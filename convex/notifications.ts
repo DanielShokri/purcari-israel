@@ -1,5 +1,5 @@
-import { v } from "convex/values";
-import { mutation, query, MutationCtx } from "./_generated/server";
+import { v, ConvexError } from "convex/values";
+import { mutation, internalMutation, query, MutationCtx } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { requireAdmin } from "./authHelpers";
@@ -49,6 +49,18 @@ export const getUnreadCount = query({
 export const markAsRead = mutation({
   args: { id: v.id("notifications") },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new ConvexError("דורש התחברות");
+
+    const notification = await ctx.db.get(args.id);
+    if (!notification) return;
+
+    // Owners can mark their own notifications; admins can mark any
+    // (the admin notifications page lists all notifications).
+    if (notification.userId !== userId) {
+      await requireAdmin(ctx);
+    }
+
     await ctx.db.patch(args.id, { isRead: true });
   },
 });
@@ -78,7 +90,7 @@ export const markAllAsRead = mutation({
  * Create an inventory alert notification
  * Used when product stock falls below threshold
  */
-export const createInventoryAlert = mutation({
+export const createInventoryAlert = internalMutation({
   args: {
     userId: v.id("users"),
     productId: v.optional(v.id("products")),
@@ -109,7 +121,7 @@ export const createInventoryAlert = mutation({
  * Create a user action notification
  * Used for user registration, login, account changes, etc.
  */
-export const createUserActionNotification = mutation({
+export const createUserActionNotification = internalMutation({
   args: {
     userId: v.id("users"),
     actionType: v.string(), // e.g., "registration", "login", "password_reset"
@@ -144,7 +156,7 @@ export const createUserActionNotification = mutation({
  * Create a payment notification
  * Used for successful/failed payments, refunds, chargebacks
  */
-export const createPaymentNotification = mutation({
+export const createPaymentNotification = internalMutation({
   args: {
     userId: v.id("users"),
     paymentStatus: v.string(), // "success", "failed", "refunded", "pending"
@@ -183,7 +195,7 @@ export const createPaymentNotification = mutation({
  * Create a promotion notification
  * Used for campaign launches, sales, discount activations
  */
-export const createPromotionNotification = mutation({
+export const createPromotionNotification = internalMutation({
   args: {
     userId: v.id("users"),
     promotionType: v.string(), // "campaign", "flash_sale", "discount", "limited_time"
@@ -223,7 +235,7 @@ export const createPromotionNotification = mutation({
  * Create a price change notification
  * Used when product prices change, sales begin/end
  */
-export const createPriceChangeNotification = mutation({
+export const createPriceChangeNotification = internalMutation({
   args: {
     userId: v.id("users"),
     productId: v.optional(v.id("products")),
@@ -266,7 +278,7 @@ export const createPriceChangeNotification = mutation({
  * Create a system error notification
  * Used for critical system failures, service issues
  */
-export const createSystemErrorNotification = mutation({
+export const createSystemErrorNotification = internalMutation({
   args: {
     userId: v.id("users"),
     errorType: v.string(), // "payment_service", "database", "email_service", "api_error"
@@ -359,7 +371,7 @@ export async function insertOrderNotification(
   });
 }
 
-export const createOrderNotification = mutation({
+export const createOrderNotification = internalMutation({
   args: {
     userId: v.id("users"),
     orderNumber: v.number(),

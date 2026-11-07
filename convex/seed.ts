@@ -1,4 +1,4 @@
-import { mutation } from "./_generated/server";
+import { mutation, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 
 // The refined product list mapped to categories
@@ -413,7 +413,7 @@ function cleanObject(obj: any) {
   return cleaned;
 }
 
-export const run = mutation({
+export const run = internalMutation({
   args: {},
   handler: async (ctx) => {
     const categoryMap: Record<string, any> = {};
