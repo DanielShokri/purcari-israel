@@ -56,7 +56,7 @@ const OrderConfirmationPage: React.FC = () => {
   
   // Get payment transaction for this order (reactive - will auto-update when IPN arrives)
   const payment = useQuery(
-    api.rivhitHelpers.getPaymentByOrderId, 
+    api.icreditHelpers.getPaymentByOrderId, 
     id ? { orderId: id as Id<"orders"> } : "skip"
   );
   

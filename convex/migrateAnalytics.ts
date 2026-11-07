@@ -1,6 +1,6 @@
-import { mutation } from "./_generated/server";
+import { internalMutation } from "./_generated/server";
 
-export const migrateTimestamps = mutation({
+export const migrateTimestamps = internalMutation({
   args: {},
   handler: async (ctx) => {
     const events = await ctx.db.query("analyticsEvents").collect();

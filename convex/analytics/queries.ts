@@ -1,5 +1,6 @@
 import { query } from "../_generated/server";
 import { v } from "convex/values";
+import { requireAdmin } from "../authHelpers";
 import { getStartOfDay, getEndOfDay } from "./aggregates";
 import {
   TimeSeriesDataPoint,
@@ -19,6 +20,8 @@ import {
 export const getSummary = query({
   args: {},
   handler: async (ctx) => {
+    await requireAdmin(ctx);
+
     const now = Date.now();
     const ONE_DAY = 24 * 60 * 60 * 1000;
     const ONE_WEEK = 7 * ONE_DAY;
@@ -128,6 +131,8 @@ export const getSummary = query({
 export const getViewsSeries = query({
   args: { interval: v.string() },
   handler: async (ctx, args): Promise<TimeSeriesDataPoint[]> => {
+    await requireAdmin(ctx);
+
     return buildTimeSeries(ctx, args.interval as "daily" | "weekly" | "monthly", async (events, start, end) => {
       // Count unique visitors per period
       const uniqueVisitors = new Set<string>();
@@ -148,6 +153,8 @@ export const getViewsSeries = query({
 export const getNewUsersSeries = query({
   args: { interval: v.string() },
   handler: async (ctx, args): Promise<TimeSeriesDataPoint[]> => {
+    await requireAdmin(ctx);
+
     // Get page views series using buildTimeSeries
     const pageViewsSeries = await buildTimeSeries(
       ctx,
@@ -171,6 +178,8 @@ export const getNewUsersSeries = query({
 export const getTopProducts = query({
   args: { limit: v.optional(v.number()) },
   handler: async (ctx, args) => {
+    await requireAdmin(ctx);
+
     return getTopProductsByViews(ctx, args.limit || 10);
   },
 });
@@ -181,6 +190,8 @@ export const getTopProducts = query({
 export const getConversionMetrics = query({
   args: {},
   handler: async (ctx) => {
+    await requireAdmin(ctx);
+
     const now = Date.now();
     const ONE_DAY = 24 * 60 * 60 * 1000;
     const todayStart = getStartOfDay(now);
@@ -245,6 +256,8 @@ export const getConversionMetrics = query({
 export const getCheckoutFunnel = query({
   args: { days: v.optional(v.number()) },
   handler: async (ctx, args) => {
+    await requireAdmin(ctx);
+
     const days = args.days || 7;
     const now = Date.now();
     const startTime = getStartOfDay(now - days * 24 * 60 * 60 * 1000);
@@ -308,6 +321,8 @@ export const getCheckoutFunnel = query({
 export const getCartMetrics = query({
   args: {},
   handler: async (ctx) => {
+    await requireAdmin(ctx);
+
     const now = Date.now();
     const ONE_DAY = 24 * 60 * 60 * 1000;
     const todayStart = getStartOfDay(now);
@@ -362,6 +377,8 @@ export const getCartMetrics = query({
 export const getCouponMetrics = query({
   args: {},
   handler: async (ctx) => {
+    await requireAdmin(ctx);
+
     const now = Date.now();
     const monthStart = new Date(now);
     monthStart.setDate(1);
@@ -406,6 +423,8 @@ export const getCouponMetrics = query({
 export const getSearchMetrics = query({
   args: {},
   handler: async (ctx) => {
+    await requireAdmin(ctx);
+
     const now = Date.now();
     const monthStart = new Date(now);
     monthStart.setDate(1);
@@ -452,6 +471,8 @@ export const getSearchMetrics = query({
 export const getSalesSeries = query({
   args: { interval: v.string() },
   handler: async (ctx, args): Promise<TimeSeriesDataPoint[]> => {
+    await requireAdmin(ctx);
+
     const periods = getTimeSeriesPeriods(
       args.interval as "daily" | "weekly" | "monthly"
     );

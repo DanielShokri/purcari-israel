@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { query, mutation, MutationCtx } from "./_generated/server";
+import { internalMutation, MutationCtx } from "./_generated/server";
 import { adminQuery } from "./authHelpers";
 
 /**
@@ -46,7 +46,7 @@ export const getLatest = adminQuery({
 /**
  * Create an activity entry for a new order
  */
-export const createOrderActivity = mutation({
+export const createOrderActivity = internalMutation({
   args: {
     orderNumber: v.number(),
     customerName: v.string(),
@@ -60,7 +60,7 @@ export const createOrderActivity = mutation({
 /**
  * Create an activity entry for a successful payment
  */
-export const createPaymentActivity = mutation({
+export const createPaymentActivity = internalMutation({
   args: {
     orderNumber: v.number(),
     invoiceNumber: v.optional(v.string()),
@@ -85,7 +85,7 @@ export const createPaymentActivity = mutation({
 /**
  * Create an activity entry for low inventory
  */
-export const createInventoryActivity = mutation({
+export const createInventoryActivity = internalMutation({
   args: {
     productName: v.string(),
     productId: v.id("products"),
@@ -109,7 +109,7 @@ export const createInventoryActivity = mutation({
 /**
  * Create an activity entry for new user registration
  */
-export const createUserActivity = mutation({
+export const createUserActivity = internalMutation({
   args: {
     userName: v.string(),
     userId: v.id("users"),
@@ -141,7 +141,7 @@ export const createUserActivity = mutation({
  * Uses index for ordering and limits to 150 most recent
  * Can be run periodically via cron or manually
  */
-export const cleanupOldActivities = mutation({
+export const cleanupOldActivities = internalMutation({
   args: {},
   handler: async (ctx) => {
     const keepCount = 150;

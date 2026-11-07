@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query, MutationCtx } from "./_generated/server";
+import { internalMutation, query, MutationCtx } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
 import { adminMutation, adminQuery } from "./authHelpers";
 
@@ -192,7 +192,7 @@ export async function incrementCouponUsage(
 /**
  * Increment coupon usage.
  */
-export const incrementUsage = mutation({
+export const incrementUsage = internalMutation({
   args: {
     code: v.string(),
     userEmail: v.string(),

@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { internalMutation, query } from "./_generated/server";
 import { adminMutation } from "./authHelpers";
 import { Id } from "./_generated/dataModel";
 
@@ -73,7 +73,7 @@ export const list = query({
 /**
  * Track an analytics event.
  */
-export const trackEvent = mutation({
+export const trackEvent = internalMutation({
   args: {
     event: v.string(),
     properties: v.any(),

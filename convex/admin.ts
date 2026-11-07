@@ -1,5 +1,4 @@
 import { v } from "convex/values";
-import { query } from "./_generated/server";
 import { adminQuery } from "./authHelpers";
 
 // Hebrew month names
@@ -8,7 +7,7 @@ const hebrewMonths = [
   "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר"
 ];
 
-export const getStats = query({
+export const getStats = adminQuery({
   args: {},
   handler: async (ctx) => {
     const now = new Date();
@@ -16,7 +15,8 @@ export const getStats = query({
     const currentYear = now.getFullYear();
     const startOfMonth = new Date(currentYear, currentMonth, 1).toISOString();
     const startOfLastMonth = new Date(currentMonth === 0 ? currentYear - 1 : currentYear, currentMonth === 0 ? 11 : currentMonth - 1, 1).toISOString();
-    const endOfLastMonth = new Date(currentYear, currentMonth, 0).toISOString();
+    // Last month ends where this month starts (the previous end value was the
+    // *start* of the last day, which dropped that day's orders).
 
     // Day boundaries for the order change calculation (today vs yesterday)
     const today = new Date();
@@ -26,8 +26,8 @@ export const getStats = query({
 
     // Run all independent reads in parallel
     const [
-      thisMonthOrders,
-      lastMonthOrders,
+      thisMonthOrdersAll,
+      lastMonthOrdersAll,
       allOrders,
       allUsers,
       allTodayOrders,
@@ -35,23 +35,16 @@ export const getStats = query({
       cancelledOrders,
       pendingOrders,
     ] = await Promise.all([
+      // This month's orders (cancelled orders are excluded below)
       ctx.db
         .query("orders")
-        .withIndex("by_status_createdAt", (q) =>
-          q.gte("status", "pending").lte("status", "completed")
-        )
-        .filter((q) => q.gte(q.field("createdAt"), startOfMonth))
+        .withIndex("by_createdAt", (q) => q.gte("createdAt", startOfMonth))
         .collect(),
+      // Last month's orders
       ctx.db
         .query("orders")
-        .withIndex("by_status_createdAt", (q) =>
-          q.gte("status", "pending").lte("status", "completed")
-        )
-        .filter((q) =>
-          q.and(
-            q.gte(q.field("createdAt"), startOfLastMonth),
-            q.lt(q.field("createdAt"), endOfLastMonth)
-          )
+        .withIndex("by_createdAt", (q) =>
+          q.gte("createdAt", startOfLastMonth).lt("createdAt", startOfMonth)
         )
         .collect(),
       ctx.db
@@ -82,6 +75,10 @@ export const getStats = query({
         .withIndex("by_status", (q) => q.eq("status", "pending"))
         .collect(),
     ]);
+
+    const notCancelled = (o: { status: string }) => o.status !== "cancelled";
+    const thisMonthOrders = thisMonthOrdersAll.filter(notCancelled);
+    const lastMonthOrders = lastMonthOrdersAll.filter(notCancelled);
 
     const totalRevenue = allOrders.reduce((sum, o) => sum + (o.total || 0), 0);
 
@@ -134,10 +131,10 @@ export const getStats = query({
   }
 });
 
-export const getMonthlySales = query({
+export const getMonthlySales = adminQuery({
   args: { year: v.optional(v.number()) },
   handler: async (ctx, args) => {
-    const targetYear = args.year || new Date().getFullYear();
+    const targetYear = (args.year as number | undefined) || new Date().getFullYear();
     const startOfYear = `${targetYear}-01-01`;
     const endOfYear = `${targetYear + 1}-01-01`;
 
@@ -173,7 +170,7 @@ export const getMonthlySales = query({
 /**
  * Get available years for sales data based on orders
  */
-export const getAvailableYears = query({
+export const getAvailableYears = adminQuery({
   args: {},
   handler: async (ctx) => {
     const orders = await ctx.db.query("orders").collect();

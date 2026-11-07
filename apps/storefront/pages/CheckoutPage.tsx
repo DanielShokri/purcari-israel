@@ -41,7 +41,7 @@ const CheckoutPage: React.FC = () => {
   } = cart;
 
   const user = useQuery(api.users.get);
-  const addresses = useQuery(api.userAddresses.list, user ? { userId: user._id } : "skip");
+  const addresses = useQuery(api.userAddresses.list, user ? {} : "skip");
 
   // Step state
   const [step, setStep] = useState(1);
@@ -63,7 +63,7 @@ const CheckoutPage: React.FC = () => {
 
   // Payment processing (includes state & logic)
   const createOrderMutation = useMutation(api.orders.create);
-  const createPaymentPageAction = useAction(api.rivhit.createPaymentPage);
+  const createPaymentPageAction = useAction(api.icredit.createPaymentPage);
   const {
     paymentUrl,
     isCreatingOrder,
