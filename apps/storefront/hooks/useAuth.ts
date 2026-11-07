@@ -78,7 +78,6 @@ export function useAuth() {
       await createUserProfile({
         phone: data.phone,
         name: data.name,
-        email: data.email,
       });
 
       return true;
@@ -101,11 +100,10 @@ export function useAuth() {
         flow: "signIn",
       });
 
-      // Ensure user profile exists in database after sign in
-      await createUserProfile({
-        phone: "", // Phone is optional in schema, will be updated later
-        email: data.email,
-      });
+      // The user document is created by the Convex Auth createOrUpdateUser
+      // callback, so no profile call is needed here. (The previous call sent an
+      // unsupported `email` arg, which made every sign-in report an error, and
+      // `phone: ""` would have wiped the user's saved phone number.)
 
       return true;
     } catch (err) {
