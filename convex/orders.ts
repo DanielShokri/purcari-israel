@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query, MutationCtx } from "./_generated/server";
-import { adminMutation, adminQuery } from "./authHelpers";
+import { adminMutation, adminQuery, requireActiveUser } from "./authHelpers";
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { incrementCouponUsage } from "./coupons";
 import { insertOrderActivity } from "./activities";
 import { insertOrderNotification } from "./notifications";
@@ -77,6 +78,11 @@ export const create = mutation({
     appliedCouponDiscount: v.optional(v.float64()),
   },
   handler: async (ctx, args) => {
+    // Never trust a client-supplied customer ID. Guest checkout remains supported.
+    const authenticatedUserId = await getAuthUserId(ctx);
+    const customer = authenticatedUserId ? await ctx.db.get(authenticatedUserId) : null;
+    if (customer && customer.status !== "active") throw new Error("החשבון אינו פעיל");
+
     // Validate inventory before creating order (product reads run in parallel)
     const products = await Promise.all(
       args.items.map((item) => ctx.db.get(item.productId))
@@ -95,9 +101,17 @@ export const create = mutation({
       }
     }
 
-    // Use the pre-calculated totals from the cart rules engine
-    // Product prices already include VAT; shipping/discount are calculated by cart rules on the frontend
-    const { subtotal, shippingCost, discount, total } = args;
+    // Price lines are derived from the product catalog, never client input.
+    const normalizedItems = args.items.map((item, index) => {
+      const product = products[index]!;
+      const price = product.onSale && product.salePrice !== undefined ? product.salePrice : product.price;
+      return { ...item, productName: product.productName, productImage: product.featuredImage, price };
+    });
+    const subtotal = normalizedItems.reduce((sum, item) => sum + item.price * Number(item.quantity), 0);
+    const shippingCost = args.shippingCost;
+    const discount = args.discount;
+    const total = subtotal + shippingCost - discount;
+    if (total < 0 || Math.abs(total - args.total) > 0.01) throw new Error("סכום ההזמנה אינו תקין");
 
     // Tax is already included in product prices (Israeli standard: מחיר כולל מע"מ)
     const tax = 0;
@@ -109,11 +123,12 @@ export const create = mutation({
 
     // 5. Create Order Document
     const orderId = await ctx.db.insert("orders", {
-      customerId: args.customerId,
-      customerName: args.customerName,
-      customerEmail: args.customerEmail,
-      customerPhone: args.customerPhone,
+      customerId: authenticatedUserId ?? undefined,
+      customerName: customer?.name || args.customerName,
+      customerEmail: customer?.email || args.customerEmail,
+      customerPhone: customer?.phone || args.customerPhone,
       customerAvatar: args.customerAvatar,
+      accessToken: crypto.randomUUID(),
       
       orderNumber,
       
@@ -145,7 +160,7 @@ export const create = mutation({
     });
 
     // 6. Create Order Items
-    for (const item of args.items) {
+    for (const item of normalizedItems) {
       await ctx.db.insert("orderItems", {
         orderId,
         productId: item.productId,
@@ -163,19 +178,20 @@ export const create = mutation({
     if (args.appliedCouponCode) {
       await incrementCouponUsage(ctx, {
         code: args.appliedCouponCode,
-        userEmail: args.customerEmail,
-        userId: args.customerId,
+        userEmail: customer?.email || args.customerEmail,
+        userId: authenticatedUserId ?? undefined,
       });
     }
 
     // 8. Create activity entry for the new order
     await insertOrderActivity(ctx, {
       orderNumber,
-      customerName: args.customerName,
+      customerName: customer?.name || args.customerName,
       total,
     });
 
-    return orderId;
+    const order = await ctx.db.get(orderId);
+    return { orderId, accessToken: order!.accessToken! };
   },
 });
 
@@ -206,10 +222,14 @@ export const get = adminQuery({
  * Public access - no admin required. The order ID acts as a capability.
  */
 export const getPublic = query({
-  args: { orderId: v.id("orders") },
+  args: { orderId: v.id("orders"), accessToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
     const order = await ctx.db.get(args.orderId);
     if (!order) return null;
+    const currentUserId = await getAuthUserId(ctx);
+    const currentUser = currentUserId ? await ctx.db.get(currentUserId) : null;
+    const hasAccess = currentUser?.role === "admin" || (currentUser?.status === "active" && order.customerId === currentUserId) || (args.accessToken !== undefined && args.accessToken === order.accessToken);
+    if (!hasAccess) throw new Error("גישה נדחתה");
 
     const items = await ctx.db
       .query("orderItems")
@@ -228,11 +248,12 @@ export const getPublic = query({
  * Used for storefront order history.
  */
 export const listByCustomer = query({
-  args: { email: v.string() },
-  handler: async (ctx, args) => {
+  args: {},
+  handler: async (ctx) => {
+    const user = await requireActiveUser(ctx);
     return await ctx.db
       .query("orders")
-      .withIndex("by_customerEmail", (q) => q.eq("customerEmail", args.email))
+      .withIndex("by_customerId", (q) => q.eq("customerId", user._id))
       .order("desc")
       .collect();
   },

@@ -24,6 +24,7 @@ export interface UsePaymentProcessingReturn {
   isLoadingPayment: boolean;
   paymentError: string | null;
   currentOrderId: Id<'orders'> | null;
+  accessToken: string | null;
   handleProceedToPayment: () => Promise<void>;
   handleRetryPayment: () => Promise<void>;
   resetPaymentState: () => void;
@@ -49,6 +50,7 @@ export function usePaymentProcessing({
   const [isLoadingPayment, setIsLoadingPayment] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [currentOrderId, setCurrentOrderId] = useState<Id<'orders'> | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
 
   const handleProceedToPayment = useCallback(async () => {
     const formData = getFormData();
@@ -57,8 +59,7 @@ export function usePaymentProcessing({
       setPaymentError(null);
 
       // Create order with cart items
-      const orderId = await createOrder({
-        customerId: user?._id as Id<'users'> | undefined,
+      const order = await createOrder({
         customerName: formData.name,
         customerEmail: formData.email,
         customerPhone: formData.phone,
@@ -90,12 +91,14 @@ export function usePaymentProcessing({
         }),
       });
 
-      setCurrentOrderId(orderId);
+      setCurrentOrderId(order.orderId);
+      setAccessToken(order.accessToken);
+      sessionStorage.setItem(`order-access-${order.orderId}`, order.accessToken);
       setIsCreatingOrder(false);
       setIsLoadingPayment(true);
 
       // Generate payment page
-      const result = await createPaymentPage({ orderId });
+      const result = await createPaymentPage({ orderId: order.orderId, accessToken: order.accessToken });
 
       if (result.success && result.paymentUrl) {
         setPaymentUrl(result.paymentUrl);
@@ -109,7 +112,7 @@ export function usePaymentProcessing({
       setIsCreatingOrder(false);
       setIsLoadingPayment(false);
     }
-  }, [getFormData, createOrder, createPaymentPage, cartItems, user, subtotal, shipping, totalDiscount, total, appliedCoupon]);
+  }, [getFormData, createOrder, createPaymentPage, cartItems, subtotal, shipping, totalDiscount, total, appliedCoupon]);
 
   const handleRetryPayment = useCallback(async () => {
     if (!currentOrderId) {
@@ -121,7 +124,7 @@ export function usePaymentProcessing({
       setPaymentError(null);
       setIsLoadingPayment(true);
 
-      const result = await createPaymentPage({ orderId: currentOrderId });
+      const result = await createPaymentPage({ orderId: currentOrderId, accessToken: accessToken ?? undefined });
 
       if (result.success && result.paymentUrl) {
         setPaymentUrl(result.paymentUrl);
@@ -134,7 +137,7 @@ export function usePaymentProcessing({
     } finally {
       setIsLoadingPayment(false);
     }
-  }, [createPaymentPage, currentOrderId]);
+  }, [createPaymentPage, currentOrderId, accessToken]);
 
   const resetPaymentState = useCallback(() => {
     setPaymentUrl(null);
@@ -150,6 +153,7 @@ export function usePaymentProcessing({
     isLoadingPayment,
     paymentError,
     currentOrderId,
+    accessToken,
     handleProceedToPayment,
     handleRetryPayment,
     resetPaymentState,

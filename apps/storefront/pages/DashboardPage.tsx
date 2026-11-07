@@ -45,7 +45,7 @@ const DashboardPage: React.FC = () => {
   // Extract addresses from the combined user data
   const addresses = convexUser?.addresses || [];
 
-   const convexOrders = useQuery(api.orders.listByCustomer, convexUser && convexUser.email ? { email: convexUser.email } : "skip");
+   const convexOrders = useQuery(api.orders.listByCustomer, convexUser ? {} : "skip");
    const orders = convexOrders as Order[] || [];
    // Orders are loading only if we have a user email but convexOrders is still undefined
    const isOrdersLoading = (convexUser && convexUser.email) ? convexOrders === undefined : false;

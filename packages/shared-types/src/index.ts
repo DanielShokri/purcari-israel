@@ -18,7 +18,6 @@ export enum ProductStatus {
 // User role enum - for user management and permissions
 export enum UserRole {
   ADMIN = 'admin',
-  EDITOR = 'editor',
   VIEWER = 'viewer',
 }
 

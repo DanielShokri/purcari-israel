@@ -9,7 +9,7 @@ import { DataModel } from "./_generated/dataModel";
 
 const emailSchema = z.string().min(1, "אימייל הוא שדה חובה").email("כתובת אימייל לא תקינה");
 
-const passwordSchema = z.string().min(4, "הסיסמה חייבת להכיל לפחות 4 תווים");
+const passwordSchema = z.string().min(8, "הסיסמה חייבת להכיל לפחות 8 תווים");
 
 // Full name: at least 3 chars + space + at least 3 chars (e.g., "John Doe", "ישראל ישראלי")
 const fullNameRegex = /^\S{3,}\s+\S{3,}$/;

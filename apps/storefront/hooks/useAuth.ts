@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { useAuthActions } from "@convex-dev/auth/react";
-import { useMutation } from "convex/react";
-import { api } from "../../../convex/_generated/api";
 
 export interface SignUpInput {
   email: string;
@@ -17,7 +15,6 @@ export interface SignInInput {
 
 export function useAuth() {
   const { signIn: convexSignIn, signOut: convexSignOut } = useAuthActions();
-  const createUserProfile = useMutation(api.users.createOrUpdateUserProfile);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -72,13 +69,10 @@ export function useAuth() {
         email: data.email,
         password: data.password,
         name: data.name,
+        phone: data.phone,
         flow: "signUp",
       });
 
-      await createUserProfile({
-        phone: data.phone,
-        name: data.name,
-      });
 
       return true;
     } catch (err) {

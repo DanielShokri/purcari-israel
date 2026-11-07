@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { internalMutation, query } from "./_generated/server";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 /**
  * Add items to an existing order. Internal only - called by orders.ts
@@ -44,8 +45,14 @@ export const create = internalMutation({
  * List items for a specific order.
  */
 export const listByOrder = query({
-  args: { orderId: v.id("orders") },
+  args: { orderId: v.id("orders"), accessToken: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    const order = await ctx.db.get(args.orderId);
+    if (!order) return [];
+    const userId = await getAuthUserId(ctx);
+    const user = userId ? await ctx.db.get(userId) : null;
+    const hasAccess = user?.role === "admin" || (user?.status === "active" && order.customerId === userId) || args.accessToken === order.accessToken;
+    if (!hasAccess) throw new Error("גישה נדחתה");
     return await ctx.db
       .query("orderItems")
       .withIndex("by_orderId", (q) => q.eq("orderId", args.orderId))

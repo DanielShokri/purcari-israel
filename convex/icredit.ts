@@ -4,6 +4,7 @@ import { v } from "convex/values";
 import { action } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 // iCredit API Configuration
 // CRITICAL: iCredit uses SEPARATE servers for test and production.
@@ -38,6 +39,7 @@ const ICREDIT_STATUS = {
 export const createPaymentPage = action({
   args: {
     orderId: v.id("orders"),
+    accessToken: v.optional(v.string()),
   },
   handler: async (ctx, args): Promise<{
     success: boolean;
@@ -81,11 +83,13 @@ export const createPaymentPage = action({
     ]);
 
     if (!order) {
-      return {
-        success: false,
-        error: "Order not found",
-      };
+      return { success: false, error: "Order not found" };
     }
+
+    const userId = await getAuthUserId(ctx);
+    const user = userId ? await ctx.runQuery(internal.icreditHelpers.getUserById, { userId }) : null;
+    const hasAccess = user?.role === "admin" || (user?.status === "active" && order.customerId === userId) || args.accessToken === order.accessToken;
+    if (!hasAccess) return { success: false, error: "Access denied" };
 
     // 6. Create a pending payment transaction record first
     const paymentTransactionId = await ctx.runMutation(
@@ -101,8 +105,9 @@ export const createPaymentPage = action({
     // 7. Build callback URLs
     // For iframe mode, we use an intermediary redirect handler that breaks out of the iframe
     // The final destination is the order confirmation page
-    const finalDestination = `${storefrontUrl}/order-confirmation/${args.orderId}`;
-    const finalFailDestination = `${storefrontUrl}/order-confirmation/${args.orderId}?status=failed`;
+    const tokenQuery = order.accessToken ? `?token=${encodeURIComponent(order.accessToken)}` : "";
+    const finalDestination = `${storefrontUrl}/order-confirmation/${args.orderId}${tokenQuery}`;
+    const finalFailDestination = `${storefrontUrl}/order-confirmation/${args.orderId}${tokenQuery ? `${tokenQuery}&` : "?"}status=failed`;
     
     // RedirectURL points to our iframe-redirect handler which will redirect the parent window
     const redirectUrl = `${siteUrl}/icredit/iframe-redirect?finalUrl=${encodeURIComponent(finalDestination)}`;

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuthActions } from "@convex-dev/auth/react";
-import { useQuery } from "convex/react";
+import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "@convex/api";
 
 export interface SignInInput {
@@ -15,13 +15,14 @@ export interface SignInInput {
  */
 export function useAdminAuth() {
   const { signIn: convexSignIn, signOut: convexSignOut } = useAuthActions();
+  const { isLoading: isAuthLoading, isAuthenticated: sessionAuthenticated } = useConvexAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Reactive query for the current user
   const currentUser = useQuery(api.users.get);
-  const isAuthenticated = currentUser !== null;
-  const isAdmin = currentUser?.role === 'admin';
+  const isAuthenticated = sessionAuthenticated && currentUser !== undefined && currentUser !== null;
+  const isAdmin = isAuthenticated && currentUser?.role === 'admin';
 
   const parseError = (err: unknown): string => {
     const message = (err as Error)?.message || "";
@@ -69,7 +70,7 @@ export function useAdminAuth() {
   return {
     signIn,
     signOut,
-    isLoading,
+    isLoading: isLoading || isAuthLoading || (sessionAuthenticated && currentUser === undefined),
     error,
     clearError,
     currentUser,

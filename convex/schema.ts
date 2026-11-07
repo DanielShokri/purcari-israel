@@ -18,7 +18,7 @@ export default defineSchema({
     isAnonymous: v.optional(v.boolean()),
 
     role: v.optional(
-      v.union(v.literal("admin"), v.literal("editor"), v.literal("viewer"))
+      v.union(v.literal("admin"), v.literal("viewer"))
     ),
     status: v.optional(
       v.union(v.literal("active"), v.literal("inactive"), v.literal("suspended"))
@@ -154,6 +154,8 @@ export default defineSchema({
     customerEmail: v.string(),
     customerPhone: v.optional(v.string()),
     customerAvatar: v.optional(v.string()),
+    // Secret capability for guest order confirmation and payment retries.
+    accessToken: v.optional(v.string()),
 
     // Short human-readable order number (e.g., 1001, 1002)
     orderNumber: v.optional(v.number()),

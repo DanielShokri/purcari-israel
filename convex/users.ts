@@ -1,8 +1,12 @@
 import { v } from "convex/values";
+import { z } from "zod";
 import { mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { auth } from "./auth";
-import { requireAdmin } from "./authHelpers";
+import { requireActiveUser, requireAdmin } from "./authHelpers";
+
+const profileNameSchema = z.string().trim().min(7).regex(/^\S{3,}\s+\S{3,}$/);
+const phoneSchema = z.string().trim().min(7).max(20).regex(/^[+\d\s-]+$/);
 
 /**
  * Get current user's full profile including addresses.
@@ -50,15 +54,10 @@ export const createOrUpdateUserProfile = mutation({
     name: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (userId === null) {
-      throw new Error("יש להתחבר למערכת");
-    }
-
-    const user = await ctx.db.get(userId);
-    if (!user) {
-      throw new Error("משתמש לא נמצא");
-    }
+    const user = await requireActiveUser(ctx);
+    const userId = user._id;
+    if (!phoneSchema.safeParse(args.phone).success) throw new Error("מספר טלפון לא תקין");
+    if (args.name !== undefined && !profileNameSchema.safeParse(args.name).success) throw new Error("שם מלא לא תקין");
 
     const now = new Date().toISOString();
     
@@ -77,7 +76,7 @@ export const createOrUpdateUserProfile = mutation({
  */
 export const listAll = query({
   args: {
-    role: v.optional(v.union(v.literal("admin"), v.literal("editor"), v.literal("viewer"))),
+    role: v.optional(v.union(v.literal("admin"), v.literal("viewer"))),
     status: v.optional(v.union(v.literal("active"), v.literal("inactive"), v.literal("suspended"))),
     limit: v.optional(v.number()),
     cursor: v.optional(v.string()),
@@ -129,11 +128,17 @@ export const listAll = query({
 export const remove = mutation({
   args: { userId: v.id("users") },
   handler: async (ctx, args) => {
-    await requireAdmin(ctx);
+    const admin = await requireAdmin(ctx);
     const userId = args.userId;
+    if (userId === admin._id) throw new Error("לא ניתן למחוק את החשבון שלך");
+    const target = await ctx.db.get(userId);
+    if (target?.role === "admin") {
+      const admins = await ctx.db.query("users").withIndex("by_role", (q) => q.eq("role", "admin")).collect();
+      if (admins.length <= 1) throw new Error("לא ניתן למחוק את המנהל האחרון");
+    }
 
     // Load all related records in parallel
-    const [addresses, notifications, orders, couponUsage, userCart] =
+    const [addresses, notifications, orders, couponUsage, userCart, authAccounts, authSessions] =
       await Promise.all([
         ctx.db
           .query("userAddresses")
@@ -155,6 +160,8 @@ export const remove = mutation({
           .query("carts")
           .withIndex("by_userId", (q) => q.eq("userId", userId))
           .first(),
+        ctx.db.query("authAccounts").filter((q) => q.eq(q.field("userId"), userId)).collect(),
+        ctx.db.query("authSessions").filter((q) => q.eq(q.field("userId"), userId)).collect(),
       ]);
 
     await Promise.all([
@@ -173,8 +180,10 @@ export const remove = mutation({
       ),
       // Delete coupon usage records
       ...couponUsage.map((usage) => ctx.db.delete(usage._id)),
-      // Delete cart
+      // Delete cart and invalidate all authentication records.
       ...(userCart ? [ctx.db.delete(userCart._id)] : []),
+      ...authAccounts.map((account) => ctx.db.delete(account._id)),
+      ...authSessions.map((session) => ctx.db.delete(session._id)),
     ]);
 
     await ctx.db.delete(userId);
@@ -188,20 +197,20 @@ export const update = mutation({
   args: {
     userId: v.id("users"),
     name: v.optional(v.string()),
-    email: v.optional(v.string()),
     phone: v.optional(v.string()),
-    address: v.optional(v.string()),
-    role: v.optional(v.union(v.literal("admin"), v.literal("editor"), v.literal("viewer"))),
+    role: v.optional(v.union(v.literal("admin"), v.literal("viewer"))),
     status: v.optional(v.union(v.literal("active"), v.literal("inactive"), v.literal("suspended"))),
   },
   handler: async (ctx, args) => {
-    await requireAdmin(ctx);
-    
+    const admin = await requireAdmin(ctx);
     const { userId, ...updates } = args;
-    await ctx.db.patch(userId, {
-      ...updates,
-      updatedAt: new Date().toISOString(),
-    });
+    const target = await ctx.db.get(userId);
+    if (!target) throw new Error("משתמש לא נמצא");
+    const removesAdmin = target.role === "admin" && (updates.role === "viewer" || (updates.status !== undefined && updates.status !== "active"));
+    if ((userId === admin._id && removesAdmin) || removesAdmin && (await ctx.db.query("users").withIndex("by_role", (q) => q.eq("role", "admin")).collect()).length <= 1) {
+      throw new Error("לא ניתן להסיר או להשבית את המנהל האחרון");
+    }
+    await ctx.db.patch(userId, { ...updates, updatedAt: new Date().toISOString() });
   },
 });
 
@@ -214,7 +223,7 @@ export const create = mutation({
     name: v.string(),
     email: v.string(),
     phone: v.optional(v.string()),
-    role: v.optional(v.union(v.literal("admin"), v.literal("editor"), v.literal("viewer"))),
+    role: v.optional(v.union(v.literal("admin"), v.literal("viewer"))),
     status: v.optional(v.union(v.literal("active"), v.literal("inactive"), v.literal("suspended"))),
   },
   handler: async (ctx, args) => {
@@ -251,7 +260,7 @@ export const create = mutation({
 export const updateRole = mutation({
   args: {
     userId: v.id("users"),
-    role: v.union(v.literal("admin"), v.literal("editor"), v.literal("viewer")),
+    role: v.union(v.literal("admin"), v.literal("viewer")),
   },
   handler: async (ctx, args) => {
     // Verify admin access
@@ -293,24 +302,12 @@ export const updateProfile = mutation({
     phone: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // Use getAuthUserId for reliable auth user lookup
-    const userId = await getAuthUserId(ctx);
+    const user = await requireActiveUser(ctx);
+    if (args.name !== undefined && !profileNameSchema.safeParse(args.name).success) throw new Error("שם מלא לא תקין");
+    if (args.phone !== undefined && !phoneSchema.safeParse(args.phone).success) throw new Error("מספר טלפון לא תקין");
+    const updates = Object.fromEntries(Object.entries(args).filter(([, value]) => value !== undefined));
+    await ctx.db.patch(user._id, { ...updates, updatedAt: new Date().toISOString() });
 
-    if (userId === null) {
-      throw new Error("Not authenticated");
-    }
-
-    const user = await ctx.db.get(userId);
-
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    await ctx.db.patch(userId, {
-      ...args,
-      updatedAt: new Date().toISOString(),
-    });
-
-    return userId;
+    return user._id;
   },
 });

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useTrackPurchase } from '../hooks/useAnalytics';
@@ -50,14 +50,16 @@ const PAYMENT_STATUS_STYLES = {
 
 const OrderConfirmationPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { clearCart } = useCart();
-  const orderData = useQuery(api.orders.getPublic, id ? { orderId: id as Id<"orders"> } : "skip");
+  const accessToken = id ? searchParams.get('token') ?? sessionStorage.getItem(`order-access-${id}`) ?? undefined : undefined;
+  const orderData = useQuery(api.orders.getPublic, id ? { orderId: id as Id<"orders">, accessToken } : "skip");
   
   // Get payment transaction for this order (reactive - will auto-update when IPN arrives)
   const payment = useQuery(
     api.icreditHelpers.getPaymentByOrderId, 
-    id ? { orderId: id as Id<"orders"> } : "skip"
+    id ? { orderId: id as Id<"orders">, accessToken } : "skip"
   );
   
   const { trackPurchase } = useTrackPurchase();

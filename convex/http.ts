@@ -24,13 +24,13 @@ http.route({
   handler: httpAction(async (ctx, request) => {
     try {
       const body = await request.text();
-      console.log("[iCredit IPN POST] Received:", body);
+      console.log("[iCredit IPN POST] Received notification");
 
       const result = await ctx.runMutation(internal.icreditHelpers.handleIpnNotification, {
         rawBody: body,
       });
 
-      console.log("[iCredit IPN POST] Result:", JSON.stringify(result));
+      console.log("[iCredit IPN POST] Processed:", result.success);
 
       return new Response("OK", { status: 200 });
     } catch (error) {
@@ -54,7 +54,7 @@ http.route({
         params[key] = value;
       });
       
-      console.log("[iCredit IPN GET] Received params:", JSON.stringify(params));
+      console.warn("[iCredit IPN GET] Deprecated GET notification received");
 
       if (params.SaleId || params.saleid) {
         const result = await ctx.runMutation(internal.icreditHelpers.handleIpnNotification, {

@@ -9,6 +9,7 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery, query } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 // ============================================================================
 // Public Queries
@@ -20,8 +21,15 @@ import { Id } from "./_generated/dataModel";
 export const getPaymentByOrderId = query({
   args: {
     orderId: v.id("orders"),
+    accessToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const order = await ctx.db.get(args.orderId);
+    if (!order) return null;
+    const userId = await getAuthUserId(ctx);
+    const user = userId ? await ctx.db.get(userId) : null;
+    const hasAccess = user?.role === "admin" || (user?.status === "active" && order.customerId === userId) || args.accessToken === order.accessToken;
+    if (!hasAccess) throw new Error("גישה נדחתה");
     const transaction = await ctx.db
       .query("paymentTransactions")
       .withIndex("by_orderId", (q) => q.eq("orderId", args.orderId))
@@ -35,6 +43,11 @@ export const getPaymentByOrderId = query({
 // ============================================================================
 // Internal Queries (used by createPaymentPage action)
 // ============================================================================
+
+export const getUserById = internalQuery({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => ctx.db.get(args.userId),
+});
 
 /**
  * Internal query to get order by ID (for use in actions).
@@ -206,19 +219,20 @@ export const handleIpnNotification = internalMutation({
         }
       }
 
-      // SECURITY: Verify sale token if provided (prevents fake IPN)
+      // Require the token stored when the payment page was created.
       const ipnToken = ipnData.Token || ipnData.token || ipnData.PrivateSaleToken;
-      if (ipnToken && paymentTransaction.ipnData) {
-        try {
-          const storedData = JSON.parse(paymentTransaction.ipnData);
-          const storedToken = storedData.privateSaleToken;
-          if (storedToken && storedToken !== ipnToken) {
-            console.error("[iCredit IPN] Token mismatch:", ipnToken, "vs", storedToken);
-            return { success: false, error: "Invalid token - possible spoofed IPN" };
-          }
-        } catch {
-          // Stored data may not be JSON, skip token verification
+      if (!ipnToken || !paymentTransaction.ipnData) {
+        return { success: false, error: "Missing payment verification token" };
+      }
+      try {
+        const storedData = JSON.parse(paymentTransaction.ipnData);
+        const storedToken = storedData.privateSaleToken;
+        if (!storedToken || storedToken !== ipnToken) {
+          console.error("[iCredit IPN] Token mismatch");
+          return { success: false, error: "Invalid token - possible spoofed IPN" };
         }
+      } catch {
+        return { success: false, error: "Invalid payment verification data" };
       }
 
       // Determine payment status from iCredit response

@@ -23,8 +23,7 @@ import { useUserDialogs } from '../hooks/useUserDialogs';
 const roleOptions = createListCollection({
   items: [
     { label: 'צופה', value: 'viewer' },
-    { label: 'עורך', value: 'editor' },
-    { label: 'מנהל', value: 'admin' },
+       { label: 'מנהל', value: 'admin' },
   ],
 });
 
