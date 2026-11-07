@@ -1,6 +1,26 @@
 import { v } from "convex/values";
-import { query, mutation } from "./_generated/server";
+import { query, mutation, MutationCtx } from "./_generated/server";
 import { adminQuery } from "./authHelpers";
+
+/**
+ * Shared helper: insert the "new order" activity entry.
+ * Called directly from orders.create (no ctx.runMutation sub-transaction).
+ */
+export async function insertOrderActivity(
+  ctx: MutationCtx,
+  args: { orderNumber: number; customerName: string; total: number }
+): Promise<void> {
+  const title = `הזמנה חדשה #${args.orderNumber}`;
+  const subtitle = `${args.customerName} - ₪${args.total.toLocaleString("he-IL")}`;
+
+  await ctx.db.insert("activities", {
+    title,
+    subtitle,
+    type: "order",
+    color: "blue.500",
+    createdAt: new Date().toISOString(),
+  });
+}
 
 /**
  * Get the latest activities for the dashboard feed
@@ -33,16 +53,7 @@ export const createOrderActivity = mutation({
     total: v.number(),
   },
   handler: async (ctx, args) => {
-    const title = `הזמנה חדשה #${args.orderNumber}`;
-    const subtitle = `${args.customerName} - ₪${args.total.toLocaleString("he-IL")}`;
-
-    await ctx.db.insert("activities", {
-      title,
-      subtitle,
-      type: "order",
-      color: "blue.500",
-      createdAt: new Date().toISOString(),
-    });
+    await insertOrderActivity(ctx, args);
   },
 });
 

@@ -9,17 +9,17 @@ importers:
   .:
     dependencies:
       '@auth/core':
-        specifier: ^0.37.4
-        version: 0.37.4
+        specifier: ^0.41.3
+        version: 0.41.3
       '@convex-dev/aggregate':
-        specifier: ^0.2.1
-        version: 0.2.1(convex@1.31.7(react@18.3.1))
+        specifier: ^0.3.4
+        version: 0.3.4(convex@1.49.0(react@18.3.1))(react@18.3.1)(typescript@5.8.3)(zod@4.3.6)
       '@convex-dev/auth':
-        specifier: ^0.0.90
-        version: 0.0.90(@auth/core@0.37.4)(convex@1.31.7(react@18.3.1))(react@18.3.1)
+        specifier: ^0.0.96
+        version: 0.0.96(@auth/core@0.41.3)(convex@1.49.0(react@18.3.1))(react@18.3.1)
       convex:
-        specifier: ^1.31.7
-        version: 1.31.7(react@18.3.1)
+        specifier: ^1.49.0
+        version: 1.49.0(react@18.3.1)
       dotenv:
         specifier: ^17.2.3
         version: 17.2.3
@@ -182,12 +182,12 @@ packages:
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
 
-  '@auth/core@0.37.4':
-    resolution: {integrity: sha512-HOXJwXWXQRhbBDHlMU0K/6FT1v+wjtzdKhsNg0ZN7/gne6XPsIrjZ4daMcFnbq0Z/vsAbYBinQhhua0d77v7qw==}
+  '@auth/core@0.41.3':
+    resolution: {integrity: sha512-sJ3JMHHkXMD3aOjopv7mOBTO1Ocw4b0fAEXJBz6k7YHLpYQI6C40jCUPc5fNvUKxXRXNE1/sRISA15UrwWJBTw==}
     peerDependencies:
       '@simplewebauthn/browser': ^9.0.1
       '@simplewebauthn/server': ^9.0.2
-      nodemailer: ^6.8.0
+      nodemailer: ^7.0.7 || ^8.0.5
     peerDependenciesMeta:
       '@simplewebauthn/browser':
         optional: true
@@ -290,21 +290,27 @@ packages:
       react: '>=18'
       react-dom: '>=18'
 
-  '@convex-dev/aggregate@0.2.1':
-    resolution: {integrity: sha512-z8GeUC+cIZEgtMXecX6WTBQHNW4E2ioRsc5IkO8BWnCjgDOru/Mw8zXe9JPe35JkqDjlSVKuwxiQHKs/jaYAyA==}
+  '@convex-dev/aggregate@0.3.4':
+    resolution: {integrity: sha512-w60E4fLuysza8sBIQsLlYFxnzMB7ed8yqYpu/JfDhkUYvnnvW3CzLEf74zCwb/RfLrR6u5a/0pfvVtIp4XNIoA==}
     peerDependencies:
-      convex: ^1.24.8
+      convex: ^1.43.0
 
-  '@convex-dev/auth@0.0.90':
-    resolution: {integrity: sha512-aqw88EB042HvnaF4wcf/f/wTocmT2Bus2VDQRuV79cM0+8kORM0ICK/ByZ6XsHgQ9qr6TmidNbXm6QAgndrdpQ==}
+  '@convex-dev/auth@0.0.96':
+    resolution: {integrity: sha512-4vcoQmmlbInLpR6BK43iIH21JwVPG5U7kRIjLaUWkeEr+hVaS/DuYsQRrDsDLu9rbHpq9PT2ZkUrtPDLkxYx0A==}
     hasBin: true
     peerDependencies:
-      '@auth/core': ^0.37.0
+      '@auth/core': ^0.41.1
       convex: ^1.17.0
       react: ^18.2.0 || ^19.0.0-0
     peerDependenciesMeta:
       react:
         optional: true
+
+  '@convex-dev/batch-worker@0.3.3':
+    resolution: {integrity: sha512-A9mOhSqITtdF6TR9bVZjTy+eES6/r/8ZvMWnNdKsATg8EOn5JMzDplibjaHCjQ57FjVeizbuKJ8GlnMs1RWF0g==}
+    peerDependencies:
+      convex: ^1.43.0
+      react: ^18.3.1 || ^19.0.0
 
   '@emotion/babel-plugin@11.13.5':
     resolution: {integrity: sha512-pxHCpT2ex+0q+HH91/zsdHkw/lXd468DIN2zvfvLtPKLLMo6gQj7oLObq8PhkrxOZb/gGCq03S3Z7PDhS8pduQ==}
@@ -856,12 +862,15 @@ packages:
 
   '@oslojs/asn1@1.0.0':
     resolution: {integrity: sha512-zw/wn0sj0j0QKbIXfIlnEcTviaCzYOY3V5rAyjR6YtOByFtJiT574+8p9Wlach0lZH9fddD4yb9laEAIl4vXQA==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   '@oslojs/binary@1.0.0':
     resolution: {integrity: sha512-9RCU6OwXU6p67H4NODbuxv2S3eenuQ4/WFLrsq+K/k682xrznH5EVWA7N4VFk9VYVcbFtKqur5YQQZc0ySGhsQ==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   '@oslojs/crypto@1.0.1':
     resolution: {integrity: sha512-7n08G8nWjAr/Yu3vu9zzrd0L9XnrJfpMioQcvCMxBIiF5orECHe5/3J0jmXRVvgfqMm/+4oxlQ+Sq39COYLcNQ==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   '@oslojs/encoding@1.1.0':
     resolution: {integrity: sha512-70wQhgYmndg4GCPxPPxPGevRKqTIJ2Nh4OkiMWmDAVYsTQ+Ta7Sq+rPevXyXGdzr30/qZBnyOalCszoMxlyldQ==}
@@ -1627,18 +1636,43 @@ packages:
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
 
-  convex@1.31.7:
-    resolution: {integrity: sha512-PtNMe1mAIOvA8Yz100QTOaIdgt2rIuWqencVXrb4McdhxBHZ8IJ1eXTnrgCC9HydyilGT1pOn+KNqT14mqn9fQ==}
-    engines: {node: '>=18.0.0', npm: '>=7.0.0'}
+  convex-helpers@0.1.128:
+    resolution: {integrity: sha512-5n7uKsJrYnnybvuSAWgDQ9d5Avqk4CzFsJ22SXow4tHmVxSUH6qiJCeomWWxcLSfN9t9jpKIXNJiGJrjddS4ng==}
+    hasBin: true
+    peerDependencies:
+      '@standard-schema/spec': ^1.0.0
+      convex: ^1.46.0
+      hono: ^4.0.5
+      react: ^17.0.2 || ^18.0.0 || ^19.0.0
+      typescript: ^5.5 || ^6.0.0 || ^7.0.0
+      zod: ^3.25.0 || ^4.0.0
+    peerDependenciesMeta:
+      '@standard-schema/spec':
+        optional: true
+      hono:
+        optional: true
+      react:
+        optional: true
+      typescript:
+        optional: true
+      zod:
+        optional: true
+
+  convex@1.49.0:
+    resolution: {integrity: sha512-mkr9oXF8/arkCI1kvYyGytWd62oVXNABh4uwLeI4UQVN6Zuudm4DlmSzNUJKF63djk6f/uUXC+6ffuVSkPLvzA==}
+    engines: {node: '>=22.0.0', npm: '>=7.0.0'}
     hasBin: true
     peerDependencies:
       '@auth0/auth0-react': ^2.0.1
       '@clerk/clerk-react': ^4.12.8 || ^5.0.0
+      '@clerk/react': ^6.4.3
       react: ^18.0.0 || ^19.0.0-0 || ^19.0.0
     peerDependenciesMeta:
       '@auth0/auth0-react':
         optional: true
       '@clerk/clerk-react':
+        optional: true
+      '@clerk/react':
         optional: true
       react:
         optional: true
@@ -1856,6 +1890,9 @@ packages:
 
   jose@5.10.0:
     resolution: {integrity: sha512-s+3Al/p9g32Iq+oqXxkW//7jk2Vig6FF1CFqzVXoTUXt2qz89YWbL+OwS17NFYEvxC35n0FKeGO2LGYSxeM2Gg==}
+
+  jose@6.2.15:
+    resolution: {integrity: sha512-qdF6ewcZARtef63fJ9AKKZPgxw+t7USH6HLXYcD4CrdmSvDp79rpJSPFEKc90QBeGS63u1KQtN2MZQHC0yDIzA==}
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
@@ -2404,6 +2441,18 @@ packages:
   w3c-keyname@2.2.8:
     resolution: {integrity: sha512-dpojBhNsCNN7T82Tm7k26A6G9ML3NkhDsnw9n/eoxSRlVBB4CEtIQ/KTCLI2Fwf3ataSXRhYFkQi3SlnFwPvPQ==}
 
+  ws@8.21.0:
+    resolution: {integrity: sha512-Vsp28b7DRcimFQvrqu2Wek3z1iYxDCWqHYB8Qsnk/S4RfaCQzPGPyBNuVjJV3cd6UiKtUtp6sNM77gWvzcCH+g==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+
   yallist@3.1.1:
     resolution: {integrity: sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==}
 
@@ -2485,10 +2534,10 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  '@auth/core@0.37.4':
+  '@auth/core@0.41.3':
     dependencies:
       '@panva/hkdf': 1.2.1
-      jose: 5.10.0
+      jose: 6.2.15
       oauth4webapi: 3.8.3
       preact: 10.24.3
       preact-render-to-string: 6.5.11(preact@10.24.3)
@@ -2620,16 +2669,24 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  '@convex-dev/aggregate@0.2.1(convex@1.31.7(react@18.3.1))':
+  '@convex-dev/aggregate@0.3.4(convex@1.49.0(react@18.3.1))(react@18.3.1)(typescript@5.8.3)(zod@4.3.6)':
     dependencies:
-      convex: 1.31.7(react@18.3.1)
+      '@convex-dev/batch-worker': 0.3.3(convex@1.49.0(react@18.3.1))(react@18.3.1)(typescript@5.8.3)(zod@4.3.6)
+      convex: 1.49.0(react@18.3.1)
+      convex-helpers: 0.1.128(convex@1.49.0(react@18.3.1))(react@18.3.1)(typescript@5.8.3)(zod@4.3.6)
+    transitivePeerDependencies:
+      - '@standard-schema/spec'
+      - hono
+      - react
+      - typescript
+      - zod
 
-  '@convex-dev/auth@0.0.90(@auth/core@0.37.4)(convex@1.31.7(react@18.3.1))(react@18.3.1)':
+  '@convex-dev/auth@0.0.96(@auth/core@0.41.3)(convex@1.49.0(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@auth/core': 0.37.4
+      '@auth/core': 0.41.3
       '@oslojs/crypto': 1.0.1
       '@oslojs/encoding': 1.1.0
-      convex: 1.31.7(react@18.3.1)
+      convex: 1.49.0(react@18.3.1)
       cookie: 1.1.1
       is-network-error: 1.3.0
       jose: 5.10.0
@@ -2640,6 +2697,17 @@ snapshots:
       server-only: 0.0.1
     optionalDependencies:
       react: 18.3.1
+
+  '@convex-dev/batch-worker@0.3.3(convex@1.49.0(react@18.3.1))(react@18.3.1)(typescript@5.8.3)(zod@4.3.6)':
+    dependencies:
+      convex: 1.49.0(react@18.3.1)
+      convex-helpers: 0.1.128(convex@1.49.0(react@18.3.1))(react@18.3.1)(typescript@5.8.3)(zod@4.3.6)
+      react: 18.3.1
+    transitivePeerDependencies:
+      - '@standard-schema/spec'
+      - hono
+      - typescript
+      - zod
 
   '@emotion/babel-plugin@11.13.5':
     dependencies:
@@ -4031,12 +4099,24 @@ snapshots:
 
   convert-source-map@2.0.0: {}
 
-  convex@1.31.7(react@18.3.1):
+  convex-helpers@0.1.128(convex@1.49.0(react@18.3.1))(react@18.3.1)(typescript@5.8.3)(zod@4.3.6):
+    dependencies:
+      convex: 1.49.0(react@18.3.1)
+    optionalDependencies:
+      react: 18.3.1
+      typescript: 5.8.3
+      zod: 4.3.6
+
+  convex@1.49.0(react@18.3.1):
     dependencies:
       esbuild: 0.27.0
       prettier: 3.8.1
+      ws: 8.21.0
     optionalDependencies:
       react: 18.3.1
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
 
   cookie@1.1.1: {}
 
@@ -4275,6 +4355,8 @@ snapshots:
   jiti@2.6.1: {}
 
   jose@5.10.0: {}
+
+  jose@6.2.15: {}
 
   js-tokens@4.0.0: {}
 
@@ -4803,6 +4885,8 @@ snapshots:
       tsx: 4.21.0
 
   w3c-keyname@2.2.8: {}
+
+  ws@8.21.0: {}
 
   yallist@3.1.1: {}
 

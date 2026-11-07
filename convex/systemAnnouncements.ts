@@ -41,7 +41,10 @@ export const getActive = query({
 
     const announcements = await ctx.db
       .query("systemAnnouncements")
-      .withIndex("by_status_startDate", (q) => q.eq("status", "active"))
+      // startDate <= today is applied in the index range, so future announcements aren't read
+      .withIndex("by_status_startDate", (q) =>
+        q.eq("status", "active").lte("startDate", today)
+      )
       .collect();
 
     // Filter by date validity and target audience

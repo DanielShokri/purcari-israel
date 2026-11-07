@@ -70,10 +70,15 @@ export const createPaymentPage = action({
     // Get storefront URL for redirect after payment
     const storefrontUrl = process.env.STOREFRONT_URL || "http://localhost:3000";
 
-    // 4. Read the order from the database
-    const order = await ctx.runQuery(internal.icreditHelpers.getOrderById, {
-      orderId: args.orderId,
-    });
+    // 4 + 5. Read the order and its items in parallel
+    const [order, orderItems] = await Promise.all([
+      ctx.runQuery(internal.icreditHelpers.getOrderById, {
+        orderId: args.orderId,
+      }),
+      ctx.runQuery(internal.icreditHelpers.getOrderItems, {
+        orderId: args.orderId,
+      }),
+    ]);
 
     if (!order) {
       return {
@@ -81,11 +86,6 @@ export const createPaymentPage = action({
         error: "Order not found",
       };
     }
-
-    // 5. Get order items
-    const orderItems = await ctx.runQuery(internal.icreditHelpers.getOrderItems, {
-      orderId: args.orderId,
-    });
 
     // 6. Create a pending payment transaction record first
     const paymentTransactionId = await ctx.runMutation(
@@ -216,7 +216,8 @@ export const createPaymentPage = action({
         // Success - update payment transaction with URL and tokens
         await ctx.runMutation(internal.icreditHelpers.updatePaymentTransaction, {
           paymentTransactionId,
-          icreditPaymentUrl: result.URL,
+          // Stored in the existing schema field (the iCredit gateway is provided via Rivhit)
+          rivhitPaymentUrl: result.URL,
           // Store the sale tokens for later verification
           ipnData: JSON.stringify({
             privateSaleToken: result.PrivateSaleToken,

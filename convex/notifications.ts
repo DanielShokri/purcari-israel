@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, MutationCtx } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { requireAdmin } from "./authHelpers";
 
@@ -36,8 +37,9 @@ export const getUnreadCount = query({
 
     const unread = await ctx.db
       .query("notifications")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .filter((q) => q.eq(q.field("isRead"), false))
+      .withIndex("by_userId_isRead", (q) =>
+        q.eq("userId", userId).eq("isRead", false)
+      )
       .collect();
 
     return unread.length;
@@ -59,13 +61,16 @@ export const markAllAsRead = mutation({
 
     const unread = await ctx.db
       .query("notifications")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .filter((q) => q.eq(q.field("isRead"), false))
+      .withIndex("by_userId_isRead", (q) =>
+        q.eq("userId", userId).eq("isRead", false)
+      )
       .collect();
 
-    for (const notification of unread) {
-      await ctx.db.patch(notification._id, { isRead: true });
-    }
+    await Promise.all(
+      unread.map((notification) =>
+        ctx.db.patch(notification._id, { isRead: true })
+      )
+    );
   },
 });
 
@@ -302,6 +307,58 @@ export const createSystemErrorNotification = mutation({
  * Create an order notification
  * Used when new orders are placed or order status changes
  */
+export async function insertOrderNotification(
+  ctx: MutationCtx,
+  args: {
+    userId: Id<"users">;
+    orderNumber: number;
+    customerName: string;
+    total: number;
+    status: string;
+    customIcon?: string;
+  }
+): Promise<void> {
+  const statusLabels: Record<string, { title: string; message: string; icon: string }> = {
+    placed: {
+      title: "הזמנה חדשה התקבלה",
+      message: `הזמנה #${args.orderNumber} מ${args.customerName} - ₪${args.total.toLocaleString("he-IL")}`,
+      icon: "shopping_cart",
+    },
+    processing: {
+      title: "הזמנה בעיבוד",
+      message: `הזמנה #${args.orderNumber} הועברה לטיפול - ₪${args.total.toLocaleString("he-IL")}`,
+      icon: "schedule",
+    },
+    shipped: {
+      title: "הזמנה נשלחה",
+      message: `הזמנה #${args.orderNumber} נשלחה ללקוח - ₪${args.total.toLocaleString("he-IL")}`,
+      icon: "local_shipping",
+    },
+    completed: {
+      title: "הזמנה הושלמה",
+      message: `הזמנה #${args.orderNumber} הושלמה בהצלחה - ₪${args.total.toLocaleString("he-IL")}`,
+      icon: "check_circle",
+    },
+    cancelled: {
+      title: "הזמנה בוטלה",
+      message: `הזמנה #${args.orderNumber} בוטלה - ₪${args.total.toLocaleString("he-IL")}`,
+      icon: "cancel",
+    },
+  };
+
+  const statusInfo = statusLabels[args.status] || statusLabels.placed;
+
+  await ctx.db.insert("notifications", {
+    userId: args.userId,
+    title: statusInfo.title,
+    message: statusInfo.message,
+    type: "order",
+    icon: args.customIcon || statusInfo.icon,
+    isRead: false,
+    createdAt: new Date().toISOString(),
+  });
+}
+
 export const createOrderNotification = mutation({
   args: {
     userId: v.id("users"),
@@ -312,44 +369,6 @@ export const createOrderNotification = mutation({
     customIcon: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const statusLabels: Record<string, { title: string; message: string; icon: string }> = {
-      placed: {
-        title: "הזמנה חדשה התקבלה",
-        message: `הזמנה #${args.orderNumber} מ${args.customerName} - ₪${args.total.toLocaleString("he-IL")}`,
-        icon: "shopping_cart",
-      },
-      processing: {
-        title: "הזמנה בעיבוד",
-        message: `הזמנה #${args.orderNumber} הועברה לטיפול - ₪${args.total.toLocaleString("he-IL")}`,
-        icon: "schedule",
-      },
-      shipped: {
-        title: "הזמנה נשלחה",
-        message: `הזמנה #${args.orderNumber} נשלחה ללקוח - ₪${args.total.toLocaleString("he-IL")}`,
-        icon: "local_shipping",
-      },
-      completed: {
-        title: "הזמנה הושלמה",
-        message: `הזמנה #${args.orderNumber} הושלמה בהצלחה - ₪${args.total.toLocaleString("he-IL")}`,
-        icon: "check_circle",
-      },
-      cancelled: {
-        title: "הזמנה בוטלה",
-        message: `הזמנה #${args.orderNumber} בוטלה - ₪${args.total.toLocaleString("he-IL")}`,
-        icon: "cancel",
-      },
-    };
-
-    const statusInfo = statusLabels[args.status] || statusLabels.placed;
-
-    await ctx.db.insert("notifications", {
-      userId: args.userId,
-      title: statusInfo.title,
-      message: statusInfo.message,
-      type: "order",
-      icon: args.customIcon || statusInfo.icon,
-      isRead: false,
-      createdAt: new Date().toISOString(),
-    });
+    await insertOrderNotification(ctx, args);
   },
 });

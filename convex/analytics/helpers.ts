@@ -11,6 +11,42 @@ export interface TimeSeriesDataPoint {
 }
 
 /**
+ * Read events of a single type within [startTime, endTime] using the
+ * compound `by_event_timestamp` index, so only matching rows are read
+ * (instead of scanning every event in the range or every event of the type).
+ */
+export async function getEventsInRange(
+  ctx: any,
+  event: string,
+  startTime: number,
+  endTime: number
+): Promise<any[]> {
+  return await ctx.db
+    .query("analyticsEvents")
+    .withIndex("by_event_timestamp", (q: any) =>
+      q.eq("event", event).gte("timestamp", startTime).lte("timestamp", endTime)
+    )
+    .collect();
+}
+
+/**
+ * Read events of a single type with timestamp >= startTime using the
+ * compound `by_event_timestamp` index.
+ */
+export async function getEventsSince(
+  ctx: any,
+  event: string,
+  startTime: number
+): Promise<any[]> {
+  return await ctx.db
+    .query("analyticsEvents")
+    .withIndex("by_event_timestamp", (q: any) =>
+      q.eq("event", event).gte("timestamp", startTime)
+    )
+    .collect();
+}
+
+/**
  * Count page views directly from events table within a time range
  */
 export async function countPageViewsInRange(
@@ -18,15 +54,8 @@ export async function countPageViewsInRange(
   startTime: number,
   endTime: number
 ): Promise<number> {
-  const events = await ctx.db
-    .query("analyticsEvents")
-    .withIndex("by_event", (q: any) => q.eq("event", "page_viewed"))
-    .collect();
-
-  return events.filter((e: any) => {
-    const ts = typeof e.timestamp === "string" ? Number(e.timestamp) : e.timestamp;
-    return ts >= startTime && ts <= endTime;
-  }).length;
+  const events = await getEventsInRange(ctx, "page_viewed", startTime, endTime);
+  return events.length;
 }
 
 /**
@@ -82,6 +111,35 @@ export async function countUniqueVisitorsInRange(
 }
 
 /**
+ * Count both unique visitors (userId or anonymousId) and authenticated users
+ * (userId only) in a time range with a single read of the events.
+ */
+export async function countVisitorsInRange(
+  ctx: any,
+  startTime: number,
+  endTime: number
+): Promise<{ uniqueVisitors: number; authenticatedUsers: number }> {
+  const events = await ctx.db
+    .query("analyticsEvents")
+    .withIndex("by_timestamp", (q: any) =>
+      q.gte("timestamp", startTime).lte("timestamp", endTime)
+    )
+    .collect();
+
+  const uniqueVisitors = new Set<string>();
+  const authenticatedUsers = new Set<string>();
+  for (const event of events) {
+    const visitorId = event.userId || event.anonymousId;
+    if (visitorId) uniqueVisitors.add(visitorId);
+    if (event.userId) authenticatedUsers.add(event.userId);
+  }
+  return {
+    uniqueVisitors: uniqueVisitors.size,
+    authenticatedUsers: authenticatedUsers.size,
+  };
+}
+
+/**
  * Get top products by view count
  */
 export async function getTopProductsByViews(
@@ -91,7 +149,7 @@ export async function getTopProductsByViews(
   // Query analyticsEvents for product_viewed events
   const events = await ctx.db
     .query("analyticsEvents")
-    .withIndex("by_event", (q) => q.eq("event", "product_viewed"))
+    .withIndex("by_event", (q: any) => q.eq("event", "product_viewed"))
     .collect();
 
   // Aggregate views per product
@@ -109,52 +167,56 @@ export async function getTopProductsByViews(
     .sort((a, b) => b[1] - a[1])
     .slice(0, limit);
 
-  // Get product details
-  const results = [];
-  for (const [productId, views] of sorted) {
-    const product = await ctx.db.get("products", productId as any);
-    results.push({
+  // Get product details (in parallel)
+  const products = await Promise.all(
+    sorted.map(([productId]) => {
+      // Guard against malformed ids stored in event properties
+      const id = ctx.db.normalizeId("products", productId);
+      return id ? ctx.db.get("products", id) : null;
+    })
+  );
+
+  return sorted.map(([productId, views], i) => {
+    const product = products[i];
+    return {
       productId,
       productName: product?.productNameHe || product?.productName || "Unknown Product",
       views,
-    });
-  }
-
-  return results;
+    };
+  });
 }
 
 /**
- * Build time series query helper for any aggregation logic
+ * A single bucket in a time series (shared by buildTimeSeries and getSalesSeries)
  */
-export async function buildTimeSeries(
-  ctx: any,
+export interface TimeSeriesPeriod {
+  name: string;
+  timestamp: string;
+  start: number;
+  end: number;
+}
+
+/**
+ * Compute the period buckets for an interval:
+ * - daily: last 30 days
+ * - weekly: last 12 weeks
+ * - monthly: last 12 months
+ */
+export function getTimeSeriesPeriods(
   interval: "daily" | "weekly" | "monthly",
-  aggregateFunc: (events: any[], start: number, end: number) => number | Promise<number>
-): Promise<TimeSeriesDataPoint[]> {
-  const now = Date.now();
-  const points: TimeSeriesDataPoint[] = [];
+  now: number = Date.now()
+): TimeSeriesPeriod[] {
+  const periods: TimeSeriesPeriod[] = [];
 
   if (interval === "daily") {
     // Last 30 days
     for (let i = 29; i >= 0; i--) {
       const date = new Date(now - i * 24 * 60 * 60 * 1000);
-      const dayStart = getStartOfDay(date.getTime());
-      const dayEnd = getEndOfDay(date.getTime());
-      const dayKey = getDayKey(date.getTime());
-
-      const events = await ctx.db
-        .query("analyticsEvents")
-        .withIndex("by_timestamp", (q) =>
-          q.gte("timestamp", dayStart).lte("timestamp", dayEnd)
-        )
-        .collect();
-
-      const value = await aggregateFunc(events, dayStart, dayEnd);
-
-      points.push({
+      periods.push({
         name: date.toLocaleDateString("he-IL", { day: "numeric", month: "short" }),
-        value,
-        timestamp: dayKey,
+        timestamp: getDayKey(date.getTime()),
+        start: getStartOfDay(date.getTime()),
+        end: getEndOfDay(date.getTime()),
       });
     }
   } else if (interval === "weekly") {
@@ -163,20 +225,11 @@ export async function buildTimeSeries(
       const weekStart = new Date(now - i * 7 * 24 * 60 * 60 * 1000);
       const weekEnd = new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000);
       const weekKey = getWeekKey(weekStart.getTime());
-
-      const events = await ctx.db
-        .query("analyticsEvents")
-        .withIndex("by_timestamp", (q) =>
-          q.gte("timestamp", getStartOfDay(weekStart.getTime())).lte("timestamp", getEndOfDay(weekEnd.getTime()))
-        )
-        .collect();
-
-      const value = await aggregateFunc(events, getStartOfDay(weekStart.getTime()), getEndOfDay(weekEnd.getTime()));
-
-      points.push({
+      periods.push({
         name: `שבוע ${weekKey.split("-W")[1]}`,
-        value,
         timestamp: weekKey,
+        start: getStartOfDay(weekStart.getTime()),
+        end: getEndOfDay(weekEnd.getTime()),
       });
     }
   } else if (interval === "monthly") {
@@ -184,31 +237,53 @@ export async function buildTimeSeries(
     for (let i = 11; i >= 0; i--) {
       const date = new Date(now);
       date.setUTCMonth(date.getUTCMonth() - i);
-      const monthKey = getMonthKey(date.getTime());
 
       const startOfMonth = new Date(date);
       startOfMonth.setUTCDate(1);
       const endOfMonth = new Date(date);
       endOfMonth.setUTCMonth(endOfMonth.getUTCMonth() + 1, 0);
 
-      const events = await ctx.db
-        .query("analyticsEvents")
-        .withIndex("by_timestamp", (q) =>
-          q.gte("timestamp", startOfMonth.getTime()).lte("timestamp", endOfMonth.getTime())
-        )
-        .collect();
-
-      const value = await aggregateFunc(events, startOfMonth.getTime(), endOfMonth.getTime());
-
-      points.push({
+      periods.push({
         name: date.toLocaleDateString("he-IL", { month: "short" }),
-        value,
-        timestamp: monthKey,
+        timestamp: getMonthKey(date.getTime()),
+        start: startOfMonth.getTime(),
+        end: endOfMonth.getTime(),
       });
     }
   }
 
-  return points;
+  return periods;
+}
+
+/**
+ * Build time series query helper for any aggregation logic.
+ * All period reads run in parallel; output order is preserved.
+ */
+export async function buildTimeSeries(
+  ctx: any,
+  interval: "daily" | "weekly" | "monthly",
+  aggregateFunc: (events: any[], start: number, end: number) => number | Promise<number>
+): Promise<TimeSeriesDataPoint[]> {
+  const periods = getTimeSeriesPeriods(interval);
+
+  return await Promise.all(
+    periods.map(async (period) => {
+      const events = await ctx.db
+        .query("analyticsEvents")
+        .withIndex("by_timestamp", (q: any) =>
+          q.gte("timestamp", period.start).lte("timestamp", period.end)
+        )
+        .collect();
+
+      const value = await aggregateFunc(events, period.start, period.end);
+
+      return {
+        name: period.name,
+        value,
+        timestamp: period.timestamp,
+      };
+    })
+  );
 }
 
 /**

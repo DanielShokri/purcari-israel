@@ -328,12 +328,23 @@ export const mergeGuestCart = mutation({
       merged.set(item.productId, { ...item });
     });
 
+    // Fetch all guest-item products in parallel (deduplicated)
+    const uniqueProductIds = [
+      ...new Set(guestItems.map((item) => item.productId as Id<"products">)),
+    ];
+    const productDocs = await Promise.all(
+      uniqueProductIds.map((id) => ctx.db.get(id))
+    );
+    const productsById = new Map<string, ProductDoc | null>(
+      uniqueProductIds.map((id, i) => [id, productDocs[i] as ProductDoc | null])
+    );
+
     // Process guest items
     for (const guestItem of guestItems) {
       const productId = guestItem.productId as Id<"products">;
 
-      // Fetch product from DB to validate
-      const product = await ctx.db.get(productId) as ProductDoc | null;
+      // Validate against the prefetched product
+      const product = productsById.get(productId) ?? null;
 
       if (!product) {
         // Product no longer exists
