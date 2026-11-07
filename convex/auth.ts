@@ -3,7 +3,8 @@ import { Password } from "@convex-dev/auth/providers/Password";
 import Google from "@auth/core/providers/google";
 import { ConvexError } from "convex/values";
 import { z } from "zod";
-import { DataModel } from "./_generated/dataModel";
+import type { DataModel } from "./_generated/dataModel";
+import type { MutationCtx } from "./_generated/server";
 
 
 
@@ -57,13 +58,63 @@ export const { auth, signIn, signOut, store } = convexAuth({
   ],
   callbacks: {
     async createOrUpdateUser(ctx, args) {
+      // The callback's ctx is typed as a generic data model, so index names are
+      // not known to it. Re-type it to this app's data model for index safety.
+      const db = ctx.db as unknown as MutationCtx["db"];
+      const now = new Date().toISOString();
+      const profile = args.profile;
+      const email = typeof profile.email === "string" ? profile.email : undefined;
+      const image = typeof profile.image === "string" ? profile.image : undefined;
+      const name = typeof profile.name === "string" ? profile.name : undefined;
+
+      // Google verifies the email it returns, so it is safe to link an OAuth
+      // sign-in to an existing account with the same email. Password accounts
+      // are NOT verified and are never linked automatically.
+      const isVerifiedOAuth =
+        args.type === "oauth" &&
+        args.provider.id === "google" &&
+        profile.emailVerified !== false;
+
       if (args.existingUserId) {
+        // Returning Google user: refresh profile fields Google may have updated.
+        const existing = await db.get(args.existingUserId);
+        if (existing) {
+          await db.patch(args.existingUserId, {
+            ...(image && image !== existing.image ? { image } : {}),
+            ...(!existing.name && name ? { name } : {}),
+            ...(isVerifiedOAuth && !existing.emailVerificationTime
+              ? { emailVerificationTime: Date.now() }
+              : {}),
+            updatedAt: now,
+          });
+        }
         return args.existingUserId;
       }
 
-      const now = new Date().toISOString();
-      return await ctx.db.insert("users", {
-        ...args.profile,
+      // Link Google sign-in to an existing account with the same email instead
+      // of creating a duplicate user row.
+      if (isVerifiedOAuth && email) {
+        const match = await db
+          .query("users")
+          .withIndex("email", (q) => q.eq("email", email))
+          .first();
+        if (match) {
+          await db.patch(match._id, {
+            ...(image && !match.image ? { image } : {}),
+            ...(!match.name && name ? { name } : {}),
+            ...(!match.emailVerificationTime ? { emailVerificationTime: Date.now() } : {}),
+            updatedAt: now,
+          });
+          return match._id;
+        }
+      }
+
+      return await db.insert("users", {
+        name: name ?? email?.split("@")[0],
+        email,
+        image,
+        phone: typeof profile.phone === "string" ? profile.phone : undefined,
+        emailVerificationTime: isVerifiedOAuth ? Date.now() : undefined,
         role: "viewer",
         status: "active",
         createdAt: now,

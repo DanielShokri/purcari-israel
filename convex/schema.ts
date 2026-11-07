@@ -6,6 +6,15 @@ export default defineSchema({
   // Standard Convex Auth tables (authAccounts, authSessions, etc.)
   ...authTables,
 
+  // Maps a stable key (e.g. "wines/01_divin_bardar_silver") to a Convex file
+  // storage id, so product docs can reference images hosted on Convex.
+  productImages: defineTable({
+    key: v.string(),
+    storageId: v.id("_storage"),
+    sourceUrl: v.optional(v.string()),
+  })
+    .index("by_key", ["key"]),
+
   users: defineTable({
     // Keep optional to handle the "race condition" during initial auth signup
     name: v.optional(v.string()),

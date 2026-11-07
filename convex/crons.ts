@@ -12,4 +12,12 @@ crons.daily(
   internal.analytics.events.pruneOldEvents
 );
 
+// @convex-dev/auth only deletes refresh tokens, sessions and OAuth verifiers
+// lazily, so abandoned sign-ins leak rows. Sweep them once a day.
+crons.daily(
+  "prune expired auth records",
+  { hourUTC: 2, minuteUTC: 30 },
+  internal.authCleanup.pruneAuth
+);
+
 export default crons;
