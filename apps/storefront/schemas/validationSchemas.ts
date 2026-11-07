@@ -10,7 +10,7 @@ export const emailSchema = z.string()
   .email('כתובת אימייל לא תקינה');
 
 export const passwordSchema = z.string()
-  .min(4, 'הסיסמה חייבת להכיל לפחות 4 תווים');
+  .min(8, 'הסיסמה חייבת להכיל לפחות 8 תווים');
 
 // Simple name validation (for address nicknames, short names)
 export const nameSchema = z.string()

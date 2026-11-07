@@ -24,7 +24,7 @@ export function useAuth() {
     const message = (err as Error)?.message || "";
 
     if (message.includes("Invalid password") || message.includes("הסיסמה")) {
-      return "הסיסמה לא עומדת בדרישות. הסיסמה חייבת להכיל לפחות 4 תווים.";
+      return "הסיסמה לא עומדת בדרישות. הסיסמה חייבת להכיל לפחות 8 תווים.";
     }
     if (message.includes("User does not exist") || message.includes("Invalid credentials")) {
       return "לא קיים משתמש עם כתובת אימייל זו.";
@@ -118,8 +118,13 @@ export function useAuth() {
     setError(null);
     try {
       // The library handles the redirect internally (window.location.href = url)
-      // so we just need to call signIn and let it do its thing.
-      await convexSignIn("google");
+      // so we just need to call signIn and let it do its thing. `redirectTo`
+      // controls where the OAuth callback lands the user after sign-in.
+      const params = new URLSearchParams(window.location.search);
+      const redirectParam = params.get("redirect");
+      await convexSignIn("google", {
+        redirectTo: redirectParam ? `/${redirectParam}` : "/dashboard",
+      });
       return true;
     } catch (err) {
       console.error("Google sign in error:", err);

@@ -31,16 +31,18 @@ const ShopPage: React.FC = () => {
   // Derive activeCategory directly from URL - single source of truth
   const activeCategory = categoryFromUrl || 'all';
 
-  // Define categories early for use in useEffect
-  const categories = [
-    { id: 'all', label: 'הכל' },
-    // If we have categories data from Convex, we would use it here
-    // For now, we use displayCategories fallback
-  ];
+  // Categories come from the DB so new ones (e.g. brandy) appear automatically.
+  // The hardcoded list below is only a fallback if the DB has none yet.
+  const dbCategories = useQuery(api.categories.list, {});
+  const categoriesFromDb = useMemo(() => (dbCategories || []).map(c => ({
+    id: c.slug,
+    label: c.nameHe || c.name,
+  })), [dbCategories]);
 
-  // If we have no categories from DB, use fallback wine categories
-  // These slugs must match the 'slug' field in the database categories table
-  const displayCategories = categories.length > 1 ? categories : [
+  const displayCategories = categoriesFromDb.length > 0 ? [
+    { id: 'all', label: 'הכל' },
+    ...categoriesFromDb.filter(c => c.id !== 'wines'), // parent umbrella not needed as a filter
+  ] : [
     { id: 'all', label: 'הכל' },
     { id: 'red-wines', label: 'יינות אדומים' },
     { id: 'white-wines', label: 'יינות לבנים' },
@@ -70,9 +72,10 @@ const ShopPage: React.FC = () => {
     searchFromUrl ? { query: searchFromUrl } : "skip"
   );
   
-  const productsResult = useQuery(api.products.list,
-    activeCategory !== 'all' ? { category: activeCategory } : {}
-  );
+  const productsResult = useQuery(api.products.list, {
+    ...(activeCategory !== 'all' ? { category: activeCategory } : {}),
+    limit: 200,
+  });
 
   const isLoading = searchFromUrl 
     ? searchResults === undefined 
