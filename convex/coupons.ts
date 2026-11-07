@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, MutationCtx } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
 import { adminMutation, adminQuery } from "./authHelpers";
 
 /**
@@ -138,6 +139,57 @@ export const remove = adminMutation({
 });
 
 /**
+ * Shared helper: increment coupon usage (global + per-user).
+ * Called directly from other mutations (e.g. orders.create) instead of
+ * going through ctx.runMutation, which adds a sub-transaction overhead.
+ */
+export async function incrementCouponUsage(
+  ctx: MutationCtx,
+  args: { code: string; userEmail: string; userId?: Id<"users"> }
+): Promise<void> {
+  const code = args.code.toUpperCase();
+  const coupon = await ctx.db
+    .query("coupons")
+    .withIndex("by_code", (q) => q.eq("code", code))
+    .unique();
+
+  if (!coupon) throw new Error("Coupon not found");
+
+  const now = new Date().toISOString();
+
+  // 1. Update global usage count
+  await ctx.db.patch(coupon._id, {
+    usageCount: (coupon.usageCount || 0) + 1,
+    updatedAt: now,
+  });
+
+  // 2. Track per-user usage
+  const existingUsage = await ctx.db
+    .query("couponUsage")
+    .withIndex("by_couponCode_userEmail", (q) =>
+      q.eq("couponCode", code).eq("userEmail", args.userEmail)
+    )
+    .unique();
+
+  if (existingUsage) {
+    await ctx.db.patch(existingUsage._id, {
+      usageCount: (existingUsage.usageCount || 0) + 1,
+      lastUsedAt: now,
+    });
+  } else {
+    await ctx.db.insert("couponUsage", {
+      couponId: coupon._id,
+      couponCode: code,
+      userId: args.userId,
+      userEmail: args.userEmail,
+      usageCount: 1,
+      lastUsedAt: now,
+      createdAt: now,
+    });
+  }
+}
+
+/**
  * Increment coupon usage.
  */
 export const incrementUsage = mutation({
@@ -147,46 +199,7 @@ export const incrementUsage = mutation({
     userId: v.optional(v.id("users")),
   },
   handler: async (ctx, args) => {
-    const code = args.code.toUpperCase();
-    const coupon = await ctx.db
-      .query("coupons")
-      .withIndex("by_code", (q) => q.eq("code", code))
-      .unique();
-
-    if (!coupon) throw new Error("Coupon not found");
-
-    const now = new Date().toISOString();
-
-    // 1. Update global usage count
-    await ctx.db.patch(coupon._id, {
-      usageCount: (coupon.usageCount || 0) + 1,
-      updatedAt: now,
-    });
-
-    // 2. Track per-user usage
-    const existingUsage = await ctx.db
-      .query("couponUsage")
-      .withIndex("by_couponCode_userEmail", (q) =>
-        q.eq("couponCode", code).eq("userEmail", args.userEmail)
-      )
-      .unique();
-
-    if (existingUsage) {
-      await ctx.db.patch(existingUsage._id, {
-        usageCount: (existingUsage.usageCount || 0) + 1,
-        lastUsedAt: now,
-      });
-    } else {
-      await ctx.db.insert("couponUsage", {
-        couponId: coupon._id,
-        couponCode: code,
-        userId: args.userId,
-        userEmail: args.userEmail,
-        usageCount: 1,
-        lastUsedAt: now,
-        createdAt: now,
-      });
-    }
+    await incrementCouponUsage(ctx, args);
   },
 });
 

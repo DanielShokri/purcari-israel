@@ -1,15 +1,14 @@
-// @ts-nocheck
-// Convex type instantiation depth issues with runMutation and complex types
-
 import { v } from "convex/values";
-import { mutation, query, internalAction } from "./_generated/server";
-import { api, internal } from "./_generated/api";
+import { mutation, query, MutationCtx } from "./_generated/server";
 import { adminMutation, adminQuery } from "./authHelpers";
+import { incrementCouponUsage } from "./coupons";
+import { insertOrderActivity } from "./activities";
+import { insertOrderNotification } from "./notifications";
 
 const STARTING_ORDER_NUMBER = 1000;
 const COUNTER_NAME = "orders";
 
-async function getNextOrderNumber(ctx: any): Promise<number> {
+async function getNextOrderNumber(ctx: MutationCtx): Promise<number> {
   const counter = await ctx.db
     .query("counters")
     .withIndex("by_name", (q) => q.eq("name", COUNTER_NAME))
@@ -78,9 +77,13 @@ export const create = mutation({
     appliedCouponDiscount: v.optional(v.float64()),
   },
   handler: async (ctx, args) => {
-    // Validate inventory before creating order
-    for (const item of args.items) {
-      const product = await ctx.db.get(item.productId);
+    // Validate inventory before creating order (product reads run in parallel)
+    const products = await Promise.all(
+      args.items.map((item) => ctx.db.get(item.productId))
+    );
+    for (let i = 0; i < args.items.length; i++) {
+      const item = args.items[i];
+      const product = products[i];
       if (!product) {
         throw new Error(`מוצר לא נמצא: ${item.productName}`);
       }
@@ -155,9 +158,10 @@ export const create = mutation({
     }
 
     // 7. Increment Coupon Usage
+    // Helpers are called directly (same transaction) instead of via
+    // ctx.runMutation, avoiding nested-transaction overhead.
     if (args.appliedCouponCode) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await ctx.runMutation(api.coupons.incrementUsage as any, {
+      await incrementCouponUsage(ctx, {
         code: args.appliedCouponCode,
         userEmail: args.customerEmail,
         userId: args.customerId,
@@ -165,8 +169,7 @@ export const create = mutation({
     }
 
     // 8. Create activity entry for the new order
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await ctx.runMutation(api.activities.createOrderActivity as any, {
+    await insertOrderActivity(ctx, {
       orderNumber,
       customerName: args.customerName,
       total,
@@ -365,7 +368,7 @@ export const updateStatus = adminMutation({
     };
 
     // Create activity entry for status change
-    const status: "pending" | "processing" | "completed" | "cancelled" | "shipped" = args.status;
+    const status = args.status as "pending" | "processing" | "completed" | "cancelled" | "shipped";
     
     const statusLabels: Record<string, { title: string; color: string }> = {
       pending: { title: `הזמנה #${order.orderNumber} נוצרה`, color: "blue.500" },
@@ -390,8 +393,7 @@ export const updateStatus = adminMutation({
       // Create notification for the customer if they have a userId
       if (order.customerId) {
         const orderStatus = statusMap[status] || "placed";
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await ctx.runMutation(api.notifications.createOrderNotification as any, {
+        await insertOrderNotification(ctx, {
           userId: order.customerId,
           orderNumber: order.orderNumber || 0,
           customerName: order.customerName,

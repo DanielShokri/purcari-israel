@@ -86,7 +86,9 @@ export const listAll = query({
     await requireAdmin(ctx);
     
     const limit = args.limit ?? 20;
-    
+
+    // Read one extra row to know whether there is a next page,
+    // instead of collecting the entire users table.
     let results;
     if (args.role && args.status) {
       results = await ctx.db
@@ -94,19 +96,19 @@ export const listAll = query({
         .withIndex("by_role_status", (qi) => 
           qi.eq("role", args.role!).eq("status", args.status!)
         )
-        .collect();
+        .take(limit + 1);
     } else if (args.role) {
       results = await ctx.db
         .query("users")
         .withIndex("by_role", (qi) => qi.eq("role", args.role!))
-        .collect();
+        .take(limit + 1);
     } else if (args.status) {
       results = await ctx.db
         .query("users")
         .withIndex("by_status", (qi) => qi.eq("status", args.status!))
-        .collect();
+        .take(limit + 1);
     } else {
-      results = await ctx.db.query("users").collect();
+      results = await ctx.db.query("users").take(limit + 1);
     }
     
     let nextCursor: string | null = null;
@@ -130,55 +132,50 @@ export const remove = mutation({
     await requireAdmin(ctx);
     const userId = args.userId;
 
-    // Delete addresses
-    const addresses = await ctx.db
-      .query("userAddresses")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .collect();
-    for (const addr of addresses) {
-      await ctx.db.delete(addr._id);
-    }
+    // Load all related records in parallel
+    const [addresses, notifications, orders, couponUsage, userCart] =
+      await Promise.all([
+        ctx.db
+          .query("userAddresses")
+          .withIndex("by_userId", (q) => q.eq("userId", userId))
+          .collect(),
+        ctx.db
+          .query("notifications")
+          .withIndex("by_userId", (q) => q.eq("userId", userId))
+          .collect(),
+        ctx.db
+          .query("orders")
+          .withIndex("by_customerId", (q) => q.eq("customerId", userId))
+          .collect(),
+        ctx.db
+          .query("couponUsage")
+          .withIndex("by_userId", (q) => q.eq("userId", userId))
+          .collect(),
+        ctx.db
+          .query("carts")
+          .withIndex("by_userId", (q) => q.eq("userId", userId))
+          .first(),
+      ]);
 
-    // Delete notifications
-    const notifications = await ctx.db
-      .query("notifications")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .collect();
-    for (const notif of notifications) {
-      await ctx.db.delete(notif._id);
-    }
-
-    // Anonymize orders (keep order history but remove personal data)
-    const orders = await ctx.db
-      .query("orders")
-      .withIndex("by_customerId", (q) => q.eq("customerId", userId))
-      .collect();
-    for (const order of orders) {
-      await ctx.db.patch(order._id, {
-        customerId: undefined,
-        customerName: "משתמש נמחק",
-        customerEmail: "deleted@example.com",
-        customerPhone: undefined,
-      });
-    }
-
-    // Delete coupon usage records
-    const couponUsage = await ctx.db
-      .query("couponUsage")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .collect();
-    for (const usage of couponUsage) {
-      await ctx.db.delete(usage._id);
-    }
-
-    // Delete cart
-    const userCart = await ctx.db
-      .query("carts")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .first();
-    if (userCart) {
-      await ctx.db.delete(userCart._id);
-    }
+    await Promise.all([
+      // Delete addresses
+      ...addresses.map((addr) => ctx.db.delete(addr._id)),
+      // Delete notifications
+      ...notifications.map((notif) => ctx.db.delete(notif._id)),
+      // Anonymize orders (keep order history but remove personal data)
+      ...orders.map((order) =>
+        ctx.db.patch(order._id, {
+          customerId: undefined,
+          customerName: "משתמש נמחק",
+          customerEmail: "deleted@example.com",
+          customerPhone: undefined,
+        })
+      ),
+      // Delete coupon usage records
+      ...couponUsage.map((usage) => ctx.db.delete(usage._id)),
+      // Delete cart
+      ...(userCart ? [ctx.db.delete(userCart._id)] : []),
+    ]);
 
     await ctx.db.delete(userId);
   },

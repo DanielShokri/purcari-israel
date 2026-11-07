@@ -1,5 +1,6 @@
 import { mutation, internalMutation } from "../_generated/server";
 import { v } from "convex/values";
+import { internal } from "../_generated/api";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import {
   dailyViewsAggregate,
@@ -111,10 +112,10 @@ export const identifyUser = mutation({
       .filter((q) => q.eq(q.field("userId"), undefined))
       .collect();
 
-    // Batch update all anonymous events to link them to the user
-    for (const event of guestEvents) {
-      await ctx.db.patch(event._id, { userId });
-    }
+    // Batch update all anonymous events to link them to the user (in parallel)
+    await Promise.all(
+      guestEvents.map((event) => ctx.db.patch(event._id, { userId }))
+    );
 
     return { linked: guestEvents.length };
   },
@@ -136,9 +137,9 @@ export const linkIdentity = mutation({
       .filter((q) => q.eq(q.field("userId"), undefined))
       .collect();
 
-    for (const event of guestEvents) {
-      await ctx.db.patch(event._id, { userId });
-    }
+    await Promise.all(
+      guestEvents.map((event) => ctx.db.patch(event._id, { userId }))
+    );
     return { linked: guestEvents.length };
   },
 });
@@ -169,13 +170,14 @@ export const pruneOldEvents = internalMutation({
   args: {},
   handler: async (ctx) => {
     const RETENTION_DAYS = 180;
+    const BATCH_SIZE = 1000;
     const cutoffDate = Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000;
     
     // Query events older than cutoff using timestamp index
     const oldEvents = await ctx.db
       .query("analyticsEvents")
       .withIndex("by_timestamp", (q) => q.lt("timestamp", cutoffDate))
-      .take(1000); // Process in batches to avoid timeout
+      .take(BATCH_SIZE); // Process in batches to avoid timeout
     
     let deleted = 0;
     for (const event of oldEvents) {
@@ -193,7 +195,15 @@ export const pruneOldEvents = internalMutation({
       deleted++;
     }
     
+    const hasMore = oldEvents.length === BATCH_SIZE;
+
+    // Keep pruning in follow-up transactions until the backlog is cleared,
+    // instead of waiting for tomorrow's cron run (which only handles one batch).
+    if (hasMore) {
+      await ctx.scheduler.runAfter(0, internal.analytics.events.pruneOldEvents, {});
+    }
+
     console.log(`Pruned ${deleted} analytics events older than ${RETENTION_DAYS} days`);
-    return { deleted, hasMore: oldEvents.length === 1000 };
+    return { deleted, hasMore };
   },
 });

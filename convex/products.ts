@@ -177,8 +177,14 @@ export const validateStock = query({
     const results = [];
     let valid = true;
 
-    for (const item of args.items) {
-      const product = await ctx.db.get(item.productId);
+    // Fetch all products in parallel
+    const products = await Promise.all(
+      args.items.map((item) => ctx.db.get(item.productId))
+    );
+
+    for (let i = 0; i < args.items.length; i++) {
+      const item = args.items[i];
+      const product = products[i];
       if (!product || Number(product.quantityInStock) < item.quantity) {
         valid = false;
         results.push({

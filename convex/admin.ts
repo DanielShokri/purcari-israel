@@ -18,37 +18,70 @@ export const getStats = query({
     const startOfLastMonth = new Date(currentMonth === 0 ? currentYear - 1 : currentYear, currentMonth === 0 ? 11 : currentMonth - 1, 1).toISOString();
     const endOfLastMonth = new Date(currentYear, currentMonth, 0).toISOString();
 
-    // Use indexes for efficient queries
-    const thisMonthOrders = await ctx.db
-      .query("orders")
-      .withIndex("by_status_createdAt", (q) => 
-        q.gte("status", "pending").lte("status", "completed")
-      )
-      .filter((q) => q.gte(q.field("createdAt"), startOfMonth))
-      .collect();
+    // Day boundaries for the order change calculation (today vs yesterday)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
 
-    const lastMonthOrders = await ctx.db
-      .query("orders")
-      .withIndex("by_status_createdAt", (q) => 
-        q.gte("status", "pending").lte("status", "completed")
-      )
-      .filter((q) => 
-        q.and(
-          q.gte(q.field("createdAt"), startOfLastMonth),
-          q.lt(q.field("createdAt"), endOfLastMonth)
+    // Run all independent reads in parallel
+    const [
+      thisMonthOrders,
+      lastMonthOrders,
+      allOrders,
+      allUsers,
+      allTodayOrders,
+      allYesterdayOrders,
+      cancelledOrders,
+      pendingOrders,
+    ] = await Promise.all([
+      ctx.db
+        .query("orders")
+        .withIndex("by_status_createdAt", (q) =>
+          q.gte("status", "pending").lte("status", "completed")
         )
-      )
-      .collect();
-
-    const allOrders = await ctx.db
-      .query("orders")
-      .withIndex("by_status", (q) => q.eq("status", "completed"))
-      .collect();
-
-    const allUsers = await ctx.db
-      .query("users")
-      .withIndex("by_status", (q) => q.eq("status", "active"))
-      .collect();
+        .filter((q) => q.gte(q.field("createdAt"), startOfMonth))
+        .collect(),
+      ctx.db
+        .query("orders")
+        .withIndex("by_status_createdAt", (q) =>
+          q.gte("status", "pending").lte("status", "completed")
+        )
+        .filter((q) =>
+          q.and(
+            q.gte(q.field("createdAt"), startOfLastMonth),
+            q.lt(q.field("createdAt"), endOfLastMonth)
+          )
+        )
+        .collect(),
+      ctx.db
+        .query("orders")
+        .withIndex("by_status", (q) => q.eq("status", "completed"))
+        .collect(),
+      ctx.db
+        .query("users")
+        .withIndex("by_status", (q) => q.eq("status", "active"))
+        .collect(),
+      ctx.db
+        .query("orders")
+        .withIndex("by_createdAt", (q) => q.gte("createdAt", today.toISOString()))
+        .collect(),
+      // Range is applied in the index (instead of .filter) so only yesterday's rows are read
+      ctx.db
+        .query("orders")
+        .withIndex("by_createdAt", (q) =>
+          q.gte("createdAt", yesterday.toISOString()).lt("createdAt", today.toISOString())
+        )
+        .collect(),
+      ctx.db
+        .query("orders")
+        .withIndex("by_status", (q) => q.eq("status", "cancelled"))
+        .collect(),
+      ctx.db
+        .query("orders")
+        .withIndex("by_status", (q) => q.eq("status", "pending"))
+        .collect(),
+    ]);
 
     const totalRevenue = allOrders.reduce((sum, o) => sum + (o.total || 0), 0);
 
@@ -76,23 +109,6 @@ export const getStats = query({
       ? ((thisMonthUsers - lastMonthUsers) / lastMonthUsers) * 100
       : 0;
 
-    // Calculate order change (today vs yesterday)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    const allTodayOrders = await ctx.db
-      .query("orders")
-      .withIndex("by_createdAt", (q) => q.gte("createdAt", today.toISOString()))
-      .collect();
-
-    const allYesterdayOrders = await ctx.db
-      .query("orders")
-      .withIndex("by_createdAt", (q) => q.gte("createdAt", yesterday.toISOString()))
-      .filter((q) => q.lt(q.field("createdAt"), today.toISOString()))
-      .collect();
-
     const ordersChange = allYesterdayOrders.length > 0
       ? ((allTodayOrders.length - allYesterdayOrders.length) / allYesterdayOrders.length) * 100
       : 0;
@@ -111,8 +127,8 @@ export const getStats = query({
       salesGrowth: revenueChange,
       orderGrowth: ordersChange,
       customerGrowth: usersChange,
-      cancelledOrders: (await ctx.db.query("orders").withIndex("by_status", (q) => q.eq("status", "cancelled")).collect()).length,
-      pendingOrders: (await ctx.db.query("orders").withIndex("by_status", (q) => q.eq("status", "pending")).collect()).length,
+      cancelledOrders: cancelledOrders.length,
+      pendingOrders: pendingOrders.length,
       conversionRate: 0,
     };
   }
@@ -125,15 +141,14 @@ export const getMonthlySales = query({
     const startOfYear = `${targetYear}-01-01`;
     const endOfYear = `${targetYear + 1}-01-01`;
 
-    // Get non-cancelled orders for the target year using status index + filter
+    // Get completed orders for the target year using the status+createdAt index
     const orders = await ctx.db
       .query("orders")
-      .withIndex("by_status", (q) => q.eq("status", "completed"))
-      .filter((q) => 
-        q.and(
-          q.gte(q.field("createdAt"), startOfYear),
-          q.lt(q.field("createdAt"), endOfYear)
-        )
+      .withIndex("by_status_createdAt", (q) =>
+        q
+          .eq("status", "completed")
+          .gte("createdAt", startOfYear)
+          .lt("createdAt", endOfYear)
       )
       .collect();
 
@@ -211,21 +226,47 @@ export const globalSearch = adminQuery({
       };
     }
 
-    // Search products (Hebrew and English)
-    const productsHe = await ctx.db
-      .query("products")
-      .withSearchIndex("search_he", (q) => 
-        q.search("productNameHe", searchQuery)
-      )
-      .take(limit);
-      
-    const productsEn = await ctx.db
-      .query("products")
-      .withSearchIndex("search_en", (q) => 
-        q.search("productName", searchQuery)
-      )
-      .take(limit);
-    
+    // Run all independent searches in parallel
+    const [productsHe, productsEn, orders, users, usersByEmail, allCategories] =
+      await Promise.all([
+        // Search products (Hebrew and English)
+        ctx.db
+          .query("products")
+          .withSearchIndex("search_he", (q) =>
+            q.search("productNameHe", searchQuery)
+          )
+          .take(limit),
+        ctx.db
+          .query("products")
+          .withSearchIndex("search_en", (q) =>
+            q.search("productName", searchQuery)
+          )
+          .take(limit),
+        // Search orders by customer email
+        ctx.db
+          .query("orders")
+          .withSearchIndex("search_orders", (q) =>
+            q.search("customerEmail", searchQuery)
+          )
+          .take(limit),
+        // Search users by name
+        ctx.db
+          .query("users")
+          .withSearchIndex("search_users", (q) =>
+            q.search("name", searchQuery)
+          )
+          .take(limit),
+        // Also try exact email match for users
+        ctx.db
+          .query("users")
+          .withIndex("email", (q) => q.eq("email", searchQuery))
+          .take(limit),
+        // Categories (only if query is short enough for substring match)
+        searchQuery.length <= 50
+          ? ctx.db.query("categories").collect()
+          : Promise.resolve([]),
+      ]);
+
     // Combine and deduplicate products
     const productMap = new Map();
     [...productsHe, ...productsEn].forEach(p => {
@@ -234,28 +275,6 @@ export const globalSearch = adminQuery({
       }
     });
     const products = Array.from(productMap.values()).slice(0, limit);
-
-    // Search orders by customer email
-    const orders = await ctx.db
-      .query("orders")
-      .withSearchIndex("search_orders", (q) => 
-        q.search("customerEmail", searchQuery)
-      )
-      .take(limit);
-
-    // Search users by name
-    const users = await ctx.db
-      .query("users")
-      .withSearchIndex("search_users", (q) => 
-        q.search("name", searchQuery)
-      )
-      .take(limit);
-    
-    // Also try exact email match for users
-    const usersByEmail = await ctx.db
-      .query("users")
-      .withIndex("email", (q) => q.eq("email", searchQuery))
-      .take(limit);
 
     // Combine and deduplicate users
     const userMap = new Map();
@@ -269,8 +288,7 @@ export const globalSearch = adminQuery({
     // Search categories (if query is short enough for exact match)
     let categories: any[] = [];
     if (searchQuery.length <= 50) {
-      const allCategories = await ctx.db.query("categories").collect();
-      categories = allCategories.filter(c => 
+      categories = allCategories.filter((c: any) => 
         c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (c.nameHe && c.nameHe.includes(searchQuery)) ||
         c.slug.toLowerCase().includes(searchQuery.toLowerCase())

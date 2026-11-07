@@ -1,16 +1,16 @@
 import { query } from "../_generated/server";
 import { v } from "convex/values";
-import { getDayKey, getWeekKey, getMonthKey, getStartOfDay, getEndOfDay } from "./aggregates";
+import { getStartOfDay, getEndOfDay } from "./aggregates";
 import {
   TimeSeriesDataPoint,
-  countPageViewsInRange,
-  countAuthenticatedUsersInRange,
-  countUniqueVisitorsInRange,
+  countVisitorsInRange,
   getTopProductsByViews,
   buildTimeSeries,
+  getTimeSeriesPeriods,
+  getEventsInRange,
+  getEventsSince,
   calculateChange,
   calculateRate,
-  filterEvents,
 } from "./helpers";
 
 /**
@@ -50,28 +50,46 @@ export const getSummary = query({
     const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
     const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0, 23, 59, 59, 999);
 
-    // Get unique visitors for current periods
-    const visitorsToday = await countUniqueVisitorsInRange(ctx, todayStart, todayEnd);
-    const visitorsThisWeek = await countUniqueVisitorsInRange(ctx, startOfWeek, endOfWeek);
-    const visitorsThisMonth = await countUniqueVisitorsInRange(ctx, startOfMonth.getTime(), endOfMonth.getTime());
+    // Each range is read once and yields both unique-visitor and
+    // authenticated-user counts; all reads run in parallel.
+    const [
+      today_,
+      thisWeek,
+      thisMonth,
+      yesterday,
+      lastWeek,
+      lastMonth,
+      allEvents,
+      topProducts,
+    ] = await Promise.all([
+      countVisitorsInRange(ctx, todayStart, todayEnd),
+      countVisitorsInRange(ctx, startOfWeek, endOfWeek),
+      countVisitorsInRange(ctx, startOfMonth.getTime(), endOfMonth.getTime()),
+      countVisitorsInRange(ctx, yesterdayStart, yesterdayEnd),
+      countVisitorsInRange(ctx, lastWeekStart, lastWeekEnd),
+      countVisitorsInRange(ctx, lastMonthStart.getTime(), lastMonthEnd.getTime()),
+      // All unique visitors (all time)
+      ctx.db.query("analyticsEvents").collect(),
+      // Top products
+      getTopProductsByViews(ctx, 10),
+    ]);
 
-    // Get unique visitors for previous periods
-    const visitorsYesterday = await countUniqueVisitorsInRange(ctx, yesterdayStart, yesterdayEnd);
-    const visitorsLastWeek = await countUniqueVisitorsInRange(ctx, lastWeekStart, lastWeekEnd);
-    const visitorsLastMonth = await countUniqueVisitorsInRange(ctx, lastMonthStart.getTime(), lastMonthEnd.getTime());
+    // Unique visitors (authenticated + anonymous)
+    const visitorsToday = today_.uniqueVisitors;
+    const visitorsThisWeek = thisWeek.uniqueVisitors;
+    const visitorsThisMonth = thisMonth.uniqueVisitors;
+    const visitorsYesterday = yesterday.uniqueVisitors;
+    const visitorsLastWeek = lastWeek.uniqueVisitors;
+    const visitorsLastMonth = lastMonth.uniqueVisitors;
 
-    // Get authenticated user counts (DAU/WAU/MAU)
-    const dau = await countAuthenticatedUsersInRange(ctx, todayStart, todayEnd);
-    const wau = await countAuthenticatedUsersInRange(ctx, startOfWeek, endOfWeek);
-    const mau = await countAuthenticatedUsersInRange(ctx, startOfMonth.getTime(), endOfMonth.getTime());
+    // Authenticated user counts (DAU/WAU/MAU)
+    const dau = today_.authenticatedUsers;
+    const wau = thisWeek.authenticatedUsers;
+    const mau = thisMonth.authenticatedUsers;
+    const dauYesterday = yesterday.authenticatedUsers;
+    const wauLastWeek = lastWeek.authenticatedUsers;
+    const mauLastMonth = lastMonth.authenticatedUsers;
 
-    // Get authenticated user counts for previous periods
-    const dauYesterday = await countAuthenticatedUsersInRange(ctx, yesterdayStart, yesterdayEnd);
-    const wauLastWeek = await countAuthenticatedUsersInRange(ctx, lastWeekStart, lastWeekEnd);
-    const mauLastMonth = await countAuthenticatedUsersInRange(ctx, lastMonthStart.getTime(), lastMonthEnd.getTime());
-
-    // Get all unique visitors (all time)
-    const allEvents = await ctx.db.query("analyticsEvents").collect();
     const allUniqueVisitors = new Set<string>();
     for (const event of allEvents) {
       const visitorId = event.userId || event.anonymousId;
@@ -80,9 +98,6 @@ export const getSummary = query({
       }
     }
     const totalVisitors = allUniqueVisitors.size;
-
-    // Get top products
-    const topProducts = await getTopProductsByViews(ctx, 10);
 
     return {
       totalViews: totalVisitors,
@@ -173,27 +188,28 @@ export const getConversionMetrics = query({
     const yesterdayStart = getStartOfDay(now - ONE_DAY);
     const yesterdayEnd = getEndOfDay(now - ONE_DAY);
 
-    // Get events for conversion calculation
-    const events = await ctx.db
-      .query("analyticsEvents")
-      .withIndex("by_timestamp", (q) =>
-        q.gte("timestamp", yesterdayStart).lte("timestamp", todayEnd)
-      )
-      .collect();
+    // Read only the 4 event types we need (via by_event_timestamp), in parallel
+    const [productViews, addToCarts, checkoutsStarted, ordersCompleted] =
+      await Promise.all(
+        ["product_viewed", "cart_item_added", "checkout_started", "order_completed"].map(
+          (event) => getEventsInRange(ctx, event, yesterdayStart, todayEnd)
+        )
+      );
+
+    const countIn = (events: any[], start: number, end: number) =>
+      events.filter((e) => e.timestamp >= start && e.timestamp <= end).length;
 
     // Today's metrics
-    const todayEvents = events.filter(e => e.timestamp >= todayStart && e.timestamp <= todayEnd);
-    const productViewsToday = todayEvents.filter(e => e.event === "product_viewed").length;
-    const addToCartsToday = todayEvents.filter(e => e.event === "cart_item_added").length;
-    const checkoutsStartedToday = todayEvents.filter(e => e.event === "checkout_started").length;
-    const ordersCompletedToday = todayEvents.filter(e => e.event === "order_completed").length;
+    const productViewsToday = countIn(productViews, todayStart, todayEnd);
+    const addToCartsToday = countIn(addToCarts, todayStart, todayEnd);
+    const checkoutsStartedToday = countIn(checkoutsStarted, todayStart, todayEnd);
+    const ordersCompletedToday = countIn(ordersCompleted, todayStart, todayEnd);
 
     // Yesterday's metrics
-    const yesterdayEvents = events.filter(e => e.timestamp >= yesterdayStart && e.timestamp <= yesterdayEnd);
-    const productViewsYesterday = yesterdayEvents.filter(e => e.event === "product_viewed").length;
-    const addToCartsYesterday = yesterdayEvents.filter(e => e.event === "cart_item_added").length;
-    const checkoutsStartedYesterday = yesterdayEvents.filter(e => e.event === "checkout_started").length;
-    const ordersCompletedYesterday = yesterdayEvents.filter(e => e.event === "order_completed").length;
+    const productViewsYesterday = countIn(productViews, yesterdayStart, yesterdayEnd);
+    const addToCartsYesterday = countIn(addToCarts, yesterdayStart, yesterdayEnd);
+    const checkoutsStartedYesterday = countIn(checkoutsStarted, yesterdayStart, yesterdayEnd);
+    const ordersCompletedYesterday = countIn(ordersCompleted, yesterdayStart, yesterdayEnd);
 
     return {
       productToCartRate: calculateRate(addToCartsToday, productViewsToday),
@@ -234,25 +250,40 @@ export const getCheckoutFunnel = query({
     const startTime = getStartOfDay(now - days * 24 * 60 * 60 * 1000);
     const endTime = getEndOfDay(now);
 
-    const events = await ctx.db
-      .query("analyticsEvents")
-      .withIndex("by_timestamp", (q) =>
-        q.gte("timestamp", startTime).lte("timestamp", endTime)
-      )
-      .collect();
+    // Read only the funnel event types (via by_event_timestamp), in parallel
+    const [
+      productViewedEvents,
+      cartItemAddedEvents,
+      cartViewedEvents,
+      checkoutStartedEvents,
+      checkoutStepEvents,
+      orderCompletedEvents,
+    ] = await Promise.all(
+      [
+        "product_viewed",
+        "cart_item_added",
+        "cart_viewed",
+        "checkout_started",
+        "checkout_step_viewed",
+        "order_completed",
+      ].map((event) => getEventsInRange(ctx, event, startTime, endTime))
+    );
+
+    const uniqueUsers = (events: any[]) =>
+      new Set(events.map((e) => e.userId || e.anonymousId)).size;
 
     // Count unique users at each funnel stage
-    const productViews = new Set(events.filter(e => e.event === "product_viewed").map(e => e.userId || e.anonymousId)).size;
-    const addToCart = new Set(events.filter(e => e.event === "cart_item_added").map(e => e.userId || e.anonymousId)).size;
-    const cartViews = new Set(events.filter(e => e.event === "cart_viewed").map(e => e.userId || e.anonymousId)).size;
-    const checkoutStarted = new Set(events.filter(e => e.event === "checkout_started").map(e => e.userId || e.anonymousId)).size;
-    const checkoutShipping = new Set(events.filter(e =>
-      e.event === "checkout_step_viewed" && e.properties?.step === "shipping"
-    ).map(e => e.userId || e.anonymousId)).size;
-    const checkoutPayment = new Set(events.filter(e =>
-      e.event === "checkout_step_viewed" && e.properties?.step === "payment"
-    ).map(e => e.userId || e.anonymousId)).size;
-    const ordersCompleted = new Set(events.filter(e => e.event === "order_completed").map(e => e.userId || e.anonymousId)).size;
+    const productViews = uniqueUsers(productViewedEvents);
+    const addToCart = uniqueUsers(cartItemAddedEvents);
+    const cartViews = uniqueUsers(cartViewedEvents);
+    const checkoutStarted = uniqueUsers(checkoutStartedEvents);
+    const checkoutShipping = uniqueUsers(
+      checkoutStepEvents.filter((e) => e.properties?.step === "shipping")
+    );
+    const checkoutPayment = uniqueUsers(
+      checkoutStepEvents.filter((e) => e.properties?.step === "payment")
+    );
+    const ordersCompleted = uniqueUsers(orderCompletedEvents);
 
     const steps = [
       { name: "הצגת מוצר", count: productViews, dropOff: 0 },
@@ -283,31 +314,14 @@ export const getCartMetrics = query({
     const todayEnd = getEndOfDay(now);
     const weekStart = getStartOfDay(now - 7 * ONE_DAY);
 
-    // Get cart events
-    const cartEvents = await ctx.db
-      .query("analyticsEvents")
-      .withIndex("by_event", (q) =>
-        q.eq("event", "cart_item_added")
-      )
-      .collect();
+    // Only events from the last week are used, so read just that range
+    // (previously every cart/checkout/order event ever was read).
+    const [weekCartEvents, orderEvents] = await Promise.all([
+      getEventsInRange(ctx, "cart_item_added", weekStart, todayEnd),
+      getEventsInRange(ctx, "order_completed", weekStart, todayEnd),
+    ]);
 
-    const todayCartEvents = cartEvents.filter(e => e.timestamp >= todayStart && e.timestamp <= todayEnd);
-    const weekCartEvents = cartEvents.filter(e => e.timestamp >= weekStart && e.timestamp <= todayEnd);
-
-    // Get checkout and order events
-    const checkoutEvents = await ctx.db
-      .query("analyticsEvents")
-      .withIndex("by_event", (q) =>
-        q.eq("event", "checkout_started")
-      )
-      .collect();
-
-    const orderEvents = await ctx.db
-      .query("analyticsEvents")
-      .withIndex("by_event", (q) =>
-        q.eq("event", "order_completed")
-      )
-      .collect();
+    const todayCartEvents = weekCartEvents.filter(e => e.timestamp >= todayStart && e.timestamp <= todayEnd);
 
     const todayOrders = orderEvents.filter(e => e.timestamp >= todayStart && e.timestamp <= todayEnd).length;
     const weekOrders = orderEvents.filter(e => e.timestamp >= weekStart && e.timestamp <= todayEnd).length;
@@ -353,14 +367,8 @@ export const getCouponMetrics = query({
     monthStart.setDate(1);
     monthStart.setHours(0, 0, 0, 0);
 
-    const events = await ctx.db
-      .query("analyticsEvents")
-      .withIndex("by_event", (q) =>
-        q.eq("event", "coupon_applied")
-      )
-      .collect();
-
-    const monthEvents = events.filter(e => e.timestamp >= monthStart.getTime());
+    // Read only this month's events via by_event_timestamp
+    const monthEvents = await getEventsSince(ctx, "coupon_applied", monthStart.getTime());
 
     const successful = monthEvents.filter(e => e.properties?.success);
     const failed = monthEvents.filter(e => !e.properties?.success);
@@ -403,14 +411,8 @@ export const getSearchMetrics = query({
     monthStart.setDate(1);
     monthStart.setHours(0, 0, 0, 0);
 
-    const events = await ctx.db
-      .query("analyticsEvents")
-      .withIndex("by_event", (q) =>
-        q.eq("event", "search_performed")
-      )
-      .collect();
-
-    const monthEvents = events.filter(e => e.timestamp >= monthStart.getTime());
+    // Read only this month's events via by_event_timestamp
+    const monthEvents = await getEventsSince(ctx, "search_performed", monthStart.getTime());
 
     // Group by query
     const queryStats: Record<string, { count: number; avgResults: number }> = {};
@@ -450,100 +452,31 @@ export const getSearchMetrics = query({
 export const getSalesSeries = query({
   args: { interval: v.string() },
   handler: async (ctx, args): Promise<TimeSeriesDataPoint[]> => {
-    const now = Date.now();
-    const points: TimeSeriesDataPoint[] = [];
+    const periods = getTimeSeriesPeriods(
+      args.interval as "daily" | "weekly" | "monthly"
+    );
 
-    if (args.interval === "daily") {
-      // Last 30 days
-      for (let i = 29; i >= 0; i--) {
-        const date = new Date(now - i * 24 * 60 * 60 * 1000);
-        const dayStart = getStartOfDay(date.getTime());
-        const dayEnd = getEndOfDay(date.getTime());
-        const dayKey = getDayKey(date.getTime());
-
-        const ev = await ctx.db
-          .query("analyticsEvents")
-          .withIndex("by_timestamp", (q: any) =>
-            q.gte("timestamp", dayStart).lte("timestamp", dayEnd)
-          )
-          .collect();
-
-        const dayOrders = ev.filter((e: any) => {
-          const ts = typeof e.timestamp === "string" ? Number(e.timestamp) : e.timestamp;
-          return ts >= dayStart && ts <= dayEnd && e.event === "order_completed";
-        });
-
-        const revenue = dayOrders.reduce((sum: number, e: any) => sum + (e.properties?.total || 0), 0);
-
-        points.push({
-          name: date.toLocaleDateString("he-IL", { day: "numeric", month: "short" }),
+    // Read only order_completed events for each period (in parallel)
+    const points: TimeSeriesDataPoint[] = await Promise.all(
+      periods.map(async (period) => {
+        const orders = await getEventsInRange(
+          ctx,
+          "order_completed",
+          period.start,
+          period.end
+        );
+        const revenue = orders.reduce(
+          (sum: number, e: any) => sum + (e.properties?.total || 0),
+          0
+        );
+        return {
+          name: period.name,
           value: revenue,
-          orders: dayOrders.length,
-          timestamp: dayKey,
-        });
-      }
-    } else if (args.interval === "weekly") {
-      // Last 12 weeks
-      for (let i = 11; i >= 0; i--) {
-        const weekStart = new Date(now - i * 7 * 24 * 60 * 60 * 1000);
-        const weekEnd = new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000);
-        const weekKey = getWeekKey(weekStart.getTime());
-
-        const ev = await ctx.db
-          .query("analyticsEvents")
-          .withIndex("by_timestamp", (q: any) =>
-            q.gte("timestamp", getStartOfDay(weekStart.getTime())).lte("timestamp", getEndOfDay(weekEnd.getTime()))
-          )
-          .collect();
-
-        const weekOrders = ev.filter((e: any) => {
-          const ts = typeof e.timestamp === "string" ? Number(e.timestamp) : e.timestamp;
-          return ts >= getStartOfDay(weekStart.getTime()) && ts <= getEndOfDay(weekEnd.getTime()) && e.event === "order_completed";
-        });
-
-        const revenue = weekOrders.reduce((sum: number, e: any) => sum + (e.properties?.total || 0), 0);
-
-        points.push({
-          name: `שבוע ${weekKey.split("-W")[1]}`,
-          value: revenue,
-          orders: weekOrders.length,
-          timestamp: weekKey,
-        });
-      }
-    } else if (args.interval === "monthly") {
-      // Last 12 months
-      for (let i = 11; i >= 0; i--) {
-        const date = new Date(now);
-        date.setUTCMonth(date.getUTCMonth() - i);
-        const monthKey = getMonthKey(date.getTime());
-
-        const startOfMonth = new Date(date);
-        startOfMonth.setUTCDate(1);
-        const endOfMonth = new Date(date);
-        endOfMonth.setUTCMonth(endOfMonth.getUTCMonth() + 1, 0);
-
-        const ev = await ctx.db
-          .query("analyticsEvents")
-          .withIndex("by_timestamp", (q: any) =>
-            q.gte("timestamp", startOfMonth.getTime()).lte("timestamp", endOfMonth.getTime())
-          )
-          .collect();
-
-        const monthOrders = ev.filter((e: any) => {
-          const ts = typeof e.timestamp === "string" ? Number(e.timestamp) : e.timestamp;
-          return ts >= startOfMonth.getTime() && ts <= endOfMonth.getTime() && e.event === "order_completed";
-        });
-
-        const revenue = monthOrders.reduce((sum: number, e: any) => sum + (e.properties?.total || 0), 0);
-
-        points.push({
-          name: date.toLocaleDateString("he-IL", { month: "short" }),
-          value: revenue,
-          orders: monthOrders.length,
-          timestamp: monthKey,
-        });
-      }
-    }
+          orders: orders.length,
+          timestamp: period.timestamp,
+        };
+      })
+    );
 
     return points;
   },
