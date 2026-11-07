@@ -197,8 +197,14 @@ export const handleIpnNotification = internalMutation({
         return { success: false, error: "Payment transaction not found" };
       }
 
-      // SECURITY: Verify payment is in pending status (not already processed)
-      if (paymentTransaction.status !== "pending") {
+      // SECURITY: Only completed/cancelled transactions are terminal. A
+      // "failed" transaction must still accept a later success IPN, because
+      // iCredit lets the customer retry on the same payment page after a
+      // declined attempt and we would otherwise drop a real payment.
+      if (
+        paymentTransaction.status === "completed" ||
+        paymentTransaction.status === "cancelled"
+      ) {
         console.error("[iCredit IPN] Payment transaction already processed:", paymentTransaction.status);
         return { success: false, error: "Payment already processed" };
       }
@@ -275,6 +281,13 @@ export const handleIpnNotification = internalMutation({
         return { success: true };
       } else {
         // Payment failed
+        // Never downgrade a completed payment: a late or duplicated failure
+        // IPN must not undo a charge that already succeeded.
+        if (paymentTransaction.status === "completed") {
+          console.error("[iCredit IPN] Ignoring failure IPN for completed payment");
+          return { success: false, error: "Payment already completed" };
+        }
+
         const errorMessage = (errorMsg ?? ipnData.client_message ?? ipnData.debug_message ?? "Payment failed") as string;
         await ctx.db.patch(paymentTransactionId, {
           status: "failed",

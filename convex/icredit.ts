@@ -9,9 +9,14 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 // iCredit API Configuration
 // CRITICAL: iCredit uses SEPARATE servers for test and production.
 // Test tokens only work on the test server, production tokens only on production.
+//
+// NOTE: the host is *.rivhit.co.il, NOT icredit.co.il. The old icredit.co.il
+// hosts still resolve but serve a certificate for *.rivhit.co.il, so TLS
+// verification fails and Convex's fetch throws a bare "fetch failed".
+// Docs: https://rivhit-api.readme.io/docs/test-enviornment-icredit
 const ICREDIT_BASE_URLS = {
-  test: "https://testicredit.icredit.co.il/API/PaymentPageRequest.svc",
-  production: "https://icredit.icredit.co.il/API/PaymentPageRequest.svc",
+  test: "https://testicredit.rivhit.co.il/API/PaymentPageRequest.svc",
+  production: "https://icredit.rivhit.co.il/API/PaymentPageRequest.svc",
 } as const;
 
 function getIcreditApiUrl(environment: "test" | "production", endpoint: string): string {
@@ -34,7 +39,7 @@ const ICREDIT_STATUS = {
  * 4. Returns the payment page URL for redirect
  * 
  * iCredit uses the Rivhit infrastructure but has a different API format.
- * API docs: https://icredit.icredit.co.il/API/PaymentPageRequest.svc/help
+ * API docs: https://rivhit-api.readme.io/reference/post_api-paymentpagerequest-svc-geturl
  */
 export const createPaymentPage = action({
   args: {
@@ -119,7 +124,8 @@ export const createPaymentPage = action({
     console.log("[iCredit] Order total:", order.total, "Items total:", order.subtotal, "Shipping:", order.shippingCost, "Tax:", order.tax);
 
     // 8. Build the iCredit GetUrl request
-    // API docs: https://icredit.icredit.co.il/API/PaymentPageRequest.svc/help/operations/GetUrl
+    // Spec: https://rivhit-api.readme.io/reference/post_api-paymentpagerequest-svc-geturl
+    // Required: GroupPrivateToken, Items, CustomerLastName
     
     // Build items array - prices already include tax
     const items = orderItems.map((item) => ({
@@ -148,6 +154,20 @@ export const createPaymentPage = action({
     
     console.log("[iCredit] Sending items:", items.length, "items, total:", order.total);
     console.log("[iCredit] Callback URLs:", { redirectUrl, failRedirectUrl, ipnUrl });
+
+    // iCredit rejects over-long values instead of truncating them server-side,
+    // so clamp every length-constrained field to the documented maximum.
+    const clamp = (value: string | undefined, max: number): string | undefined => {
+      const trimmed = value?.trim();
+      if (!trimmed) return undefined;
+      return trimmed.length > max ? trimmed.slice(0, max) : trimmed;
+    };
+
+    // CustomerLastName is required (1-30) and CustomerFirstName must be
+    // non-empty when present (1-20). Hebrew names don't split reliably, so the
+    // full name goes to LastName and FirstName falls back to the first word.
+    const fullName = order.customerName.trim() || "לקוח";
+    const firstName = fullName.split(/\s+/)[0] || fullName;
     
     const requestBody = {
       // Required: Payment Page ID (GroupPrivateToken)
@@ -160,6 +180,9 @@ export const createPaymentPage = action({
       RedirectURL: redirectUrl,
       FailRedirectURL: failRedirectUrl,
       IPNURL: ipnUrl,
+      // Also report failures to the IPN endpoint so the transaction is marked
+      // failed instead of being left pending forever.
+      IPNFailureURL: ipnUrl,
       IPNMethod: 1, // 1 = POST (recommended), 2 = GET
       
       // Custom data to identify the order in IPN callback
@@ -170,12 +193,12 @@ export const createPaymentPage = action({
       }),
       
       // Customer information
-      CustomerLastName: order.customerName,
-      CustomerFirstName: "", // Hebrew names often don't split well
-      EmailAddress: order.customerEmail,
-      PhoneNumber: order.customerPhone || undefined,
-      Address: order.shippingStreet,
-      City: order.shippingCity,
+      CustomerLastName: clamp(fullName, 30),
+      CustomerFirstName: clamp(firstName, 20),
+      EmailAddress: clamp(order.customerEmail, 50),
+      PhoneNumber: clamp(order.customerPhone, 15),
+      Address: clamp(order.shippingStreet, 30),
+      City: clamp(order.shippingCity, 20),
       
       // Payment settings
       PriceIncludeVAT: true,
