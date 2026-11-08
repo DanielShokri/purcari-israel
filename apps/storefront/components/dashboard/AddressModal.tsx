@@ -59,9 +59,20 @@ const AddressModal: React.FC<AddressModalProps> = ({
               />
               {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
             </div>
-            
+
             <div>
-              <AddressAutocomplete 
+              <label className="block text-sm font-medium text-gray-700 mb-1">טלפון</label>
+              <input
+                type="tel"
+                {...register('phone')}
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all"
+                placeholder="050-0000000"
+                dir="ltr"
+              />
+            </div>
+
+            <div>
+              <AddressAutocomplete
                 name="street" 
                 label="רחוב ומספר בית" 
                 placeholder="רחוב הירקון 1"

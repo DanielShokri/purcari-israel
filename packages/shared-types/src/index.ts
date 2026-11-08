@@ -371,6 +371,7 @@ export interface CartRule {
 export interface Address {
   _id: string;
   name: string;
+  phone?: string;
   street: string;
   city: string;
   postalCode: string;

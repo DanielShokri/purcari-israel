@@ -45,6 +45,9 @@ const AddressCard: React.FC<AddressCardProps> = ({ address, onEdit, onDelete }) 
       <p className="text-gray-500 text-sm">{address.street}</p>
       <p className="text-gray-500 text-sm">{address.city}, {address.postalCode}</p>
       <p className="text-gray-500 text-sm">{address.country}</p>
+      {address.phone && (
+        <p className="text-gray-500 text-sm mt-1" dir="ltr">{address.phone}</p>
+      )}
     </div>
   );
 };

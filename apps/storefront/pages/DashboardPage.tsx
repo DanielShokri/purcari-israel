@@ -82,6 +82,7 @@ const DashboardPage: React.FC = () => {
     resolver: zodResolver(addressFormSchema),
     defaultValues: {
       name: '',
+      phone: '',
       street: '',
       city: '',
       postalCode: '',
@@ -164,6 +165,7 @@ const DashboardPage: React.FC = () => {
     setEditingAddressId(address._id);
     resetAddress({
       name: address.name,
+      phone: address.phone || '',
       street: address.street,
       city: address.city,
       postalCode: address.postalCode,
@@ -177,6 +179,7 @@ const DashboardPage: React.FC = () => {
     setEditingAddressId(null);
     resetAddress({
       name: '',
+      phone: '',
       street: '',
       city: '',
       postalCode: '',

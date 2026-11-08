@@ -64,6 +64,7 @@ const CheckoutPage: React.FC = () => {
   // Payment processing (includes state & logic)
   const createOrderMutation = useMutation(api.orders.create);
   const createPaymentPageAction = useAction(api.icredit.createPaymentPage);
+  const saveAddressMutation = useMutation(api.userAddresses.saveFromCheckout);
 
   // Move to the payment step as soon as the order exists, without waiting for
   // the iCredit round-trip.
@@ -114,6 +115,8 @@ const CheckoutPage: React.FC = () => {
       setValue('city', defaultAddr.city);
       setValue('postalCode', defaultAddr.postalCode);
       setValue('country', defaultAddr.country);
+      // Saved address phone takes precedence over the profile phone
+      if (defaultAddr.phone) setValue('phone', defaultAddr.phone);
     }
   }, [user, addresses, setValue]);
 
@@ -134,6 +137,27 @@ const CheckoutPage: React.FC = () => {
     const fieldsToValidate: (keyof CheckoutInput)[] = ['name', 'email', 'phone', 'street', 'city', 'postalCode'];
     const isValid = await trigger(fieldsToValidate);
     if (isValid) {
+      // Optionally save the shipping details for the next order (logged-in users)
+      const { saveAddress, ...formData } = watch();
+      if (user && saveAddress) {
+        saveAddressMutation({
+          name: formData.name,
+          phone: formData.phone,
+          street: formData.street,
+          city: formData.city,
+          postalCode: formData.postalCode || '',
+          country: formData.country || 'Israel',
+        })
+          .then((res) => {
+            if (res && !res.existed) {
+              toast.success('הכתובת נשמרה להזמנות הבאות');
+            }
+          })
+          .catch((err) => {
+            console.error('Failed to save address:', err);
+            toast.error('שמירת הכתובת נכשלה');
+          });
+      }
       setStep(2);
     }
   };

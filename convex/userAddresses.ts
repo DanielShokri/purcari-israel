@@ -29,6 +29,7 @@ export const list = query({
 export const create = mutation({
   args: {
     name: v.string(),
+    phone: v.optional(v.string()),
     street: v.string(),
     apartment: v.optional(v.string()),
     city: v.string(),
@@ -65,12 +66,54 @@ export const create = mutation({
 });
 
 /**
+ * Save shipping details from checkout as a new address for the logged-in user.
+ * Skips creation if an identical address (street + city + postalCode) already
+ * exists, and never changes the default address.
+ */
+export const saveFromCheckout = mutation({
+  args: {
+    name: v.string(),
+    phone: v.optional(v.string()),
+    street: v.string(),
+    city: v.string(),
+    postalCode: v.string(),
+    country: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireAuth(ctx);
+
+    const existing = await ctx.db
+      .query("userAddresses")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .collect();
+
+    const duplicate = existing.find(
+      (a) =>
+        a.street.trim() === args.street.trim() &&
+        a.city.trim() === args.city.trim() &&
+        (a.postalCode || "").trim() === args.postalCode.trim()
+    );
+    if (duplicate) return { addressId: duplicate._id, existed: true };
+
+    const addressId = await ctx.db.insert("userAddresses", {
+      userId,
+      isDefault: false,
+      ...args,
+      createdAt: new Date().toISOString(),
+    });
+
+    return { addressId, existed: false };
+  },
+});
+
+/**
  * Update an existing address. Only the owner can update.
  */
 export const update = mutation({
   args: {
     addressId: v.id("userAddresses"),
     name: v.optional(v.string()),
+    phone: v.optional(v.string()),
     street: v.optional(v.string()),
     apartment: v.optional(v.string()),
     city: v.optional(v.string()),

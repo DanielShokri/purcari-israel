@@ -53,6 +53,7 @@ export default defineSchema({
 
   userAddresses: defineTable({
     name: v.string(),
+    phone: v.optional(v.string()),
     street: v.string(),
     apartment: v.optional(v.string()),
     city: v.string(),

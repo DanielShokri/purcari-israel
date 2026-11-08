@@ -84,6 +84,7 @@ export const profileSchema = z.object({
 // Address Schema (name is a nickname like "בית", "משרד" - not a full name)
 export const addressFormSchema = z.object({
   name: z.string().min(2, 'כינוי קצר מדי'),
+  phone: z.string().optional(),
   street: streetSchema,
   city: citySchema,
   postalCode: postalCodeSchema,
@@ -103,6 +104,8 @@ export const checkoutSchema = z.object({
   country: z.string().min(1, 'מדינה היא שדה חובה'),
   // Coupon
   couponCode: z.string().optional(),
+  // Save shipping details for next order (logged-in users only)
+  saveAddress: z.boolean().optional(),
 });
 
 export type CheckoutInput = z.infer<typeof checkoutSchema>;

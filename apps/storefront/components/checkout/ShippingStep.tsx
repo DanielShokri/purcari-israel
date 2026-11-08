@@ -1,5 +1,5 @@
 import React from 'react';
-import { Truck } from 'lucide-react';
+import { Truck, Bookmark } from 'lucide-react';
 import GuestLoginPrompt from './GuestLoginPrompt';
 import { useFormContext } from 'react-hook-form';
 import { CheckoutInput } from '../../schemas/validationSchemas';
@@ -77,7 +77,24 @@ const ShippingStep: React.FC<ShippingStepProps> = ({ nextStep, user }) => {
           />
           {errors.postalCode && <p className="text-red-500 text-xs mt-1">{errors.postalCode.message}</p>}
         </div>
-        <button 
+        {user && (
+          <div className="md:col-span-2 mt-4 flex items-center gap-3 bg-gray-50 rounded-xl p-4">
+            <input
+              type="checkbox"
+              id="saveAddress"
+              {...register('saveAddress')}
+              className="w-5 h-5 rounded border-gray-300 text-secondary focus:ring-secondary cursor-pointer"
+            />
+            <label
+              htmlFor="saveAddress"
+              className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer select-none"
+            >
+              <Bookmark size={16} className="text-secondary" />
+              שמור פרטים אלו להזמנה הבאה
+            </label>
+          </div>
+        )}
+        <button
           type="button" 
           onClick={nextStep}
           className="md:col-span-2 w-full mt-8 bg-secondary text-white py-4 rounded-xl font-bold text-lg hover:bg-red-900 transition-colors cursor-pointer"
