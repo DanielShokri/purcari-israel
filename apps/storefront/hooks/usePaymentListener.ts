@@ -23,12 +23,16 @@ export function usePaymentListener(
 
       console.log('[iCredit] Payment message received:', event.data);
 
-      // Check for explicit success indicators in the message data
+      // Check for explicit success indicators in the message data.
+      // iCredit uses Status: 0 as its generic "OK" code and also posts
+      // unrelated housekeeping messages (e.g. ParentFrameLoad), so a bare
+      // Status: 0 must not be read as "payment captured" — that cleared the
+      // cart while the customer was still typing card details.
       const data = event.data;
-      const isPaymentComplete = data && (
+      const isPaymentComplete = !!data && (
+        data.type === 'payment_complete' ||
         data.status === 'success' ||
-        data.Status === 0 ||
-        data.type === 'payment_complete'
+        (data.Status === 0 && (data.SaleId || data.saleId))
       );
 
       if (isPaymentComplete && currentOrderId) {

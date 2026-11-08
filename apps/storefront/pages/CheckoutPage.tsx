@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useToast from '../store/hooks/useToast';
 import { useCart } from '../hooks/useCart';
@@ -64,6 +64,12 @@ const CheckoutPage: React.FC = () => {
   // Payment processing (includes state & logic)
   const createOrderMutation = useMutation(api.orders.create);
   const createPaymentPageAction = useAction(api.icredit.createPaymentPage);
+
+  // Move to the payment step as soon as the order exists. The payment page
+  // request needs a round-trip to iCredit, so waiting for it before leaving
+  // the review step made the button look like it did nothing.
+  const goToPaymentStep = useCallback(() => setStep(3), []);
+
   const {
     paymentUrl,
     isCreatingOrder,
@@ -83,6 +89,7 @@ const CheckoutPage: React.FC = () => {
     totalDiscount: automaticDiscount + (appliedCoupon?.discountAmount || 0),
     total: Math.max(0, subtotal + shipping - (automaticDiscount + (appliedCoupon?.discountAmount || 0))),
     appliedCoupon,
+    onOrderCreated: goToPaymentStep,
   });
 
   // Coupon management

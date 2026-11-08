@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { CreditCard, Shield, Loader2, AlertCircle } from 'lucide-react';
 
 interface PaymentStepProps {
@@ -35,6 +35,11 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
+  // iCredit resizes itself over postMessage ("ParentFrameLoad" carries the
+  // rendered document height). Without honouring it the card form sits below
+  // the fold inside a fixed 500px box.
+  const [iframeHeight, setIframeHeight] = useState(500);
+
   const ALLOWED_ORIGINS = ['https://icredit.rivhit.co.il', 'https://testicredit.rivhit.co.il'];
 
   const isAllowedOrigin = (origin: string): boolean => {
@@ -43,8 +48,17 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (isAllowedOrigin(event.origin)) {
-        console.log('[iCredit] Received message:', event.data);
+      if (!isAllowedOrigin(event.origin)) return;
+      console.log('[iCredit] Received message:', event.data);
+
+      const data = event.data;
+      if (
+        data &&
+        data.method === 'ParentFrameLoad' &&
+        typeof data.height === 'number' &&
+        data.height > 0
+      ) {
+        setIframeHeight(Math.max(500, Math.ceil(data.height)));
       }
     };
 
@@ -117,7 +131,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
                 src={paymentUrl}
                 title="טופס תשלום מאובטח"
                 className="w-full border-0"
-                style={{ height: '500px', minHeight: '500px' }}
+                style={{ height: `${iframeHeight}px`, minHeight: '500px' }}
               />
             </div>
             
