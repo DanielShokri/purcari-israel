@@ -65,9 +65,8 @@ const CheckoutPage: React.FC = () => {
   const createOrderMutation = useMutation(api.orders.create);
   const createPaymentPageAction = useAction(api.icredit.createPaymentPage);
 
-  // Move to the payment step as soon as the order exists. The payment page
-  // request needs a round-trip to iCredit, so waiting for it before leaving
-  // the review step made the button look like it did nothing.
+  // Move to the payment step as soon as the order exists, without waiting for
+  // the iCredit round-trip.
   const goToPaymentStep = useCallback(() => setStep(3), []);
 
   const {

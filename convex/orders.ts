@@ -1,8 +1,11 @@
 import { v } from "convex/values";
-import { mutation, query, MutationCtx } from "./_generated/server";
+import { internalMutation, mutation, query, MutationCtx } from "./_generated/server";
 import { adminMutation, adminQuery, requireActiveUser } from "./authHelpers";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { incrementCouponUsage } from "./coupons";
+import { incrementCouponUsage, evaluateCoupon, normalizeEmail } from "./coupons";
+import { calculateCartTotals } from "./pricing";
+import { loadActiveCartRules } from "./cartRules";
+import { hasOrderAccess, OrderStatus, reserveStock, transitionOrder } from "./orderLifecycle";
 import { insertOrderActivity } from "./activities";
 import { insertOrderNotification } from "./notifications";
 
@@ -40,20 +43,12 @@ export const create = mutation({
     customerPhone: v.optional(v.string()),
     customerAvatar: v.optional(v.string()),
     
-    // Items
+    // Prices, shipping and discounts are computed server-side; `total` is only
+    // the amount the customer saw, used to detect stale carts.
     items: v.array(v.object({
       productId: v.id("products"),
-      productName: v.string(),
-      productImage: v.optional(v.string()),
-      price: v.float64(),
       quantity: v.int64(),
     })),
-
-    // Pre-calculated totals from the cart rules engine
-    // Prices already include VAT; shipping and discounts are calculated by cart rules
-    subtotal: v.float64(),
-    shippingCost: v.float64(),
-    discount: v.float64(),
     total: v.float64(),
 
     // Shipping address (to be denormalized)
@@ -75,7 +70,6 @@ export const create = mutation({
 
     // Optional coupon info
     appliedCouponCode: v.optional(v.string()),
-    appliedCouponDiscount: v.optional(v.float64()),
   },
   handler: async (ctx, args) => {
     // Never trust a client-supplied customer ID. Guest checkout remains supported.
@@ -83,35 +77,44 @@ export const create = mutation({
     const customer = authenticatedUserId ? await ctx.db.get(authenticatedUserId) : null;
     if (customer && customer.status !== "active") throw new Error("החשבון אינו פעיל");
 
-    // Validate inventory before creating order (product reads run in parallel)
-    const products = await Promise.all(
-      args.items.map((item) => ctx.db.get(item.productId))
-    );
-    for (let i = 0; i < args.items.length; i++) {
-      const item = args.items[i];
-      const product = products[i];
-      if (!product) {
-        throw new Error(`מוצר לא נמצא: ${item.productName}`);
-      }
-      if (product.status === "discontinued") {
-        throw new Error(`המוצר ${item.productName} הופסק מהמכירה`);
-      }
-      if (product.quantityInStock < item.quantity) {
-        throw new Error(`מלאי לא מספיק עבור ${item.productName}. זמין: ${product.quantityInStock}, נדרש: ${item.quantity}`);
-      }
+    const products = await Promise.all(args.items.map((item) => ctx.db.get(item.productId)));
+    const pricingItems = args.items.map((item, index) => {
+      const product = products[index];
+      if (!product) throw new Error("מוצר לא נמצא");
+      return {
+        productId: product._id,
+        title: product.productName,
+        price: product.price,
+        salePrice: product.onSale && product.salePrice !== undefined ? product.salePrice : undefined,
+        quantity: Number(item.quantity),
+      };
+    });
+
+    // Every price line comes from the catalog and the active cart rules, never the client.
+    const totals = calculateCartTotals(pricingItems, await loadActiveCartRules(ctx));
+    const customerEmail = normalizeEmail(customer?.email || args.customerEmail);
+
+    let couponDiscount = 0;
+    if (args.appliedCouponCode) {
+      const evaluation = await evaluateCoupon(ctx, {
+        code: args.appliedCouponCode,
+        subtotal: totals.subtotal,
+        itemCount: totals.itemCount,
+        userEmail: customerEmail,
+        userId: authenticatedUserId ?? undefined,
+      });
+      if ("error" in evaluation) throw new Error(evaluation.error);
+      couponDiscount = evaluation.discountAmount;
     }
 
-    // Price lines are derived from the product catalog, never client input.
-    const normalizedItems = args.items.map((item, index) => {
-      const product = products[index]!;
-      const price = product.onSale && product.salePrice !== undefined ? product.salePrice : product.price;
-      return { ...item, productName: product.productName, productImage: product.featuredImage, price };
-    });
-    const subtotal = normalizedItems.reduce((sum, item) => sum + item.price * Number(item.quantity), 0);
-    const shippingCost = args.shippingCost;
-    const discount = args.discount;
-    const total = subtotal + shippingCost - discount;
-    if (total < 0 || Math.abs(total - args.total) > 0.01) throw new Error("סכום ההזמנה אינו תקין");
+    const round2 = (n: number) => Math.round(n * 100) / 100;
+    const subtotal = round2(totals.subtotal);
+    const shippingCost = totals.shippingCost;
+    const discount = round2(totals.discount + couponDiscount);
+    const total = Math.max(0, round2(subtotal + shippingCost - discount));
+    if (Math.abs(total - args.total) > 0.01) throw new Error("המחירים עודכנו, נא לרענן את העגלה");
+
+    await reserveStock(ctx, pricingItems);
 
     // Tax is already included in product prices (Israeli standard: מחיר כולל מע"מ)
     const tax = 0;
@@ -125,7 +128,7 @@ export const create = mutation({
     const orderId = await ctx.db.insert("orders", {
       customerId: authenticatedUserId ?? undefined,
       customerName: customer?.name || args.customerName,
-      customerEmail: customer?.email || args.customerEmail,
+      customerEmail,
       customerPhone: customer?.phone || args.customerPhone,
       customerAvatar: args.customerAvatar,
       accessToken: crypto.randomUUID(),
@@ -152,33 +155,32 @@ export const create = mutation({
       paymentChargeDate: args.payment.chargeDate,
 
       status: "pending",
-      appliedCouponCode: args.appliedCouponCode,
-      appliedCouponDiscount: args.appliedCouponDiscount,
+      appliedCouponCode: args.appliedCouponCode?.toUpperCase(),
+      appliedCouponDiscount: args.appliedCouponCode ? couponDiscount : undefined,
+      stockReserved: true,
 
       createdAt: now,
       updatedAt: now,
     });
 
-    // 6. Create Order Items
-    for (const item of normalizedItems) {
+    for (const [index, item] of pricingItems.entries()) {
       await ctx.db.insert("orderItems", {
         orderId,
         productId: item.productId,
-        productName: item.productName,
-        productImage: item.productImage,
-        price: item.price,
-        quantity: Number(item.quantity),
-        total: item.price * Number(item.quantity),
+        productName: item.title,
+        productImage: products[index]?.featuredImage,
+        price: item.salePrice ?? item.price,
+        quantity: item.quantity,
+        total: (item.salePrice ?? item.price) * item.quantity,
       });
     }
 
-    // 7. Increment Coupon Usage
-    // Helpers are called directly (same transaction) instead of via
-    // ctx.runMutation, avoiding nested-transaction overhead.
+    // Increment coupon usage by calling the helper directly (same transaction),
+    // avoiding ctx.runMutation overhead.
     if (args.appliedCouponCode) {
       await incrementCouponUsage(ctx, {
         code: args.appliedCouponCode,
-        userEmail: customer?.email || args.customerEmail,
+        userEmail: customerEmail,
         userId: authenticatedUserId ?? undefined,
       });
     }
@@ -228,7 +230,7 @@ export const getPublic = query({
     if (!order) return null;
     const currentUserId = await getAuthUserId(ctx);
     const currentUser = currentUserId ? await ctx.db.get(currentUserId) : null;
-    const hasAccess = currentUser?.role === "admin" || (currentUser?.status === "active" && order.customerId === currentUserId) || (args.accessToken !== undefined && args.accessToken === order.accessToken);
+    const hasAccess = hasOrderAccess(order, currentUser, args.accessToken);
     if (!hasAccess) throw new Error("גישה נדחתה");
 
     const items = await ctx.db
@@ -319,9 +321,8 @@ export const listAll = adminQuery({
 });
 
 /**
- * Backfill orderNumber for existing orders that don't have one.
- * Assigns sequential numbers starting from STARTING_ORDER_NUMBER.
- * Admin-only mutation - run once to migrate existing orders.
+ * Backfill orderNumber for existing orders without one, using the
+ * shared counter so numbers never collide. Admin-only, run once.
  */
 export const backfillOrderNumbers = adminMutation({
   args: {},
@@ -332,21 +333,19 @@ export const backfillOrderNumbers = adminMutation({
       .order("asc")
       .collect();
 
-    let nextNumber = STARTING_ORDER_NUMBER;
     let updatedCount = 0;
 
     for (const order of ordersWithoutNumber) {
       if (order.orderNumber === undefined) {
         await ctx.db.patch(order._id, {
-          orderNumber: nextNumber,
+          orderNumber: await getNextOrderNumber(ctx),
           updatedAt: new Date().toISOString(),
         });
-        nextNumber++;
         updatedCount++;
       }
     }
 
-    return { updatedCount, nextOrderNumber: nextNumber };
+    return { updatedCount };
   },
 });
 
@@ -368,16 +367,14 @@ export const updateStatus = adminMutation({
   handler: async (ctx, args) => {
     const now = new Date().toISOString();
 
-    // Get order details before updating
     const order = await ctx.db.get(args.orderId);
     if (!order) {
       throw new Error("Order not found");
     }
+    if (order.status === args.status) return;
 
-    await ctx.db.patch(args.orderId, {
-      status: args.status,
-      updatedAt: now,
-    });
+    // adminMutation erases arg types, hence the cast.
+    await transitionOrder(ctx, order, args.status as OrderStatus);
 
     // Map status to activity/notification status
     const statusMap: Record<string, string> = {
@@ -423,5 +420,24 @@ export const updateStatus = adminMutation({
         });
       }
     }
+  },
+});
+
+const PENDING_ORDER_TTL_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Cancel orders that were never paid, releasing their stock and coupon.
+ * Run hourly; a late payment still completes its transaction and is flagged.
+ */
+export const expireStalePendingOrders = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const cutoff = new Date(Date.now() - PENDING_ORDER_TTL_MS).toISOString();
+    const stale = await ctx.db
+      .query("orders")
+      .withIndex("by_status_createdAt", (q) => q.eq("status", "pending").lt("createdAt", cutoff))
+      .take(50);
+    for (const order of stale) await transitionOrder(ctx, order, "cancelled");
+    return { expired: stale.length };
   },
 });

@@ -94,10 +94,8 @@ export function useAuth() {
         flow: "signIn",
       });
 
-      // The user document is created by the Convex Auth createOrUpdateUser
-      // callback, so no profile call is needed here. (The previous call sent an
-      // unsupported `email` arg, which made every sign-in report an error, and
-      // `phone: ""` would have wiped the user's saved phone number.)
+      // The user document is created by the Convex Auth createOrUpdateUser callback,
+      // so no profile call is needed here.
 
       return true;
     } catch (err) {
@@ -117,9 +115,8 @@ export function useAuth() {
     setIsGoogleLoading(true);
     setError(null);
     try {
-      // The library handles the redirect internally (window.location.href = url)
-      // so we just need to call signIn and let it do its thing. `redirectTo`
-      // controls where the OAuth callback lands the user after sign-in.
+      // The library redirects internally; `redirectTo` sets where the OAuth callback
+      // lands the user after sign-in.
       const params = new URLSearchParams(window.location.search);
       const redirectParam = params.get("redirect");
       await convexSignIn("google", {

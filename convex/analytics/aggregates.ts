@@ -57,9 +57,8 @@ export function getEndOfDay(timestamp: number = Date.now()): number {
 }
 
 /**
- * Aggregate for daily page view counts
- * Key: YYYY-MM-DD date string
- * Value: count of views for that day
+ * Daily page view counts. Key: YYYY-MM-DD date string.
+ * Value: views for that day.
  */
 export const dailyViewsAggregate = new TableAggregate<{
   Key: string; // YYYY-MM-DD
@@ -75,12 +74,8 @@ export const dailyViewsAggregate = new TableAggregate<{
 });
 
 /**
- * Aggregate for active user tracking (DAU/WAU/MAU)
- * Key: [date, userId] tuple for unique user per day
- * Value: 1 (unique user count)
- *
- * This allows counting unique users per day, week, or month
- * by using bounds with date prefixes
+ * Active users (DAU/WAU/MAU). Key: [date, userId], value: 1,
+ * so unique users can be counted per day/week/month via date-prefix bounds.
  */
 export const activeUsersAggregate = new TableAggregate<{
   Key: [string, string]; // [YYYY-MM-DD, userId or anonymousId]
@@ -97,9 +92,8 @@ export const activeUsersAggregate = new TableAggregate<{
 });
 
 /**
- * Aggregate for per-product view counts
- * Key: [date, productId] tuple for product views per day
- * Value: count of views for that product on that day
+ * Per-product view counts. Key: [date, productId],
+ * value: views of that product that day.
  */
 export const productViewsAggregate = new TableAggregate<{
   Key: [string, string]; // [YYYY-MM-DD, productId]

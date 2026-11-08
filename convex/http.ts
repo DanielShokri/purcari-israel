@@ -8,15 +8,11 @@ const http = httpRouter();
 // Add Convex Auth HTTP routes
 auth.addHttpRoutes(http);
 
-// ============================================================================
 // iCredit Payment Gateway Routes (via Rivhit)
-// ============================================================================
 
 /**
- * IPN (Instant Payment Notification) webhook for iCredit - POST method.
- * 
- * iCredit calls this endpoint when a payment is completed or fails.
- * This processes the notification and updates order/payment status.
+ * IPN webhook for iCredit (POST), called when a payment completes or fails.
+ * Updates order and payment status.
  */
 http.route({
   path: "/icredit/ipn",
@@ -24,13 +20,11 @@ http.route({
   handler: httpAction(async (ctx, request) => {
     try {
       const body = await request.text();
-      console.log("[iCredit IPN POST] Received notification");
 
-      const result = await ctx.runMutation(internal.icreditHelpers.handleIpnNotification, {
+      await ctx.runMutation(internal.icreditHelpers.handleIpnNotification, {
         rawBody: body,
       });
 
-      console.log("[iCredit IPN POST] Processed:", result.success);
 
       return new Response("OK", { status: 200 });
     } catch (error) {
@@ -53,14 +47,11 @@ http.route({
       url.searchParams.forEach((value, key) => {
         params[key] = value;
       });
-      
-      console.warn("[iCredit IPN GET] Deprecated GET notification received");
 
       if (params.SaleId || params.saleid) {
-        const result = await ctx.runMutation(internal.icreditHelpers.handleIpnNotification, {
+        await ctx.runMutation(internal.icreditHelpers.handleIpnNotification, {
           rawBody: JSON.stringify(params),
         });
-        console.log("[iCredit IPN GET] Result:", JSON.stringify(result));
       }
 
       return new Response("OK", { status: 200 });
@@ -106,20 +97,11 @@ http.route({
   handler: httpAction(async (ctx, request) => {
     const url = new URL(request.url);
     
-    // Log ALL query parameters from iCredit for debugging
-    const allParams: Record<string, string> = {};
-    url.searchParams.forEach((value, key) => {
-      allParams[key] = value;
-    });
-    console.log("[iCredit Redirect] All parameters received:", JSON.stringify(allParams));
-    
     const finalRedirectUrl = url.searchParams.get("finalUrl");
-    const token = url.searchParams.get("Token"); // iCredit appends this
     const status = url.searchParams.get("Status"); // Payment status if available
     const saleId = url.searchParams.get("SaleId");
     const response = url.searchParams.get("Response"); // May contain success/failure info
     
-    console.log("[iCredit Redirect] Token:", token, "Status:", status, "SaleId:", saleId, "Response:", response);
     
     // Get the storefront URL from environment or use default
     const storefrontUrl = process.env.STOREFRONT_URL || "http://localhost:3000";
@@ -129,13 +111,13 @@ http.route({
     
     // Append token and status if available
     const destUrl = new URL(destination);
-    if (token) destUrl.searchParams.set("token", token);
+    // Do NOT forward iCredit's payment Token as ?token=: that is the order access token
+    // (already in finalUrl), and overwriting it made orders.getPublic reject the request.
     if (status) destUrl.searchParams.set("paymentStatus", status);
     if (saleId) destUrl.searchParams.set("saleId", saleId);
     if (response) destUrl.searchParams.set("response", response);
     destination = destUrl.toString();
     
-    console.log("[iCredit Redirect] Redirecting to:", destination);
     
     // Return HTML page that breaks out of iframe and redirects parent
     const html = `<!DOCTYPE html>

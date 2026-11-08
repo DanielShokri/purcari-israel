@@ -26,12 +26,8 @@ export const list = adminQuery({
 });
 
 /**
- * Get active announcements for storefront display.
- * Returns announcements where:
- * - status === 'active'
- * - startDate <= current date
- * - (endDate is null OR endDate >= current date)
- * - targetAudience === 'all' OR targetAudience === 'customers'
+ * Active announcements for the storefront: status active, within start/end dates,
+ * and targetAudience 'all' or 'customers'.
  */
 export const getActive = query({
   args: {},

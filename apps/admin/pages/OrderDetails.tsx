@@ -24,9 +24,14 @@ import {
   createListCollection,
   Separator,
   Link,
+  Alert,
 } from '@chakra-ui/react';
 import { LoadingState, Breadcrumbs, StatusBadge, orderStatusConfig } from '../components/shared';
+import { CancelPaidOrderDialog } from '../components/orders';
 import { toaster } from '../components/ui/toaster';
+
+// Paid order statuses: stock is restored on cancel, but refunds are manual in iCredit
+const PAID_ORDER_STATUSES: OrderStatus[] = ['processing', 'shipped', 'completed'];
 
 // Helper to format date in Hebrew locale
 const formatDate = (dateStr: string) => {
@@ -83,6 +88,10 @@ export default function OrderDetails() {
   const isLoading = !hasEverLoaded && !allLoaded;
   const updateStatus = useMutation(api.orders.updateStatus);
   const [isUpdating, setIsUpdating] = React.useState(false);
+  const [pendingCancel, setPendingCancel] = useState(false);
+  const payment = useQuery(api.icreditHelpers.getPaymentByOrderId, orderId ? { orderId } : "skip");
+  const showPaidCancelledBanner =
+    order?.status === 'cancelled' && payment?.status === 'completed';
 
   if (isLoading) {
     return <LoadingState message="טוען פרטי הזמנה..." />;
@@ -123,6 +132,20 @@ export default function OrderDetails() {
     }
   };
 
+  // Intercept "cancelled": for paid orders confirm first; the dropdown keeps the old status until then
+  const handleSelectChange = (newStatus: OrderStatus) => {
+    if (newStatus === 'cancelled' && PAID_ORDER_STATUSES.includes(order.status)) {
+      setPendingCancel(true);
+      return;
+    }
+    void handleStatusChange(newStatus);
+  };
+
+  const handleConfirmCancel = async () => {
+    await handleStatusChange('cancelled');
+    setPendingCancel(false);
+  };
+
   const handlePrint = () => {
     window.print();
   };
@@ -145,6 +168,17 @@ export default function OrderDetails() {
           { label: 'פרטי הזמנה' },
         ]}
       />
+
+      {showPaidCancelledBanner && (
+        <Alert.Root status="warning" variant="subtle" rounded="lg">
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Description>
+              ההזמנה בוטלה אך התשלום התקבל - נדרש החזר ידני ב-iCredit
+            </Alert.Description>
+          </Alert.Content>
+        </Alert.Root>
+      )}
 
       {/* Page Header */}
       <Flex
@@ -203,7 +237,7 @@ export default function OrderDetails() {
               collection={orderStatusOptions}
               size="sm"
               value={[order.status]}
-              onValueChange={(e) => handleStatusChange(e.value[0] as OrderStatus)}
+              onValueChange={(e) => handleSelectChange(e.value[0] as OrderStatus)}
               disabled={isUpdating}
             >
               <Select.HiddenSelect />
@@ -247,6 +281,13 @@ export default function OrderDetails() {
           </Card.Body>
         </Card.Root>
       </SimpleGrid>
+
+      <CancelPaidOrderDialog
+        isOpen={pendingCancel}
+        onClose={() => setPendingCancel(false)}
+        onConfirm={handleConfirmCancel}
+        isSubmitting={isUpdating}
+      />
 
       {/* Customer & Shipping Row */}
       <SimpleGrid columns={{ base: 1, md: 2 }} gap="6" alignItems="stretch">

@@ -18,7 +18,6 @@ const ContactForm: React.FC = () => {
   });
 
   const onSubmit = (data: ContactInput) => {
-    console.log('Form submitted:', data);
     setIsSubmitted(true);
     reset();
   };

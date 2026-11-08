@@ -67,9 +67,8 @@ export const { auth, signIn, signOut, store } = convexAuth({
       const image = typeof profile.image === "string" ? profile.image : undefined;
       const name = typeof profile.name === "string" ? profile.name : undefined;
 
-      // Google verifies the email it returns, so it is safe to link an OAuth
-      // sign-in to an existing account with the same email. Password accounts
-      // are NOT verified and are never linked automatically.
+      // Google verifies emails, so OAuth sign-ins may link to an existing account with
+      // the same email. Unverified password accounts are never linked automatically.
       const isVerifiedOAuth =
         args.type === "oauth" &&
         args.provider.id === "google" &&

@@ -1,18 +1,6 @@
 /**
- * beforeunloadGuard.ts
- *
- * Problem: @convex-dev/auth registers a `beforeunload` listener that calls
- * e.preventDefault() + sets e.returnValue when isRefreshingToken is true.
- * Firefox ignores stopImmediatePropagation() for beforeunload — all listeners
- * always run — so we can't block it from capture phase.
- *
- * Solution: Patch window.addEventListener at module-load time to track every
- * beforeunload listener. Before OAuth navigation, removeAll() detaches them all.
- * They are re-attached after pagehide (navigation complete) so nothing breaks
- * if the user hits Back or if an error occurs.
- *
- * This module must be imported before any library code runs, i.e. as the very
- * first import in index.tsx.
+ * Tracks every beforeunload listener so removeAll() can detach them before OAuth
+ * navigation (Firefox ignores stopImmediatePropagation). Import this first in index.tsx.
  */
 
 type ListenerEntry = {
@@ -53,9 +41,8 @@ window.removeEventListener = function patchedRemoveEventListener(
 };
 
 /**
- * Remove all tracked beforeunload listeners from the window.
- * Returns a restore function that re-adds them.
- * The restore function is also automatically called on `pagehide` (once).
+ * Removes all tracked beforeunload listeners and returns a restore function.
+ * Restore also runs automatically once on `pagehide`.
  */
 export function suppressAllBeforeunloadListeners(): () => void {
   // Take a snapshot and detach every tracked listener.

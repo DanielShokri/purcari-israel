@@ -2,11 +2,8 @@ import { useAppDispatch } from '../hooks';
 import { showToast } from '../slices/uiSlice';
 
 /**
- * Custom hook for showing toast notifications
- * Usage:
- *   const toast = useToast();
- *   toast.success('המוצר נוסף לסל');
- *   toast.error('משהו השתבש');
+ * Hook for toast notifications.
+ * Usage: const toast = useToast(); toast.success('...'); toast.error('...');
  */
 export const useToast = () => {
   const dispatch = useAppDispatch();

@@ -3,9 +3,7 @@
  * All types used across storefront and admin applications
  */
 
-// ============================================================================
 // ENUMS
-// ============================================================================
 
 // Product status enum - for admin product editor
 export enum ProductStatus {
@@ -113,9 +111,7 @@ export enum SystemAnnouncementStatus {
   DRAFT = 'draft',
 }
 
-// ============================================================================
 // PRODUCT & CATEGORY INTERFACES
-// ============================================================================
 
 export interface Product {
   _id: string;
@@ -170,9 +166,7 @@ export interface CategoryWithChildren extends Category {
   children?: CategoryWithChildren[];
 }
 
-// ============================================================================
 // CART INTERFACES
-// ============================================================================
 
 export interface CartItem {
   id: string;
@@ -201,9 +195,7 @@ export interface CartSyncResult {
   adjustedItems: { productId: string; productName: string; requestedQty: number; availableQty: number }[];
 }
 
-// ============================================================================
 // ORDER INTERFACES
-// ============================================================================
 
 export type OrderStatus = 'pending' | 'processing' | 'completed' | 'cancelled' | 'shipped';
 
@@ -284,9 +276,7 @@ export interface CreateOrderPayload {
   appliedCouponType?: CouponDiscountType;
 }
 
-// ============================================================================
 // COUPON INTERFACES
-// ============================================================================
 
 export interface Coupon {
   _id: string;
@@ -337,9 +327,7 @@ export interface CouponUsageRecord {
   lastUsedAt: string;
 }
 
-// ============================================================================
 // CART RULE INTERFACES
-// ============================================================================
 
 export type CartRuleType = 'buy_x_get_y' | 'bulk_discount' | 'shipping';
 export type CartRuleStatus = 'draft' | 'active' | 'paused';
@@ -397,9 +385,7 @@ export interface UserPreferences {
   cart?: SavedCart;
 }
 
-// ============================================================================
 // ANALYTICS & NOTIFICATIONS
-// ============================================================================
 
 export interface AnalyticsEvent {
   _id: string;
@@ -436,9 +422,7 @@ export interface SystemAnnouncement {
   updatedAt: string;
 }
 
-// ============================================================================
 // UI & UTILITY TYPES
-// ============================================================================
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
@@ -449,9 +433,7 @@ export interface Toast {
   duration?: number;
 }
 
-// ============================================================================
 // ANALYTICS TYPES
-// ============================================================================
 
 // Product categories - used in filters
 export enum ProductCategoryEnum {
@@ -497,9 +479,7 @@ export interface AnalyticsSummary {
   };
 }
 
-// ============================================================================
 // USER & ADMIN TYPES
-// ============================================================================
 
 export interface AuthUser {
   _id: string;
@@ -521,9 +501,7 @@ export interface User extends AuthUser {
   prefs?: Record<string, any>;
 }
 
-// ============================================================================
 // RIVHIT PAYMENT GATEWAY TYPES
-// ============================================================================
 
 // Rivhit Payment Gateway Types
 export type RivhitPaymentStatus = 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
@@ -586,6 +564,4 @@ export interface RivhitPaymentTransaction {
   updatedAt: string;
 }
 
-// ============================================================================
 // END OF SHARED TYPES
-// ============================================================================

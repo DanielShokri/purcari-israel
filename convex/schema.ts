@@ -197,6 +197,9 @@ export default defineSchema({
     appliedCouponCode: v.optional(v.string()),
     appliedCouponDiscount: v.optional(v.float64()),
 
+    // True while this order holds stock; released on cancel.
+    stockReserved: v.optional(v.boolean()),
+
     createdAt: v.string(),
     updatedAt: v.string(),
   })
@@ -372,7 +375,13 @@ export default defineSchema({
     rivhitCustomerId: v.optional(v.number()),
     rivhitDocumentLink: v.optional(v.string()),
     rivhitConfirmationNumber: v.optional(v.number()),
-    status: v.string(), // RivhitPaymentStatus: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled'
+    status: v.union(
+      v.literal("pending"),
+      v.literal("processing"),
+      v.literal("completed"),
+      v.literal("failed"),
+      v.literal("cancelled")
+    ),
     amount: v.number(),
     environment: v.string(), // 'test' | 'production'
     ipnData: v.optional(v.string()),

@@ -43,10 +43,8 @@ export const get = query({
 });
 
 /**
- * Create or update user profile after authentication.
- * 
- * This mutation updates the user profile with phone number and other custom fields.
- * Requires user to be authenticated - uses auth's getUserId for consistency.
+ * Create or update the authenticated user's profile (phone and other custom
+ * fields), using auth's getUserId.
  */
 export const createOrUpdateUserProfile = mutation({
   args: {

@@ -192,9 +192,8 @@ export const getAvailableYears = adminQuery({
 });
 
 /**
- * Global search across products, orders, and users.
- * Admin-only query.
- * Uses prefix search with Convex search indexes.
+ * Admin-only global prefix search across products, orders and users
+ * using Convex search indexes.
  */
 export const globalSearch = adminQuery({
   args: { 

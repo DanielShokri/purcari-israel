@@ -4,9 +4,8 @@
  */
 
 /**
- * Get Hebrew wine type label from product wineType
- * @param wineType - Product wineType string (e.g., "Red", "White", "Rosé", "Sparkling")
- * @returns Hebrew label for the wine type
+ * Returns the Hebrew label for a product wineType
+ * (Red, White, Rosé, Sparkling).
  */
 export const getWineTypeLabel = (wineType?: string): string => {
   const type = wineType?.toLowerCase();

@@ -3,16 +3,8 @@ import { internal } from "./_generated/api";
 import { v } from "convex/values";
 
 /**
- * Product image storage helper.
- *
- * Uploads a binary image into Convex file storage and records a mapping from a
- * short key to its storage id, so product docs can reference images without
- * depending on an external host (purcari.co.il).
- *
- * Flow (per image):
- *  1. generateUploadUrl (internal action -> ctx.storage.generateUploadUrl)
- *  2. POST the file bytes to that URL -> { storageId }
- *  3. persist { filename -> storageId } in the productImages table
+ * Uploads images to Convex file storage and maps a short key to its storage id,
+ * so product docs don't depend on an external host.
  */
 
 export const uploadImage = internalAction({

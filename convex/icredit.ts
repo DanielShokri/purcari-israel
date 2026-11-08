@@ -5,15 +5,10 @@ import { action } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { hasOrderAccess } from "./orderLifecycle";
 
-// iCredit API Configuration
-// CRITICAL: iCredit uses SEPARATE servers for test and production.
-// Test tokens only work on the test server, production tokens only on production.
-//
-// NOTE: the host is *.rivhit.co.il, NOT icredit.co.il. The old icredit.co.il
-// hosts still resolve but serve a certificate for *.rivhit.co.il, so TLS
-// verification fails and Convex's fetch throws a bare "fetch failed".
-// Docs: https://rivhit-api.readme.io/docs/test-enviornment-icredit
+// iCredit uses SEPARATE test and production servers; tokens only work on their own.
+// Host is *.rivhit.co.il (old icredit.co.il hosts fail TLS). Docs: https://rivhit-api.readme.io/docs/test-enviornment-icredit
 const ICREDIT_BASE_URLS = {
   test: "https://testicredit.rivhit.co.il/API/PaymentPageRequest.svc",
   production: "https://icredit.rivhit.co.il/API/PaymentPageRequest.svc",
@@ -30,16 +25,8 @@ const ICREDIT_STATUS = {
 } as const;
 
 /**
- * Create an iCredit hosted payment page for an order.
- * 
- * This action:
- * 1. Reads the order from the database
- * 2. Calls iCredit GetUrl API to create a hosted payment page
- * 3. Creates a paymentTransactions record to track the payment
- * 4. Returns the payment page URL for redirect
- * 
- * iCredit uses the Rivhit infrastructure but has a different API format.
- * API docs: https://rivhit-api.readme.io/reference/post_api-paymentpagerequest-svc-geturl
+ * Create an iCredit hosted payment page for an order, record a paymentTransactions
+ * row, and return the URL. API: https://rivhit-api.readme.io/reference/post_api-paymentpagerequest-svc-geturl
  */
 export const createPaymentPage = action({
   args: {
@@ -93,8 +80,23 @@ export const createPaymentPage = action({
 
     const userId = await getAuthUserId(ctx);
     const user = userId ? await ctx.runQuery(internal.icreditHelpers.getUserById, { userId }) : null;
-    const hasAccess = user?.role === "admin" || (user?.status === "active" && order.customerId === userId) || args.accessToken === order.accessToken;
-    if (!hasAccess) return { success: false, error: "Access denied" };
+    if (!hasOrderAccess(order, user, args.accessToken)) return { success: false, error: "Access denied" };
+
+    // A cancelled (or any non-pending) order can no longer receive a new payment page.
+    if (order.status !== "pending") return { success: false, error: "ההזמנה אינה פתוחה לתשלום" };
+
+    // Reuse an existing open transaction with a payment URL instead of creating one per click,
+    // so a page refresh or retry does not generate a new iCredit sale each time.
+    const existing = await ctx.runQuery(internal.icreditHelpers.getLatestPaymentTransaction, {
+      orderId: args.orderId,
+    });
+    if (existing && existing.status === "pending" && existing.rivhitPaymentUrl) {
+      return {
+        success: true,
+        paymentUrl: existing.rivhitPaymentUrl,
+        paymentTransactionId: existing._id,
+      };
+    }
 
     // 6. Create a pending payment transaction record first
     const paymentTransactionId = await ctx.runMutation(
@@ -107,9 +109,8 @@ export const createPaymentPage = action({
       }
     );
 
-    // 7. Build callback URLs
-    // For iframe mode, we use an intermediary redirect handler that breaks out of the iframe
-    // The final destination is the order confirmation page
+    // Build callback URLs: an intermediary handler breaks out of the iframe and
+    // redirects to the order confirmation page.
     const tokenQuery = order.accessToken ? `?token=${encodeURIComponent(order.accessToken)}` : "";
     const finalDestination = `${storefrontUrl}/order-confirmation/${args.orderId}${tokenQuery}`;
     const finalFailDestination = `${storefrontUrl}/order-confirmation/${args.orderId}${tokenQuery ? `${tokenQuery}&` : "?"}status=failed`;
@@ -121,11 +122,9 @@ export const createPaymentPage = action({
     // IPNURL - webhook for payment notifications (server-to-server)
     const ipnUrl = `${siteUrl}/icredit/ipn`;
     
-    console.log("[iCredit] Order total:", order.total, "Items total:", order.subtotal, "Shipping:", order.shippingCost, "Tax:", order.tax);
 
-    // 8. Build the iCredit GetUrl request
+    // Build the GetUrl request. Required: GroupPrivateToken, Items, CustomerLastName.
     // Spec: https://rivhit-api.readme.io/reference/post_api-paymentpagerequest-svc-geturl
-    // Required: GroupPrivateToken, Items, CustomerLastName
     
     // Build items array - prices already include tax
     const items = orderItems.map((item) => ({
@@ -152,8 +151,6 @@ export const createPaymentPage = action({
       });
     }
     
-    console.log("[iCredit] Sending items:", items.length, "items, total:", order.total);
-    console.log("[iCredit] Callback URLs:", { redirectUrl, failRedirectUrl, ipnUrl });
 
     // iCredit rejects over-long values instead of truncating them server-side,
     // so clamp every length-constrained field to the documented maximum.
@@ -163,9 +160,8 @@ export const createPaymentPage = action({
       return trimmed.length > max ? trimmed.slice(0, max) : trimmed;
     };
 
-    // CustomerLastName is required (1-30) and CustomerFirstName must be
-    // non-empty when present (1-20). Hebrew names don't split reliably, so the
-    // full name goes to LastName and FirstName falls back to the first word.
+    // CustomerLastName is required (1-30) and FirstName must be non-empty (1-20);
+    // Hebrew names don't split reliably, so full name goes to LastName.
     const fullName = order.customerName.trim() || "לקוח";
     const firstName = fullName.split(/\s+/)[0] || fullName;
     
@@ -218,8 +214,6 @@ export const createPaymentPage = action({
     // 9. Call iCredit GetUrl API
     try {
       const apiUrl = getIcreditApiUrl(environment, "GetUrl");
-      console.log(`[iCredit] Calling GetUrl API (${environment}) for order:`, args.orderId);
-      console.log(`[iCredit] URL: ${apiUrl}`);
       
       const response = await fetch(apiUrl, {
         method: "POST",
@@ -237,7 +231,6 @@ export const createPaymentPage = action({
         PublicSaleToken: string | null;
       };
 
-      console.log("[iCredit] API Response:", JSON.stringify(result));
 
       // 10. Process response
       if (result.Status === ICREDIT_STATUS.SUCCESS && result.URL) {
@@ -261,12 +254,10 @@ export const createPaymentPage = action({
       } else {
         // Error - update payment transaction with error
         const errorMessage = result.DebugMessage || `iCredit error (Status: ${result.Status})`;
-        console.error("[iCredit] API Error:", errorMessage);
         
-        await ctx.runMutation(internal.icreditHelpers.updatePaymentTransaction, {
+        await ctx.runMutation(internal.icreditHelpers.applyPaymentOutcome, {
           paymentTransactionId,
-          status: "failed",
-          errorMessage,
+          outcome: { type: "failed", errorMessage },
         });
 
         return {
@@ -278,12 +269,10 @@ export const createPaymentPage = action({
     } catch (error) {
       // Network or parsing error
       const errorMessage = error instanceof Error ? error.message : "Network error";
-      console.error("[iCredit] Network error:", errorMessage);
       
-      await ctx.runMutation(internal.icreditHelpers.updatePaymentTransaction, {
+      await ctx.runMutation(internal.icreditHelpers.applyPaymentOutcome, {
         paymentTransactionId,
-        status: "failed",
-        errorMessage,
+        outcome: { type: "failed", errorMessage },
       });
 
       return {
@@ -292,5 +281,115 @@ export const createPaymentPage = action({
         paymentTransactionId,
       };
     }
+  },
+});
+
+/**
+ * Pull the authoritative payment state via SaleDetails, since the IPN can be delayed or lost.
+ * The sale token comes from the stored transaction and the caller must own the order.
+ */
+export const verifyPaymentStatus = action({
+  args: {
+    orderId: v.id("orders"),
+    accessToken: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const order = await ctx.runQuery(internal.icreditHelpers.getOrderById, {
+      orderId: args.orderId,
+    });
+    if (!order) return { success: false, error: "Order not found" };
+
+    const userId = await getAuthUserId(ctx);
+    const user = userId
+      ? await ctx.runQuery(internal.icreditHelpers.getUserById, { userId })
+      : null;
+    if (!hasOrderAccess(order, user, args.accessToken)) return { success: false, error: "Access denied" };
+
+    const transaction = await ctx.runQuery(
+      internal.icreditHelpers.getLatestPaymentTransaction,
+      { orderId: args.orderId }
+    );
+    if (!transaction) return { success: false, status: "pending", error: "No payment transaction" };
+
+    // Nothing to verify for terminal states.
+    if (transaction.status === "completed" || transaction.status === "cancelled") {
+      return { success: true, status: transaction.status };
+    }
+
+    // The sale token was captured when the payment page was created.
+    let privateSaleToken: string | undefined;
+    try {
+      const stored = JSON.parse(transaction.ipnData || "{}");
+      privateSaleToken = stored.privateSaleToken;
+    } catch {
+      // ipnData may hold a raw IPN body; not fatal, we just can't verify.
+    }
+    if (!privateSaleToken) {
+      return { success: false, status: transaction.status, error: "No sale token stored" };
+    }
+
+    const environment = (transaction.environment || "test") as "test" | "production";
+    const apiUrl = getIcreditApiUrl(environment, "SaleDetails");
+
+    let sale: Record<string, unknown>;
+    try {
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ SalePrivateToken: privateSaleToken }),
+      });
+      sale = (await response.json()) as Record<string, unknown>;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Network error";
+      return { success: false, status: transaction.status, error: message };
+    }
+
+    // A sale that was never completed has no TransactionStatus yet.
+    const rawStatus = sale.TransactionStatus;
+    if (rawStatus === undefined || rawStatus === null) {
+      return { success: true, status: transaction.status, verified: false };
+    }
+
+    const status = Number(rawStatus);
+
+    if (status === 0) {
+      await ctx.runMutation(internal.icreditHelpers.applyPaymentOutcome, {
+        paymentTransactionId: transaction._id,
+        outcome: {
+          type: "succeeded",
+          fields: {
+            rivhitDocumentNumber: Number(sale.DocumentNum ?? sale.ReceiptNum) || undefined,
+            rivhitDocumentLink: (sale.DocumentURL ?? sale.ReceiptURL) as string | undefined,
+            rivhitCustomerId: Number(sale.CustomerId) || undefined,
+            rivhitConfirmationNumber: Number(sale.AuthNum) || undefined,
+            ipnData: JSON.stringify({ privateSaleToken, ipn: sale }),
+          },
+        },
+      });
+
+      return {
+        success: true,
+        status: "completed",
+        documentNumber: Number(sale.DocumentNum) || undefined,
+        documentUrl: (sale.DocumentURL as string) || undefined,
+      };
+    }
+
+    // Non-zero TransactionStatus on an existing sale is a declined payment.
+    if (status > 0) {
+      await ctx.runMutation(internal.icreditHelpers.applyPaymentOutcome, {
+        paymentTransactionId: transaction._id,
+        outcome: {
+          type: "failed",
+          errorMessage:
+            (sale.ClientMessage as string) ||
+            (sale.DebugMessage as string) ||
+            `iCredit declined (status ${status})`,
+        },
+      });
+      return { success: true, status: "failed" };
+    }
+
+    return { success: true, status: transaction.status, verified: false };
   },
 });

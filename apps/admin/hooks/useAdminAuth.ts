@@ -9,8 +9,7 @@ export interface SignInInput {
 }
 
 /**
- * Custom hook for admin authentication.
- * Provides sign-in, sign-out, and auth state (currentUser, isAdmin, isAuthenticated).
+ * Admin authentication hook: sign-in, sign-out and auth state.
  * Admin role validation is handled reactively by components/app.
  */
 export function useAdminAuth() {

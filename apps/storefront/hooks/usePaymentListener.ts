@@ -2,9 +2,8 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 /**
- * Hook to listen for payment completion messages from iCredit iframe via postMessage
- * @param currentOrderId - The order ID to navigate to upon completion
- * @param onPaymentComplete - Callback when payment is confirmed (optional, default navigates to confirmation)
+ * Listens for payment-completion postMessages from the iCredit iframe.
+ * Navigates to the order confirmation or calls onPaymentComplete.
  */
 export function usePaymentListener(
   currentOrderId: string | null,
@@ -21,13 +20,9 @@ export function usePaymentListener(
 
       if (!isIcreditOrigin) return;
 
-      console.log('[iCredit] Payment message received:', event.data);
 
-      // Check for explicit success indicators in the message data.
-      // iCredit uses Status: 0 as its generic "OK" code and also posts
-      // unrelated housekeeping messages (e.g. ParentFrameLoad), so a bare
-      // Status: 0 must not be read as "payment captured" — that cleared the
-      // cart while the customer was still typing card details.
+      // Require explicit success indicators: iCredit's Status 0 is a generic OK also
+      // sent with housekeeping messages like ParentFrameLoad.
       const data = event.data;
       const isPaymentComplete = !!data && (
         data.type === 'payment_complete' ||

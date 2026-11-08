@@ -2,13 +2,8 @@ import { v } from "convex/values";
 import { internalMutation } from "./_generated/server";
 
 /**
- * @convex-dev/auth cleans up lazily: refresh tokens and sessions are only deleted
- * when presented again, and OAuth PKCE verifiers are only deleted when the OAuth
- * callback completes. Abandoned sign-ins therefore leak rows forever.
- *
- * This mutation sweeps the auth tables. It is batched so a single run stays well
- * under Convex's per-mutation document limits; the daily cron runs it repeatedly
- * until the backlog is gone.
+ * @convex-dev/auth only cleans up lazily, so abandoned sign-ins leak rows.
+ * This batched mutation sweeps the auth tables; a daily cron repeats it until done.
  */
 
 // An OAuth verifier lives ~2 minutes (OAUTH_SIGN_IN_EXPIRATION_MS). Anything

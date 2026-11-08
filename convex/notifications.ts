@@ -87,6 +87,31 @@ export const markAllAsRead = mutation({
 });
 
 /**
+ * Fan out a notification to every admin (appears in the admin notification bell).
+ */
+export async function notifyAdmins(
+  ctx: MutationCtx,
+  args: { title: string; message: string; type: "warning" | "payment"; icon?: string }
+): Promise<void> {
+  const admins = await ctx.db
+    .query("users")
+    .withIndex("by_role", (q) => q.eq("role", "admin"))
+    .collect();
+
+  for (const admin of admins) {
+    await ctx.db.insert("notifications", {
+      userId: admin._id,
+      title: args.title,
+      message: args.message,
+      type: args.type,
+      icon: args.icon ?? args.type,
+      isRead: false,
+      createdAt: new Date().toISOString(),
+    });
+  }
+}
+
+/**
  * Create an inventory alert notification
  * Used when product stock falls below threshold
  */

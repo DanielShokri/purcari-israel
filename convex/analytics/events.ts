@@ -35,10 +35,8 @@ export const trackEvent = mutation({
     const doc = await ctx.db.get("analyticsEvents", eventDoc);
     if (!doc) throw new Error("Failed to retrieve inserted event");
 
-    // Update all aggregates (each has its own filtering logic)
-    // dailyViews: only tracks page_viewed events
-    // activeUsers: tracks all events for unique user counting
-    // productViews: only tracks product_viewed events
+    // Update all aggregates; each filters its own events
+    // (dailyViews: page_viewed, activeUsers: all, productViews: product_viewed).
     try {
       await dailyViewsAggregate.insertIfDoesNotExist(ctx, doc);
       await activeUsersAggregate.insertIfDoesNotExist(ctx, doc);
@@ -91,9 +89,8 @@ export const track = mutation({
 });
 
 /**
- * Identify an anonymous user after they log in (Identity Stitching)
- * Links all anonymous guest events to the authenticated user.
- * Uses the optimized by_anon_id index for efficient lookup.
+ * Identity stitching: link anonymous guest events to the authenticated user
+ * after login, using the by_anon_id index.
  */
 export const identifyUser = mutation({
   args: {
@@ -162,9 +159,8 @@ export const migrateTimestamps = internalMutation({
 });
 
 /**
- * Prune analytics events older than 180 days
- * Called by cron job daily at 2:00 AM UTC
- * Deletes events in batches to avoid timeout
+ * Prune analytics events older than 180 days in batches to avoid timeouts.
+ * Called by a daily cron at 2:00 AM UTC.
  */
 export const pruneOldEvents = internalMutation({
   args: {},
@@ -203,7 +199,6 @@ export const pruneOldEvents = internalMutation({
       await ctx.scheduler.runAfter(0, internal.analytics.events.pruneOldEvents, {});
     }
 
-    console.log(`Pruned ${deleted} analytics events older than ${RETENTION_DAYS} days`);
     return { deleted, hasMore };
   },
 });

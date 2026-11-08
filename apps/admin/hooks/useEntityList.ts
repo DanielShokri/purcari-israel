@@ -68,41 +68,8 @@ export interface UseEntityListReturn<T extends { _id: string }> {
 }
 
 /**
- * Generic hook for managing entity lists with filtering, pagination, and selection
- * 
- * @example
- * // Basic usage for Coupons (client-side filtering)
- * const { items, isLoading, state, handlers } = useEntityList<Coupon>({
- *   query: api.coupons.list,
- *   filters: [
- *     { key: 'search', type: 'search' },
- *     { key: 'status', type: 'select', field: 'status', defaultValue: 'all' },
- *   ],
- *   itemsPerPage: 10,
- * });
- * 
- * @example
- * // With server-side filtering (e.g., Products by category)
- * const { items, isLoading, state, handlers } = useEntityList<Product>({
- *   query: api.products.list,
- *   filters: [
- *     { key: 'search', type: 'search' },
- *     { key: 'category', type: 'select', defaultValue: 'all', queryArg: 'category' },
- *   ],
- *   itemsPerPage: 10,
- * });
- * 
- * @example
- * // With selection enabled for bulk operations
- * const { items, isLoading, state, handlers } = useEntityList<Product>({
- *   query: api.products.list,
- *   filters: [
- *     { key: 'search', type: 'search' },
- *     { key: 'category', type: 'select', field: 'category', defaultValue: 'all' },
- *   ],
- *   itemsPerPage: 10,
- *   enableSelection: true,
- * });
+ * Generic hook for entity lists with filtering, pagination and selection.
+ * Filters can run client-side or via `queryArg` on the server query.
  */
 export function useEntityList<T extends { _id: string }>(
   options: UseEntityListOptions<T>

@@ -1,10 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { useQuery } from 'convex/react';
+import { useQuery, useAction } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useTrackPurchase } from '../hooks/useAnalytics';
 import { useCart } from '../hooks/useCart';
-import { CheckCircle, Package, Truck, ArrowRight, AlertCircle, Clock, XCircle, FileText, Loader2 } from 'lucide-react';
+import { CheckCircle, Package, Truck, ArrowLeft, AlertCircle, Clock, XCircle, FileText, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Id } from '../../../convex/_generated/dataModel';
 
@@ -52,7 +52,7 @@ const OrderConfirmationPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { clearCart } = useCart();
+  const { clearCart, items: cartItems } = useCart();
   const accessToken = id ? searchParams.get('token') ?? sessionStorage.getItem(`order-access-${id}`) ?? undefined : undefined;
   const orderData = useQuery(api.orders.getPublic, id ? { orderId: id as Id<"orders">, accessToken } : "skip");
   
@@ -66,13 +66,52 @@ const OrderConfirmationPage: React.FC = () => {
   const hasTracked = useRef(false);
   const hasCleared = useRef(false);
 
-  // Clear cart when payment is completed
+  // Cart matches the order only if it still holds exactly this order's items;
+  // prevents clearCart() from wiping items the customer added after checkout.
+  const cartMatchesOrder = !!orderData &&
+    (!orderData.items || orderData.items.length === cartItems.length) &&
+    (orderData.items ?? []).every((orderItem: { productId: string; quantity: number }) =>
+      cartItems.some((cartItem) =>
+        cartItem.productId === String(orderItem.productId) &&
+        cartItem.quantity === Number(orderItem.quantity)
+      )
+    );
+
+  // Ask iCredit for the authoritative status: the IPN webhook may be delayed or lost,
+  // so verify a few times on mount and then stop.
+  const verifyPayment = useAction(api.icredit.verifyPaymentStatus);
+  const verifyAttempts = useRef(0);
+
   useEffect(() => {
-    if (payment?.status === 'completed' && !hasCleared.current) {
+    if (!id) return;
+    if (payment === undefined) return; // still loading the record
+    if (payment?.status && payment.status !== 'pending') return; // already settled
+
+    const MAX_ATTEMPTS = 4;
+    if (verifyAttempts.current >= MAX_ATTEMPTS) return;
+
+    const delay = verifyAttempts.current === 0 ? 0 : 1500 * verifyAttempts.current;
+    const timer = setTimeout(() => {
+      verifyAttempts.current += 1;
+      verifyPayment({ orderId: id as Id<'orders'>, accessToken })
+        // The reactive query picks the result up, so nothing to do with it.
+        .catch(() => {});
+    }, delay);
+
+    return () => clearTimeout(timer);
+  }, [id, accessToken, payment?.status, payment === undefined, verifyPayment]);
+
+  // Clear cart when payment is completed (only if cart still holds this order's items)
+  useEffect(() => {
+    // Only the checkout that created this order may clear the cart; later
+    // visits of a completed order must not.
+    const shouldClearCart = !!id && sessionStorage.getItem(`cart-clear-${id}`) === '1';
+    if (payment?.status === 'completed' && shouldClearCart && cartMatchesOrder && !hasCleared.current) {
       hasCleared.current = true;
+      sessionStorage.removeItem(`cart-clear-${id}`);
       clearCart();
     }
-  }, [payment?.status, clearCart]);
+  }, [id, payment?.status, cartMatchesOrder, clearCart]);
 
   // Track order completion once when payment is confirmed
   useEffect(() => {
@@ -279,9 +318,9 @@ const OrderConfirmationPage: React.FC = () => {
             <Link to="/products" className="bg-secondary text-white py-4 rounded-xl font-bold hover:bg-red-900 transition-colors">
               המשך בקניות
             </Link>
-            <Link to="/" className="text-gray-500 text-sm font-medium flex items-center justify-center gap-1 hover:text-gray-900 transition-colors">
-              חזרה לדף הבית
-              <ArrowRight size={14} />
+            <Link to="/dashboard" className="text-gray-500 text-sm font-medium flex items-center justify-center gap-1 hover:text-gray-900 transition-colors">
+              חזרה לחשבון שלי
+              <ArrowLeft size={14} />
             </Link>
           </div>
         </motion.div>

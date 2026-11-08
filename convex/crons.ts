@@ -20,4 +20,10 @@ crons.daily(
   internal.authCleanup.pruneAuth
 );
 
+crons.hourly(
+  "expire unpaid orders",
+  { minuteUTC: 15 },
+  internal.orders.expireStalePendingOrders
+);
+
 export default crons;

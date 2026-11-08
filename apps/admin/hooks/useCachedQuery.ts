@@ -31,25 +31,8 @@ export interface UseCachedQueryOptions<T> {
 }
 
 /**
- * Smart loading hook that tracks cache state to eliminate unnecessary spinners.
- * 
- * Convex useQuery returns undefined while loading, but cached data is available
- * instantly from previous visits. This hook tracks whether data has ever been
- * loaded to distinguish between:
- * - First visit (cold cache): isLoading = true, show spinner
- * - Return visit (warm cache): isLoading = false, show data instantly
- * - Background refresh: isRefreshing = true, show subtle indicator
- * 
- * @example
- * const { data, isLoading, hasEverLoaded, isRefreshing } = useCachedQuery({
- *   query: api.products.list,
- *   args: { category: 'wine' }
- * });
- * 
- * // Use in component:
- * if (isLoading && !hasEverLoaded) return <Spinner />;
- * if (!data) return <EmptyState />;
- * return <ProductList products={data} />;
+ * Tracks whether a Convex query has ever loaded, so cached revisits skip spinners.
+ * isLoading is true only on cold cache; isRefreshing marks background updates.
  */
 export function useCachedQuery<T>(options: UseCachedQueryOptions<T>): UseCachedQueryReturn<T> {
   const { query, args = {} } = options;
@@ -79,9 +62,7 @@ export function useCachedQuery<T>(options: UseCachedQueryOptions<T>): UseCachedQ
     previousDataRef.current = data;
   });
   
-  // Smart loading state:
-  // - isLoading = true only on first load (cold cache)
-  // - After first load, isLoading = false even if data is undefined (cache miss)
+  // isLoading is true only on first load (cold cache), even if data is later undefined.
   const isLoading = !hasEverLoaded && data === undefined;
   
   return {

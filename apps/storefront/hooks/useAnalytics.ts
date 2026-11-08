@@ -47,12 +47,8 @@ export function clearAnonymousId(): void {
 }
 
 /**
- * Hook for tracking analytics events with identity stitching support
- * 
- * Features:
- * - track(): Log events with automatic anonymous ID management
- * - identify(): Link anonymous events to authenticated user after login
- * - trackEvent: Alias for track() (backwards compatibility)
+ * Tracks analytics events with anonymous-ID management and identity stitching.
+ * track() logs events, identify() links anonymous events to the user after login.
  */
 export function useAnalytics() {
   const trackMutation = useMutation(api.analytics.trackEvent);

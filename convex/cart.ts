@@ -46,9 +46,8 @@ export const getCart = query({
 });
 
 /**
- * Add item to cart.
- * Validates stock availability and builds CartItem from fresh product data (not client-submitted).
- * Prevents price manipulation by fetching product from DB.
+ * Add item to cart after validating stock, building the CartItem from fresh
+ * DB product data (not client input) to prevent price manipulation.
  */
 export const addItem = mutation({
   args: {

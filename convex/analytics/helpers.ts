@@ -11,9 +11,8 @@ export interface TimeSeriesDataPoint {
 }
 
 /**
- * Read events of a single type within [startTime, endTime] using the
- * compound `by_event_timestamp` index, so only matching rows are read
- * (instead of scanning every event in the range or every event of the type).
+ * Read events of one type in [startTime, endTime] via the by_event_timestamp
+ * index, so only matching rows are read.
  */
 export async function getEventsInRange(
   ctx: any,
@@ -197,10 +196,8 @@ export interface TimeSeriesPeriod {
 }
 
 /**
- * Compute the period buckets for an interval:
- * - daily: last 30 days
- * - weekly: last 12 weeks
- * - monthly: last 12 months
+ * Period buckets per interval:
+ * daily = last 30 days, weekly = last 12 weeks, monthly = last 12 months.
  */
 export function getTimeSeriesPeriods(
   interval: "daily" | "weekly" | "monthly",

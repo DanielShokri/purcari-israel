@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { query } from "./_generated/server";
+import { query, QueryCtx } from "./_generated/server";
 import { adminMutation, adminQuery } from "./authHelpers";
 
 // Define strict config types
@@ -23,24 +23,27 @@ const shippingConfig = v.object({
   minOrderAmount: v.number(),
 });
 
-// Public query for storefront - returns active rules sorted by priority
+// Active rules within their date window, sorted by priority.
+export async function loadActiveCartRules(ctx: Pick<QueryCtx, "db">) {
+  const now = new Date().toISOString();
+  const rules = await ctx.db
+    .query("cartRules")
+    .withIndex("by_status", (q) => q.eq("status", "active"))
+    .collect();
+
+  return rules
+    .filter((rule) => {
+      if (rule.startDate && rule.startDate > now) return false;
+      if (rule.endDate && rule.endDate < now) return false;
+      return true;
+    })
+    .sort((a, b) => (a.priority ?? 99) - (b.priority ?? 99));
+}
+
+// Public query for storefront
 export const getActive = query({
   args: {},
-  handler: async (ctx) => {
-    const now = new Date().toISOString();
-    const rules = await ctx.db
-      .query("cartRules")
-      .withIndex("by_status", (q) => q.eq("status", "active"))
-      .collect();
-
-    return rules
-      .filter((rule) => {
-        if (rule.startDate && rule.startDate > now) return false;
-        if (rule.endDate && rule.endDate < now) return false;
-        return true;
-      })
-      .sort((a, b) => (a.priority ?? 99) - (b.priority ?? 99));
-  },
+  handler: async (ctx) => loadActiveCartRules(ctx),
 });
 
 // Admin-only queries for cart rules management

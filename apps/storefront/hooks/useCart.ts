@@ -10,9 +10,7 @@ const CART_STORAGE_KEY = 'cart';
 const COUPON_STORAGE_KEY = 'coupon';
 const FREE_SHIPPING_THRESHOLD = 300;
 
-// ============================================================================
 // localStorage adapter functions
-// ============================================================================
 
 function loadFromLocalStorage(): CartItem[] {
   try {
@@ -63,9 +61,7 @@ function saveCouponToLocalStorage(coupon: AppliedCoupon | null): void {
   }
 }
 
-// ============================================================================
 // Hook return type
-// ============================================================================
 
 export interface UseCartReturn {
   // State
@@ -101,9 +97,7 @@ export interface UseCartReturn {
   dismissSyncResult: () => void;
 }
 
-// ============================================================================
 // useCart hook
-// ============================================================================
 
 export function useCart(): UseCartReturn {
   // Auth state

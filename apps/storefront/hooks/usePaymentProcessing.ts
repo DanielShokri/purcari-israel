@@ -17,10 +17,8 @@ export interface UsePaymentProcessingParams {
   total: number;
   appliedCoupon: AppliedCoupon | null;
   /**
-   * Called as soon as an order exists for this checkout, before the (slow)
-   * payment-page request finishes. The page uses it to move to the payment
-   * step so the customer sees progress instead of a button that appears to
-   * do nothing.
+   * Called once an order exists, before the slow payment-page request finishes,
+   * so the page can move to the payment step right away.
    */
   onOrderCreated?: () => void;
 }
@@ -46,9 +44,6 @@ export function usePaymentProcessing({
   createPaymentPage,
   cartItems,
   user,
-  subtotal,
-  shipping,
-  totalDiscount,
   total,
   appliedCoupon,
   onOrderCreated,
@@ -91,10 +86,8 @@ export function usePaymentProcessing({
   const handleProceedToPayment = useCallback(async () => {
     setPaymentError(null);
 
-    // Reuse the order we already created when the cart hasn't changed.
-    // Without this, going back from the payment step and continuing again
-    // leaves an orphan pending order (plus its payment page) behind on
-    // every click.
+    // Reuse the existing order when the cart is unchanged, so going back and
+    // continuing does not leave orphan pending orders.
     if (currentOrderId && createdOrderTotal === total) {
       onOrderCreated?.();
       await generatePaymentUrl(currentOrderId, accessToken);
@@ -124,18 +117,11 @@ export function usePaymentProcessing({
         },
         items: cartItems.map(item => ({
           productId: item.productId as Id<'products'>,
-          productName: item.title,
-          productImage: item.imgSrc,
           quantity: BigInt(item.quantity),
-          price: item.price,
         })),
-        subtotal,
-        shippingCost: shipping,
-        discount: totalDiscount,
         total,
         ...(appliedCoupon && {
           appliedCouponCode: appliedCoupon.code,
-          appliedCouponDiscount: appliedCoupon.discountAmount,
         }),
       });
 
@@ -143,6 +129,7 @@ export function usePaymentProcessing({
       setAccessToken(order.accessToken);
       setCreatedOrderTotal(total);
       sessionStorage.setItem(`order-access-${order.orderId}`, order.accessToken);
+      sessionStorage.setItem(`cart-clear-${order.orderId}`, '1');
 
       // The order exists — let the page show the payment step now. Requesting
       // the payment page is the slow part and has its own loading state.
@@ -160,9 +147,6 @@ export function usePaymentProcessing({
     getFormData,
     createOrder,
     cartItems,
-    subtotal,
-    shipping,
-    totalDiscount,
     total,
     appliedCoupon,
     currentOrderId,
@@ -173,9 +157,8 @@ export function usePaymentProcessing({
   ]);
 
   const handleRetryPayment = useCallback(async () => {
-    // No order yet means the failure happened while creating it, so there is
-    // nothing to retry against — run the whole flow again instead of
-    // returning silently (which looked like the button was dead).
+    // No order yet means creation failed, so there is nothing to retry:
+    // run the whole flow again.
     if (!currentOrderId) {
       await handleProceedToPayment();
       return;

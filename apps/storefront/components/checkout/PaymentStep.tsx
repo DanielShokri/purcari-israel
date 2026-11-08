@@ -17,13 +17,8 @@ interface PaymentStepProps {
 }
 
 /**
- * PaymentStep - Shows iCredit payment form in an embedded iframe.
- * 
- * The iframe loads iCredit's hosted payment page, keeping the customer
- * on our site while ensuring PCI compliance (we never touch card data).
- * 
- * After payment completes, iCredit redirects within the iframe, 
- * and we detect completion via postMessage or redirect URL.
+ * Embeds iCredit's hosted payment page in an iframe (we never touch card data).
+ * Completion is detected via postMessage or the in-iframe redirect URL.
  */
 const PaymentStep: React.FC<PaymentStepProps> = ({
   paymentUrl,
@@ -35,9 +30,7 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  // iCredit resizes itself over postMessage ("ParentFrameLoad" carries the
-  // rendered document height). Without honouring it the card form sits below
-  // the fold inside a fixed 500px box.
+  // iCredit posts its rendered height ("ParentFrameLoad"); honour it or the form is cut off.
   const [iframeHeight, setIframeHeight] = useState(500);
 
   const ALLOWED_ORIGINS = ['https://icredit.rivhit.co.il', 'https://testicredit.rivhit.co.il'];
@@ -49,7 +42,6 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (!isAllowedOrigin(event.origin)) return;
-      console.log('[iCredit] Received message:', event.data);
 
       const data = event.data;
       if (

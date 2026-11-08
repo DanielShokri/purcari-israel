@@ -137,9 +137,8 @@ export const createUserActivity = internalMutation({
 });
 
 /**
- * Clean up old activities (keep only last 150)
- * Uses index for ordering and limits to 150 most recent
- * Can be run periodically via cron or manually
+ * Keep only the 150 most recent activities (ordered via index).
+ * Run periodically via cron or manually.
  */
 export const cleanupOldActivities = internalMutation({
   args: {},

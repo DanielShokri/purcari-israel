@@ -2,17 +2,8 @@ import { internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 
 /**
- * One-time import of the "Purcari wines - purcari.co.il" spreadsheet into the
- * products table. Images are already hosted on Convex file storage; callers
- * pass resolved URLs (from productImages.resolveUrls), so product docs store
- * permanent Convex URLs instead of purcari.co.il links.
- *
- * Matching is by SKU (barcode), which the sheet guarantees unique. Existing
- * products with the same SKU are updated in place, not duplicated.
- *
- * wineType mapping (schema enum only allows Red/White/Rosé/Sparkling):
- *   ברנדי / orange / still "יבש" rows -> no wineType (schema field is optional)
- * Category mapping uses the sheet's Categories column (comma separated).
+ * One-time import of the purcari.co.il spreadsheet into products, matched by SKU
+ * (updates in place). wineType and category mapping follow the sheet columns.
  */
 
 const CATEGORY_SLUGS: Record<string, string> = {
@@ -113,11 +104,8 @@ export const importWines = internalMutation({
       const alcoholMatch = w.alcohol.match(/(\d+(?:\.\d+)?)/);
       const alcoholContent = alcoholMatch ? parseFloat(alcoholMatch[1]) : undefined;
 
-      // Sheet semantics:
-      //   "Price (₪)"         = the price customers actually pay (discounted)
-      //   "Regular price (₪)" = the crossed-out original
-      // In our schema `price` is the base price and `salePrice` the discounted one,
-      // so a discounted row becomes price=regular, salePrice=paying price.
+      // Sheet "Price" is what customers pay and "Regular price" the crossed-out one, so
+      // a discounted row becomes price=regular, salePrice=paying price.
       const isDiscounted =
         w.onSale && w.regularPrice !== null && w.regularPrice > w.price;
       const basePrice = isDiscounted ? (w.regularPrice as number) : w.price;
@@ -146,9 +134,8 @@ export const importWines = internalMutation({
         updatedAt: now,
       });
 
-      // products table has no sku index in the current schema - scan and match.
-      // (36 products is tiny; adding a by_sku index is a schema change we can
-      // make later if this table grows.)
+      // No sku index exists; scan and match (36 products is tiny).
+      // Add a by_sku index if the table grows.
       const all = await ctx.db.query("products").collect();
       const existingDoc = all.find((p) => p.sku === w.sku);
 

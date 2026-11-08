@@ -1,7 +1,11 @@
 import { v } from "convex/values";
-import { internalMutation, query, MutationCtx } from "./_generated/server";
-import { Id } from "./_generated/dataModel";
+import { internalMutation, query, MutationCtx, QueryCtx } from "./_generated/server";
+import { Id, Doc } from "./_generated/dataModel";
 import { adminMutation, adminQuery } from "./authHelpers";
+import { DEFAULT_SHIPPING_COST } from "./pricing";
+
+// Emails are the per-user usage key, so compare them case-insensitively.
+export const normalizeEmail = (email: string) => email.trim().toLowerCase();
 
 /**
  * Admin: Get coupon by ID.
@@ -140,14 +144,14 @@ export const remove = adminMutation({
 
 /**
  * Shared helper: increment coupon usage (global + per-user).
- * Called directly from other mutations (e.g. orders.create) instead of
- * going through ctx.runMutation, which adds a sub-transaction overhead.
+ * Called directly from other mutations to avoid ctx.runMutation sub-transactions.
  */
 export async function incrementCouponUsage(
   ctx: MutationCtx,
   args: { code: string; userEmail: string; userId?: Id<"users"> }
 ): Promise<void> {
   const code = args.code.toUpperCase();
+  const userEmail = normalizeEmail(args.userEmail);
   const coupon = await ctx.db
     .query("coupons")
     .withIndex("by_code", (q) => q.eq("code", code))
@@ -167,7 +171,7 @@ export async function incrementCouponUsage(
   const existingUsage = await ctx.db
     .query("couponUsage")
     .withIndex("by_couponCode_userEmail", (q) =>
-      q.eq("couponCode", code).eq("userEmail", args.userEmail)
+      q.eq("couponCode", code).eq("userEmail", userEmail)
     )
     .unique();
 
@@ -181,11 +185,37 @@ export async function incrementCouponUsage(
       couponId: coupon._id,
       couponCode: code,
       userId: args.userId,
-      userEmail: args.userEmail,
+      userEmail,
       usageCount: 1,
       lastUsedAt: now,
       createdAt: now,
     });
+  }
+}
+
+/**
+ * Undo one coupon use (order cancelled or expired before payment).
+ * Never drops a counter below zero.
+ */
+export async function releaseCouponUsage(
+  ctx: MutationCtx,
+  args: { code: string; userEmail: string }
+): Promise<void> {
+  const code = args.code.toUpperCase();
+  const userEmail = normalizeEmail(args.userEmail);
+  const coupon = await ctx.db
+    .query("coupons")
+    .withIndex("by_code", (q) => q.eq("code", code))
+    .unique();
+  if (coupon) {
+    await ctx.db.patch(coupon._id, { usageCount: Math.max(0, (coupon.usageCount || 0) - 1) });
+  }
+  const usage = await ctx.db
+    .query("couponUsage")
+    .withIndex("by_couponCode_userEmail", (q) => q.eq("couponCode", code).eq("userEmail", userEmail))
+    .unique();
+  if (usage) {
+    await ctx.db.patch(usage._id, { usageCount: Math.max(0, (usage.usageCount || 0) - 1) });
   }
 }
 
@@ -203,9 +233,134 @@ export const incrementUsage = internalMutation({
   },
 });
 
+export type CouponEvaluation =
+  | { valid: false; error: string }
+  | { valid: true; coupon: Doc<"coupons">; discountAmount: number };
+
 /**
- * Validate a coupon code and calculate discount.
- * This query implements the complex multi-step validation logic.
+ * Single source of truth for coupon validity and discount amount.
+ * Used by the storefront preview (validate) and by orders.create.
+ */
+export async function evaluateCoupon(
+  ctx: Pick<QueryCtx, "db">,
+  args: { code: string; subtotal: number; itemCount: number; userEmail?: string; userId?: Id<"users"> }
+): Promise<CouponEvaluation> {
+  const code = args.code.toUpperCase();
+  const userEmail = args.userEmail ? normalizeEmail(args.userEmail) : undefined;
+  const coupon = await ctx.db
+    .query("coupons")
+    .withIndex("by_code", (q) => q.eq("code", code))
+    .unique();
+
+  if (!coupon) {
+    return { valid: false, error: "קוד קופון לא תקין" };
+  }
+
+  const now = new Date();
+
+  // 1. Check status
+  if (coupon.status !== "active") {
+    return { valid: false, error: "קופון זה אינו פעיל" };
+  }
+
+  // 2. Check start date
+  if (new Date(coupon.startDate) > now) {
+    return { valid: false, error: "קופון זה עדיין לא בתוקף" };
+  }
+
+  // 3. Check end date
+  if (coupon.endDate && new Date(coupon.endDate) < now) {
+    return { valid: false, error: "תוקף הקופון פג" };
+  }
+
+  // 4. Check global usage limit
+  if (coupon.usageLimit && coupon.usageCount >= coupon.usageLimit) {
+    return { valid: false, error: "הקופון הגיע למגבלת השימושים" };
+  }
+
+  // 5. Check per-user usage limit
+  if (coupon.usageLimitPerUser && userEmail) {
+    const usage = await ctx.db
+      .query("couponUsage")
+      .withIndex("by_couponCode_userEmail", (q) =>
+        q.eq("couponCode", code).eq("userEmail", userEmail)
+      )
+      .unique();
+
+    if (usage && usage.usageCount >= coupon.usageLimitPerUser) {
+      return { 
+        valid: false, 
+        error: `הגעת למגבלת השימוש בקופון זה (${coupon.usageLimitPerUser} שימושים)` 
+      };
+    }
+  }
+
+  // 6. Check minimum order
+  if (coupon.minimumOrder && args.subtotal < coupon.minimumOrder) {
+    return { 
+      valid: false, 
+      error: `מינימום הזמנה לקופון זה: ₪${coupon.minimumOrder}` 
+    };
+  }
+
+  // 7. Check user restriction
+  if (coupon.userIds && coupon.userIds.length > 0 && args.userId) {
+    if (!coupon.userIds.includes(args.userId)) {
+      return { valid: false, error: "קופון זה אינו זמין עבורך" };
+    }
+  } else if (coupon.userIds && coupon.userIds.length > 0 && !args.userId) {
+    return { valid: false, error: "יש להתחבר כדי להשתמש בקופון זה" };
+  }
+
+  // 8. Calculate discount amount
+  let discountAmount = 0;
+
+  switch (coupon.discountType) {
+    case "percentage":
+      discountAmount = args.subtotal * (coupon.discountValue / 100);
+      break;
+
+    case "fixed_amount":
+      discountAmount = coupon.discountValue;
+      break;
+
+    case "free_shipping":
+      discountAmount = DEFAULT_SHIPPING_COST;
+      break;
+
+    case "free_product":
+      discountAmount = coupon.discountValue;
+      break;
+
+    case "buy_x_get_y":
+      if (coupon.buyQuantity && coupon.getQuantity) {
+        const sets = Math.floor(Number(args.itemCount) / (Number(coupon.buyQuantity) + Number(coupon.getQuantity)));
+        const avgPrice = args.subtotal / Number(args.itemCount);
+        discountAmount = sets * Number(coupon.getQuantity) * avgPrice;
+      }
+      break;
+  }
+
+  // 9. Apply maximum discount cap
+  if (coupon.maximumDiscount && discountAmount > coupon.maximumDiscount) {
+    discountAmount = coupon.maximumDiscount;
+  }
+
+  // 10. Don't allow discount to exceed subtotal
+  if (discountAmount > args.subtotal) {
+    discountAmount = args.subtotal;
+  }
+
+  return {
+    valid: true,
+    coupon,
+    discountAmount: Math.round(discountAmount * 100) / 100,
+  };
+}
+
+/**
+ * Validate a coupon code and calculate its discount (preview only;
+ * orders.create re-evaluates it).
  */
 export const validate = query({
   args: {
@@ -215,117 +370,5 @@ export const validate = query({
     userId: v.optional(v.id("users")),
     itemCount: v.number(),
   },
-  handler: async (ctx, args) => {
-    const code = args.code.toUpperCase();
-    const coupon = await ctx.db
-      .query("coupons")
-      .withIndex("by_code", (q) => q.eq("code", code))
-      .unique();
-
-    if (!coupon) {
-      return { valid: false, error: "קוד קופון לא תקין" };
-    }
-
-    const now = new Date();
-
-    // 1. Check status
-    if (coupon.status !== "active") {
-      return { valid: false, error: "קופון זה אינו פעיל" };
-    }
-
-    // 2. Check start date
-    if (new Date(coupon.startDate) > now) {
-      return { valid: false, error: "קופון זה עדיין לא בתוקף" };
-    }
-
-    // 3. Check end date
-    if (coupon.endDate && new Date(coupon.endDate) < now) {
-      return { valid: false, error: "תוקף הקופון פג" };
-    }
-
-    // 4. Check global usage limit
-    if (coupon.usageLimit && coupon.usageCount >= coupon.usageLimit) {
-      return { valid: false, error: "הקופון הגיע למגבלת השימושים" };
-    }
-
-    // 5. Check per-user usage limit
-    if (coupon.usageLimitPerUser && args.userEmail) {
-      const usage = await ctx.db
-        .query("couponUsage")
-        .withIndex("by_couponCode_userEmail", (q) =>
-          q.eq("couponCode", code).eq("userEmail", args.userEmail!)
-        )
-        .unique();
-
-      if (usage && usage.usageCount >= coupon.usageLimitPerUser) {
-        return { 
-          valid: false, 
-          error: `הגעת למגבלת השימוש בקופון זה (${coupon.usageLimitPerUser} שימושים)` 
-        };
-      }
-    }
-
-    // 6. Check minimum order
-    if (coupon.minimumOrder && args.subtotal < coupon.minimumOrder) {
-      return { 
-        valid: false, 
-        error: `מינימום הזמנה לקופון זה: ₪${coupon.minimumOrder}` 
-      };
-    }
-
-    // 7. Check user restriction
-    if (coupon.userIds && coupon.userIds.length > 0 && args.userId) {
-      if (!coupon.userIds.includes(args.userId)) {
-        return { valid: false, error: "קופון זה אינו זמין עבורך" };
-      }
-    } else if (coupon.userIds && coupon.userIds.length > 0 && !args.userId) {
-      return { valid: false, error: "יש להתחבר כדי להשתמש בקופון זה" };
-    }
-
-    // 8. Calculate discount amount
-    let discountAmount = 0;
-    const STANDARD_SHIPPING_COST = 29.90;
-
-    switch (coupon.discountType) {
-      case "percentage":
-        discountAmount = args.subtotal * (coupon.discountValue / 100);
-        break;
-
-      case "fixed_amount":
-        discountAmount = coupon.discountValue;
-        break;
-
-      case "free_shipping":
-        discountAmount = STANDARD_SHIPPING_COST;
-        break;
-
-      case "free_product":
-        discountAmount = coupon.discountValue;
-        break;
-
-      case "buy_x_get_y":
-        if (coupon.buyQuantity && coupon.getQuantity) {
-          const sets = Math.floor(Number(args.itemCount) / (Number(coupon.buyQuantity) + Number(coupon.getQuantity)));
-          const avgPrice = args.subtotal / Number(args.itemCount);
-          discountAmount = sets * Number(coupon.getQuantity) * avgPrice;
-        }
-        break;
-    }
-
-    // 9. Apply maximum discount cap
-    if (coupon.maximumDiscount && discountAmount > coupon.maximumDiscount) {
-      discountAmount = coupon.maximumDiscount;
-    }
-
-    // 10. Don't allow discount to exceed subtotal
-    if (discountAmount > args.subtotal) {
-      discountAmount = args.subtotal;
-    }
-
-    return {
-      valid: true,
-      coupon,
-      discountAmount: Math.round(discountAmount * 100) / 100,
-    };
-  },
+  handler: async (ctx, args) => evaluateCoupon(ctx, args),
 });

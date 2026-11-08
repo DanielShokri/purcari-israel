@@ -105,10 +105,8 @@ const AuthForm: React.FC = () => {
     trackLogin("google");
     setIsGoogleLoading(true);
 
-    // Remove all beforeunload listeners before OAuth redirect.
-    // Firefox ignores stopImmediatePropagation() for beforeunload, so the only
-    // reliable fix is to detach every listener (including @convex-dev/auth's)
-    // before the navigation occurs. They are auto-restored on pagehide.
+    // Detach all beforeunload listeners before the OAuth redirect (Firefox ignores
+    // stopImmediatePropagation); they are restored on pagehide.
     const restore = suppressAllBeforeunloadListeners();
 
     try {
