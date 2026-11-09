@@ -4,23 +4,14 @@ import { Link } from 'react-router-dom';
 import { Product } from '@shared/types';
 import HighlightText from './HighlightText';
 
-// Category labels in Hebrew
-const categoryLabels: Record<string, string> = {
-  electronics: 'אלקטרוניקה',
-  clothing: 'ביגוד',
-  home: 'בית',
-  beauty: 'יופי',
-  sports: 'ספורט',
-};
-
 interface ProductResultCardProps {
   product: Product;
   searchTerm: string;
+  // Hebrew label resolved from the categories table by the parent
+  categoryLabel?: string;
 }
 
-export default function ProductResultCard({ product, searchTerm }: ProductResultCardProps) {
-  const categoryLabel = categoryLabels[product.category] || product.category;
-
+export default function ProductResultCard({ product, searchTerm, categoryLabel }: ProductResultCardProps) {
   return (
     <Link to={`/products/${product._id}/edit`} style={{ textDecoration: 'none' }}>
       <Flex
@@ -37,7 +28,7 @@ export default function ProductResultCard({ product, searchTerm }: ProductResult
         transition="all 0.15s"
         cursor="pointer"
         role="group"
-        _hover={{ 
+        _hover={{
           borderColor: 'blue.300',
           shadow: 'md',
         }}
@@ -83,17 +74,19 @@ export default function ProductResultCard({ product, searchTerm }: ProductResult
           mt={{ base: '2', md: '0' }}
           pr="2"
         >
-          <Text
-            fontSize="xs"
-            fontWeight="medium"
-            color="fg.muted"
-            bg="bg.subtle"
-            px="2"
-            py="1"
-            rounded="md"
-          >
-            {categoryLabel}
-          </Text>
+          {categoryLabel && (
+            <Text
+              fontSize="xs"
+              fontWeight="medium"
+              color="fg.muted"
+              bg="bg.subtle"
+              px="2"
+              py="1"
+              rounded="md"
+            >
+              {categoryLabel}
+            </Text>
+          )}
           <Text fontSize="sm" fontWeight="semibold" color="fg" fontFeatureSettings="'tnum'">
             ₪{product.price.toLocaleString('he-IL', { minimumFractionDigits: 2 })}
           </Text>

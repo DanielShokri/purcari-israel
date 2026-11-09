@@ -2,7 +2,7 @@
 // Type instantiation depth issues with Convex useQuery API
 // This file compiles correctly at runtime but TypeScript cannot fully verify it
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -37,6 +37,17 @@ export default function Search() {
   const results = useQuery(api.admin.globalSearch, queryParam ? {
     query: queryParam
   } : "skip");
+
+  // Real category names for product result labels (products store category as document ID)
+  const categoriesData = useQuery(api.categories.list, { includeInactive: true });
+  const categoryById = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const c of categoriesData || []) {
+      map[c._id] = c.nameHe || c.name;
+    }
+    return map;
+  }, [categoriesData]);
+
   const isLoading = results === undefined;
   const isFetching = false; // Convex handles this automatically
 
@@ -337,6 +348,7 @@ export default function Search() {
                         key={product._id}
                         product={product}
                         searchTerm={searchInput}
+                        categoryLabel={categoryById[product.category]}
                       />
                     ))}
                   </VStack>

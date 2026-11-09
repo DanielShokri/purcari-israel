@@ -1,35 +1,30 @@
 import React from 'react';
 import { Box, Flex, HStack, Text, Button, Card, Menu, Portal } from '@chakra-ui/react';
 import { SearchInput } from '../shared';
-import { ProductCategory } from '@shared/types';
 
-// Category options matching Appwrite enum
-const categoryOptions = [
-  { value: 'all', label: 'הכל' },
-  { value: 'red_wine', label: 'יינות אדומים' },
-  { value: 'white_wine', label: 'יינות לבנים' },
-  { value: 'rose_wine', label: 'יינות רוזה' },
-  { value: 'sparkling_wine', label: 'יינות מבעבעים' },
-  { value: 'dessert_wine', label: 'יינות קינוח' },
-  { value: 'gift_sets', label: 'מארזי מתנה' },
-];
+export interface CategoryOption {
+  value: string;
+  label: string;
+}
 
 interface ProductsFilterToolbarProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
   statusFilter: string;
   onStatusFilterChange: (status: string) => void;
+  categoryOptions: CategoryOption[];
 }
 
 export default function ProductsFilterToolbar({
   searchTerm,
   onSearchChange,
   statusFilter,
-  onStatusFilterChange
+  onStatusFilterChange,
+  categoryOptions,
 }: ProductsFilterToolbarProps) {
-  const getCategoryLabel = (category: string) => {
-    const found = categoryOptions.find(opt => opt.value === category);
-    return found?.label || 'הכל';
+  const getSelectedLabel = () => {
+    const found = categoryOptions.find((opt) => opt.value === statusFilter);
+    return found?.label || 'כל הקטגוריות';
   };
 
   return (
@@ -57,7 +52,7 @@ export default function ProductsFilterToolbar({
                 <Menu.Trigger asChild>
                   <Button variant="ghost" size="sm" bg="bg.subtle" px="3" py="2.5">
                     <Text as="span">
-                      קטגוריה: {getCategoryLabel(statusFilter)}
+                      קטגוריה: {getSelectedLabel()}
                     </Text>
                     <Text as="span" className="material-symbols-outlined" fontSize="18px" color="fg.muted">
                       keyboard_arrow_down
@@ -68,9 +63,9 @@ export default function ProductsFilterToolbar({
                   <Menu.Positioner>
                     <Menu.Content>
                       {categoryOptions.map((option) => (
-                        <Menu.Item 
-                          key={option.value} 
-                          value={option.value} 
+                        <Menu.Item
+                          key={option.value}
+                          value={option.value}
                           onClick={() => onStatusFilterChange(option.value)}
                         >
                           {option.label}
