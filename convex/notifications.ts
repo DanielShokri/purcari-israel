@@ -89,6 +89,15 @@ export const markAllAsRead = mutation({
 /**
  * Fan out a notification to every admin (appears in the admin notification bell).
  */
+const adminNotifyIcons: Record<string, string> = {
+  info: "info",
+  warning: "warning",
+  error: "error",
+  success: "check_circle",
+  order: "shopping_cart",
+  payment: "payment",
+};
+
 export async function notifyAdmins(
   ctx: MutationCtx,
   args: { title: string; message: string; type: "info" | "warning" | "error" | "success" | "order" | "payment"; icon?: string }
@@ -104,7 +113,7 @@ export async function notifyAdmins(
       title: args.title,
       message: args.message,
       type: args.type,
-      icon: args.icon ?? args.type,
+      icon: args.icon ?? adminNotifyIcons[args.type],
       isRead: false,
       createdAt: new Date().toISOString(),
     });
