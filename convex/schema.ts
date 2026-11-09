@@ -366,7 +366,8 @@ export default defineSchema({
     createdAt: v.string(),
   })
     .index("by_userId", ["userId"])
-    .index("by_userId_isRead", ["userId", "isRead"]),
+    .index("by_userId_isRead", ["userId", "isRead"])
+    .index("by_createdAt", ["createdAt"]),
 
   // Rivhit Payment Transactions - tracks payment lifecycle for Israeli payment gateway
   paymentTransactions: defineTable({

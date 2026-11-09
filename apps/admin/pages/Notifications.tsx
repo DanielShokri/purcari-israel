@@ -32,19 +32,23 @@ export default function Notifications() {
   const error = false; // Convex handles errors via try/catch or result pattern, we'll keep it simple for now
   const isMarkingAll = false; // We can add state if needed
 
-  // Filter notifications based on active tab
+  // Filter notifications based on active tab (sorted latest first as a safety net)
   const filteredNotifications = useMemo(() => {
     if (!notifications) return [];
-    
+
+    const sorted = [...notifications].sort((a, b) =>
+      (b.createdAt || '').localeCompare(a.createdAt || '')
+    );
+
     switch (activeTab) {
       case 'unread':
-        return notifications.filter((n) => !n.isRead);
+        return sorted.filter((n) => !n.isRead);
       case 'archived':
         // For now, archived could be all read notifications
-        return notifications.filter((n) => n.isRead);
+        return sorted.filter((n) => n.isRead);
       case 'all':
       default:
-        return notifications;
+        return sorted;
     }
   }, [notifications, activeTab]);
 

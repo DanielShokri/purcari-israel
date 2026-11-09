@@ -8,8 +8,10 @@ export const list = query({
   args: {},
   handler: async (ctx) => {
     await requireAdmin(ctx);
+    // ISO date strings sort lexicographically: latest first
     return await ctx.db
       .query("notifications")
+      .withIndex("by_createdAt")
       .order("desc")
       .collect();
   },
@@ -21,11 +23,11 @@ export const listMy = query({
     const userId = await getAuthUserId(ctx);
     if (!userId) return [];
 
-    return await ctx.db
+    const notifications = await ctx.db
       .query("notifications")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .order("desc")
       .collect();
+    return notifications.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   },
 });
 
