@@ -7,21 +7,17 @@ export function formatRelativeTime(dateStr: string): string {
   const date = new Date(dateStr);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
-  const diffMinutes = Math.floor(diffMs / (1000 * 60));
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  if (diffMinutes < 1) return 'עכשיו';
-  if (diffMinutes < 60) return `לפני ${diffMinutes} דקות`;
-  if (diffHours < 24) return diffHours === 1 ? 'לפני שעה' : `לפני ${diffHours} שעות`;
-  if (diffDays === 1) return 'אתמול';
-  if (diffDays < 7) return `לפני ${diffDays} ימים`;
-  
-  return date.toLocaleDateString('he-IL', {
-    day: 'numeric',
-    month: 'short',
-    year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
-  });
+  if (diffMs < 60 * 1000) return 'עכשיו';
+
+  // Show the exact date and time for anything older than a minute
+  return new Intl.DateTimeFormat('he-IL', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
 }
 
 // Get icon and colors based on notification type

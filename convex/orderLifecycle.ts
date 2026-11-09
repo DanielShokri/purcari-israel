@@ -115,6 +115,7 @@ export async function transitionOrder(ctx: MutationCtx, order: Doc<"orders">, to
         type: "warning",
         title: "הזמנה ששולמה בוטלה",
         message: `הזמנה #${order.orderNumber} בוטלה לאחר תשלום - ₪${order.total.toLocaleString("he-IL")}. יש לבצע החזר ידני ב-iCredit.`,
+        orderId: order._id,
       });
     }
     await releaseReservation(ctx, order);
@@ -184,6 +185,7 @@ export async function applyPaymentEvent(
       type: "payment",
       title: "תשלום בוצע בהצלחה",
       message: `הזמנה #${order.orderNumber} - ₪${Number(transaction.amount).toLocaleString("he-IL")}`,
+      orderId: order._id,
     });
   } else if (order?.status === "cancelled") {
     // Money was taken for an order we already released: flag it for the admin.
@@ -199,6 +201,7 @@ export async function applyPaymentEvent(
       type: "payment",
       title: "תשלום התקבל להזמנה מבוטלת",
       message: `הזמנה #${order.orderNumber} - ₪${transaction.amount.toLocaleString("he-IL")}. יש לבצע החזר ידני.`,
+      orderId: order._id,
     });
   }
   return { applied: true };

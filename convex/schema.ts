@@ -362,6 +362,7 @@ export default defineSchema({
     ),
     isRead: v.boolean(),
     icon: v.optional(v.string()),
+    orderId: v.optional(v.id("orders")),
     createdAt: v.string(),
   })
     .index("by_userId", ["userId"])

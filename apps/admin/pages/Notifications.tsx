@@ -3,6 +3,7 @@
 // This file compiles correctly at runtime but TypeScript cannot fully verify it
 
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Flex,
@@ -21,6 +22,7 @@ import { Notification } from '@shared/types';
 type FilterTab = 'all' | 'unread' | 'archived';
 
 export default function Notifications() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
   const notifications = useQuery(api.notifications.list);
   const markAsRead = useMutation(api.notifications.markAsRead);
@@ -57,6 +59,10 @@ export default function Notifications() {
   const handleNotificationClick = (notification: Notification) => {
     if (!notification.isRead) {
       markAsRead({ id: (notification._id || notification._id) as any });
+    }
+    // Open the order details page when the notification refers to an order
+    if (notification.orderId) {
+      navigate(`/orders/${notification.orderId}`);
     }
   };
 

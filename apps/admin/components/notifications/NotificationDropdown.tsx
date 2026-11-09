@@ -31,8 +31,13 @@ export default function NotificationDropdown() {
     if (!notification.isRead) {
       markAsRead({ id: notification._id });
     }
-    // Navigate to notifications page
-    navigate('/notifications');
+    // Open the order details page when the notification refers to an order;
+    // otherwise jump to the full notifications list
+    if (notification.orderId) {
+      navigate(`/orders/${notification.orderId}`);
+    } else {
+      navigate('/notifications');
+    }
   };
 
   const handleViewAll = () => {

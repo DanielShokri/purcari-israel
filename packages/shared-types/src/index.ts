@@ -405,6 +405,7 @@ export interface Notification {
   type: NotificationType | 'info' | 'warning' | 'error' | 'success' | 'order' | 'system' | 'inventory' | 'user_action' | 'payment' | 'promotion' | 'price_change' | 'system_error';
   isRead: boolean;
   icon?: string;
+  orderId?: string;
   createdAt?: string;
 }
 

@@ -100,7 +100,7 @@ const adminNotifyIcons: Record<string, string> = {
 
 export async function notifyAdmins(
   ctx: MutationCtx,
-  args: { title: string; message: string; type: "info" | "warning" | "error" | "success" | "order" | "payment"; icon?: string }
+  args: { title: string; message: string; type: "info" | "warning" | "error" | "success" | "order" | "payment"; icon?: string; orderId?: Id<"orders"> }
 ): Promise<void> {
   const admins = await ctx.db
     .query("users")
@@ -114,6 +114,7 @@ export async function notifyAdmins(
       message: args.message,
       type: args.type,
       icon: args.icon ?? adminNotifyIcons[args.type],
+      orderId: args.orderId,
       isRead: false,
       createdAt: new Date().toISOString(),
     });

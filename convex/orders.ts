@@ -197,6 +197,7 @@ export const create = mutation({
       type: "order",
       title: "הזמנה חדשה התקבלה",
       message: `הזמנה #${orderNumber} מ${customer?.name || args.customerName} - ₪${total.toLocaleString("he-IL")}`,
+      orderId,
     });
 
     const order = await ctx.db.get(orderId);
