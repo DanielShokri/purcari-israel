@@ -15,6 +15,9 @@ import {
   Image,
 } from '@chakra-ui/react';
 import { ColorModeButton } from '../components/ui/color-mode';
+import { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
+import { InputGroup, IconButton } from '@chakra-ui/react';
 
 const PURCARI_LOGO_URL = 'https://cdn.8wines.com/media/amasty/shopby/option_images/purcari-winery-logo.png';
 
@@ -26,6 +29,7 @@ interface LoginFormData {
 export default function Login() {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>();
   const { signIn, isLoading, error: authError, isAuthenticated, isAdmin } = useAdminAuth();
+  const [showPassword, setShowPassword] = useState(false);
 
   const onSubmit = async (data: LoginFormData) => {
     await signIn(data);
@@ -110,13 +114,24 @@ export default function Login() {
                   <Field.Label fontSize="sm" fontWeight="medium" color="fg.muted">
                     סיסמה
                   </Field.Label>
-                  <Input
-                    {...register('password', { required: 'שדה חובה' })}
-                    type="password"
-                    placeholder="********"
-                    dir="ltr"
-                    size="lg"
-                  />
+                  <InputGroup endElement={
+                    <IconButton
+                      aria-label={showPassword ? 'הסתר סיסמה' : 'הצג סיסמה'}
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowPassword((s) => !s)}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </IconButton>
+                  }>
+                    <Input
+                      {...register('password', { required: 'שדה חובה' })}
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="********"
+                      dir="ltr"
+                      size="lg"
+                    />
+                  </InputGroup>
                   {errors.password && (
                     <Field.ErrorText>{errors.password.message}</Field.ErrorText>
                   )}

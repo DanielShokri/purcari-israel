@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import useToast from "../../store/hooks/useToast";
-import { LogIn, UserPlus, Mail, Lock, User as UserIcon, AlertCircle, Phone } from "lucide-react";
+import { LogIn, UserPlus, Mail, Lock, User as UserIcon, AlertCircle, Phone, Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
-import { useForm, SubmitHandler, FieldErrors } from "react-hook-form";
+import { useForm, SubmitHandler, FieldErrors, UseFormRegisterReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, registerSchema, LoginInput, RegisterInput } from "../../schemas/validationSchemas";
 import { useAuth, SignUpInput, SignInInput } from "../../hooks/useAuth";
@@ -35,6 +35,37 @@ const GoogleIcon: React.FC<{ className?: string }> = ({ className }) => (
 );
 
 type FormData = LoginInput | RegisterInput;
+
+const PasswordInput: React.FC<{
+  error?: boolean;
+  register: UseFormRegisterReturn;
+}> = ({ error, register }) => {
+  const [showPassword, setShowPassword] = useState(false);
+
+  return (
+    <div className="relative">
+      <span className="absolute inset-y-0 start-0 flex items-center ps-3 text-gray-400">
+        <Lock size={18} />
+      </span>
+      <input
+        type={showPassword ? "text" : "password"}
+        {...register}
+        className={`w-full border-gray-300 rounded-xl p-3 ps-10 pe-10 border focus:ring-secondary focus:border-secondary text-left ${
+          error ? "border-red-500" : ""
+        }`}
+        dir="ltr"
+      />
+      <button
+        type="button"
+        onClick={() => setShowPassword((s) => !s)}
+        aria-label={showPassword ? "הסתר סיסמה" : "הצג סיסמה"}
+        className="absolute inset-y-0 end-0 flex items-center pe-3 text-gray-400 hover:text-gray-600 cursor-pointer"
+      >
+        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+      </button>
+    </div>
+  );
+};
 
 const AuthForm: React.FC = () => {
   const navigate = useNavigate();
@@ -232,19 +263,10 @@ const AuthForm: React.FC = () => {
           <label className="block text-sm font-medium text-gray-700 mb-1">
             סיסמה <span className="text-red-500">*</span>
           </label>
-          <div className="relative">
-            <span className="absolute inset-y-0 start-0 flex items-center ps-3 text-gray-400">
-              <Lock size={18} />
-            </span>
-            <input
-              type="password"
-              {...register("password")}
-              className={`w-full border-gray-300 rounded-xl p-3 ps-10 border focus:ring-secondary focus:border-secondary ${
-                errors.password ? "border-red-500" : ""
-              }`}
-            />
-          </div>
-          {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
+          <PasswordInput error={!!errors.password} register={register("password")} />
+          {errors.password && (
+            <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
+          )}
         </div>
 
         <button
