@@ -246,6 +246,7 @@ export interface Order {
   shippingCountry: string;
   paymentMethod: string;
   paymentCardExpiry?: string;
+  createdAt: string;
   paymentTransactionId: string;
   paymentChargeDate: string;
 }

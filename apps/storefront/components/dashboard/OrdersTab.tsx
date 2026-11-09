@@ -27,8 +27,12 @@ const OrderStatusBadge: React.FC<{ status: Order['status'] }> = ({ status }) => 
   );
 };
 
-const OrderCard: React.FC<{ order: any }> = ({ order }) => (
-  <div className="bg-white p-6 rounded-2xl shadow-sm flex flex-col md:flex-row justify-between items-center gap-4 hover:shadow-md transition-shadow">
+const OrderCard: React.FC<{ order: Order }> = ({ order }) => (
+  <Link
+    to={`/order-confirmation/${order._id}`}
+    aria-label={`לפרטי הזמנה #${order._id.slice(-6).toUpperCase()}`}
+    className="group bg-white p-6 rounded-2xl shadow-sm flex flex-col md:flex-row justify-between items-center gap-4 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-2 transition-shadow"
+  >
     <div className="flex items-center gap-4">
       <div className="bg-gray-50 p-3 rounded-xl text-gray-400">
         <Clock size={24} />
@@ -48,14 +52,14 @@ const OrderCard: React.FC<{ order: any }> = ({ order }) => (
         <p className="text-xs text-gray-500 mb-1 text-center md:text-right">סטטוס</p>
         <OrderStatusBadge status={order.status} />
       </div>
-      <Link 
-        to={`/order-confirmation/${order._id}`} 
-        className="p-2 bg-gray-50 rounded-full text-gray-400 hover:text-secondary hover:bg-red-50 transition-all"
+      <span
+        className="p-2 bg-gray-50 rounded-full text-gray-400 transition-all group-hover:text-secondary group-hover:bg-red-50"
+        aria-hidden="true"
       >
         <ChevronLeft size={20} />
-      </Link>
+      </span>
     </div>
-  </div>
+  </Link>
 );
 
 const LoadingSkeleton: React.FC = () => (
@@ -88,7 +92,7 @@ const OrdersTab: React.FC<OrdersTabProps> = ({ orders, isLoading }) => {
         <LoadingSkeleton />
       ) : orders && orders.length > 0 ? (
         <div className="space-y-4">
-          {orders.map((order: any) => (
+          {orders.map((order) => (
             <OrderCard key={order._id} order={order} />
           ))}
         </div>
