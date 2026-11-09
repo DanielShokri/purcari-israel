@@ -27,6 +27,7 @@ import type * as crons from "../crons.js";
 import type * as http from "../http.js";
 import type * as icredit from "../icredit.js";
 import type * as icreditHelpers from "../icreditHelpers.js";
+import type * as media from "../media.js";
 import type * as migrateAnalytics from "../migrateAnalytics.js";
 import type * as notifications from "../notifications.js";
 import type * as orderItems from "../orderItems.js";
@@ -67,6 +68,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   icredit: typeof icredit;
   icreditHelpers: typeof icreditHelpers;
+  media: typeof media;
   migrateAnalytics: typeof migrateAnalytics;
   notifications: typeof notifications;
   orderItems: typeof orderItems;

@@ -53,10 +53,12 @@ export const getCurrentAdmin = query({
 /** Define an admin-only mutation with a typed Convex context. */
 export function adminMutation<Args extends Record<string, any>, Return>(config: {
   args: { [K in keyof Args]: any };
+  returns?: any;
   handler: (ctx: any, args: Args) => Promise<Return>;
 }) {
   return mutation({
     args: config.args as any,
+    ...(config.returns ? { returns: config.returns } : {}),
     handler: async (ctx, args) => {
       await requireAdmin(ctx);
       return config.handler(ctx, args as Args);

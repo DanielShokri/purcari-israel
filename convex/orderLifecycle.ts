@@ -179,6 +179,12 @@ export async function applyPaymentEvent(
   const order = await ctx.db.get(transaction.orderId);
   if (order?.status === "pending") {
     await transitionOrder(ctx, order, "processing");
+    // Notify admins that a payment succeeded (order is funded and ready to fulfill)
+    await notifyAdmins(ctx, {
+      type: "payment",
+      title: "תשלום בוצע בהצלחה",
+      message: `הזמנה #${order.orderNumber} - ₪${Number(transaction.amount).toLocaleString("he-IL")}`,
+    });
   } else if (order?.status === "cancelled") {
     // Money was taken for an order we already released: flag it for the admin.
     await ctx.db.insert("activities", {

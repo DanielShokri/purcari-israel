@@ -7,7 +7,7 @@ import { calculateCartTotals } from "./pricing";
 import { loadActiveCartRules } from "./cartRules";
 import { hasOrderAccess, OrderStatus, reserveStock, transitionOrder } from "./orderLifecycle";
 import { insertOrderActivity } from "./activities";
-import { insertOrderNotification } from "./notifications";
+import { insertOrderNotification, notifyAdmins } from "./notifications";
 
 const STARTING_ORDER_NUMBER = 1000;
 const COUNTER_NAME = "orders";
@@ -190,6 +190,13 @@ export const create = mutation({
       orderNumber,
       customerName: customer?.name || args.customerName,
       total,
+    });
+
+    // 9. Notify every admin about the new order (notification bell)
+    await notifyAdmins(ctx, {
+      type: "order",
+      title: "הזמנה חדשה התקבלה",
+      message: `הזמנה #${orderNumber} מ${customer?.name || args.customerName} - ₪${total.toLocaleString("he-IL")}`,
     });
 
     const order = await ctx.db.get(orderId);

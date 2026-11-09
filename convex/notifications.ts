@@ -91,7 +91,7 @@ export const markAllAsRead = mutation({
  */
 export async function notifyAdmins(
   ctx: MutationCtx,
-  args: { title: string; message: string; type: "warning" | "payment"; icon?: string }
+  args: { title: string; message: string; type: "info" | "warning" | "error" | "success" | "order" | "payment"; icon?: string }
 ): Promise<void> {
   const admins = await ctx.db
     .query("users")

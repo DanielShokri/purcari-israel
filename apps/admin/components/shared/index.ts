@@ -1,4 +1,5 @@
 export { default as LoadingState } from './LoadingState';
+export { default as LoadingOverlay } from './LoadingOverlay';
 export { default as SearchInput } from './SearchInput';
 export { default as Pagination } from './Pagination';
 export { default as PageHeader } from './PageHeader';
