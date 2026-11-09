@@ -65,6 +65,7 @@ const CheckoutPage: React.FC = () => {
   const createOrderMutation = useMutation(api.orders.create);
   const createPaymentPageAction = useAction(api.icredit.createPaymentPage);
   const saveAddressMutation = useMutation(api.userAddresses.saveFromCheckout);
+  const updateProfileMutation = useMutation(api.users.updateProfile);
 
   // Move to the payment step as soon as the order exists, without waiting for
   // the iCredit round-trip.
@@ -140,6 +141,13 @@ const CheckoutPage: React.FC = () => {
       // Optionally save the shipping details for the next order (logged-in users)
       const { saveAddress, ...formData } = watch();
       if (user && saveAddress) {
+        // Keep the profile in sync as well, so the phone number also appears
+        // in the Profile tab of the user settings (it is stored separately
+        // from the saved address).
+        if (formData.phone !== user.phone) {
+          updateProfileMutation({ name: formData.name, phone: formData.phone })
+            .catch((err) => console.error('Failed to update profile details:', err));
+        }
         saveAddressMutation({
           name: formData.name,
           phone: formData.phone,
@@ -149,8 +157,8 @@ const CheckoutPage: React.FC = () => {
           country: formData.country || 'Israel',
         })
           .then((res) => {
-            if (res && !res.existed) {
-              toast.success('הכתובת נשמרה להזמנות הבאות');
+            if (res && (!res.existed || res.updated)) {
+              toast.success('הפרטים נשמרו להזמנות הבאות');
             }
           })
           .catch((err) => {

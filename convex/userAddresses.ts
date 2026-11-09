@@ -93,7 +93,23 @@ export const saveFromCheckout = mutation({
         a.city.trim() === args.city.trim() &&
         (a.postalCode || "").trim() === args.postalCode.trim()
     );
-    if (duplicate) return { addressId: duplicate._id, existed: true };
+    if (duplicate) {
+      // The address itself is unchanged, but the name or phone may have been
+      // edited in checkout (e.g. saved earlier without a phone). Keep the
+      // stored record in sync instead of silently dropping the new values.
+      const updates: { name?: string; phone?: string } = {};
+      if (duplicate.name.trim() !== args.name.trim()) {
+        updates.name = args.name;
+      }
+      if ((duplicate.phone || "").trim() !== (args.phone || "").trim()) {
+        updates.phone = args.phone || "";
+      }
+      if (Object.keys(updates).length > 0) {
+        await ctx.db.patch(duplicate._id, updates);
+        return { addressId: duplicate._id, existed: true, updated: true };
+      }
+      return { addressId: duplicate._id, existed: true };
+    }
 
     const addressId = await ctx.db.insert("userAddresses", {
       userId,
