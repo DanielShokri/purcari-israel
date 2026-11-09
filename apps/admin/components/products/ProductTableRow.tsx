@@ -39,7 +39,7 @@ export default function ProductTableRow({
         '&:hover .action-buttons': { opacity: 1 },
       }}
     >
-      <Table.Cell px="6" py="4">
+      <Table.Cell px={{ base: '4', lg: '6' }} py="4">
         <Checkbox.Root
           size="sm"
           checked={isSelected}
@@ -49,11 +49,11 @@ export default function ProductTableRow({
           <Checkbox.Control />
         </Checkbox.Root>
       </Table.Cell>
-      <Table.Cell px="6" py="4">
-        <HStack gap="3">
+      <Table.Cell px={{ base: '4', lg: '6' }} py="4">
+        <HStack gap="3" align="center">
           <Box
-            w="10"
-            h="10"
+            w={{ base: '8', lg: '10' }}
+            h={{ base: '8', lg: '10' }}
             rounded="lg"
             backgroundSize="cover"
             backgroundPosition="center"
@@ -102,35 +102,12 @@ export default function ProductTableRow({
           </VStack>
         </HStack>
       </Table.Cell>
-      <Table.Cell px="6" py="4">
+      <Table.Cell px={{ base: '4', lg: '6' }} py="4">
         <Text fontSize="sm" color="fg">
           {getCategoryLabel(product.category)}
         </Text>
       </Table.Cell>
-      <Table.Cell px="6" py="4" dir="ltr">
-        <VStack align="start" gap="0">
-          {product.onSale && product.salePrice ? (
-            <>
-              <Text fontSize="sm" fontWeight="medium" color="red.500">
-                {formatPrice(product.salePrice)}
-              </Text>
-              <Text fontSize="xs" color="fg.muted" textDecoration="line-through">
-                {formatPrice(product.price)}
-              </Text>
-            </>
-          ) : (
-            <Text fontSize="sm" fontWeight="medium" color="fg">
-              {formatPrice(product.price)}
-            </Text>
-          )}
-        </VStack>
-      </Table.Cell>
-      <Table.Cell px="6" py="4">
-        <Badge colorPalette={stockInfo.color} variant="subtle" fontSize="xs">
-          {stockInfo.label}
-        </Badge>
-      </Table.Cell>
-      <Table.Cell px="6" py="4">
+      <Table.Cell px={{ base: '4', lg: '6' }} py="4">
         <HStack gap="1" className="action-buttons" transition="opacity" justify="flex-end">
           <IconButton
             variant="ghost"

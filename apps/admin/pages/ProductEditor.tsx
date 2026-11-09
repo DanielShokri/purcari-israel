@@ -24,7 +24,7 @@ export default function ProductEditor() {
           <Breadcrumbs items={[{ label: 'ראשי', href: '#' }, { label: 'מוצרים', href: '#/products' }, { label: isEditMode ? watch('productName') || 'עריכת מוצר' : 'יצירת מוצר' }]} />
           <Flex direction={{ base: 'column', sm: 'row' }} justify="space-between" align={{ base: 'start', sm: 'center' }} gap="4" mb="8">
             <Box>
-              <Heading size="2xl" color="fg" mb="1" letterSpacing="tight">{isEditMode ? watch('productName') || 'עריכת מוצר' : 'יצירת מוצר'}</Heading>
+              <Heading size={{ base: 'xl', sm: '2xl' }} color="fg" mb="1" letterSpacing="tight">{isEditMode ? watch('productName') || 'עריכת מוצר' : 'יצירת מוצר'}</Heading>
               <Text color="fg.muted" fontSize="sm">{isEditMode ? 'ערוך את פרטי המוצר, התיאור וההגדרות' : 'צור מוצר חדש עם תיאור והגדרות'}</Text>
             </Box>
             {saveError && (
@@ -35,7 +35,7 @@ export default function ProductEditor() {
             <Button variant="outline" size="sm" bg="bg.panel" borderColor="border"><Text as="span" className="material-symbols-outlined" fontSize="lg">visibility</Text>תצוגה מקדימה</Button>
           </Flex>
           <form id="product-form" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
-            <SimpleGrid columns={{ base: 1, lg: 12 }} gap={{ base: 6, lg: 8 }} alignItems="start">
+            <SimpleGrid columns={{ base: 1, sm: 2, lg: 12 }} gap={{ base: 6, sm: 8, lg: 8 }} alignItems="start">
               <VStack gap="6" gridColumn={{ lg: 'span 8' }} align="stretch">
                 <Card.Root><Card.Body p="6">
                   <Text fontSize="sm" fontWeight="bold" color="fg" mb="3">שם המוצר</Text>

@@ -34,7 +34,7 @@ export default function Search() {
   const [searchInput, setSearchInput] = useState(queryParam);
   const [activeTab, setActiveTab] = useState<TabType>('all');
 
-  const results = useQuery(api.admin.globalSearch, queryParam ? { 
+  const results = useQuery(api.admin.globalSearch, queryParam ? {
     query: queryParam
   } : "skip");
   const isLoading = results === undefined;
@@ -156,18 +156,18 @@ export default function Search() {
                 color="fg"
                 lineHeight="tight"
               >
-                {queryParam ? (
+                {searchInput ? (
                   <>
                     תוצאות חיפוש עבור:{' '}
                     <Text as="span" color="blue.500">
-                      "{queryParam}"
+                      "{searchInput}"
                     </Text>
                   </>
                 ) : (
                   'חיפוש גלובלי'
                 )}
               </Text>
-              {results && queryParam && (
+              {results && searchInput && (
                 <Text fontSize="sm" color="fg.muted" mt="1">
                   נמצאו {results.counts.total} תוצאות ({results.searchTime} שניות)
                 </Text>
@@ -175,7 +175,7 @@ export default function Search() {
             </Box>
           </Flex>
 
-          {/* Search Input */}
+          {/* Search Input - Always visible on mobile */}
           <Box position="relative" w="full">
             <Box
               position="absolute"
@@ -210,165 +210,165 @@ export default function Search() {
               }}
             />
           </Box>
-        </VStack>
 
-        {/* Tabs - Only show when there's a valid search */}
-        {queryParam && queryParam.trim().length >= 2 && (
-          <Box mb="8" borderBottomWidth="1px" borderColor="border">
-            <HStack gap="8" overflowX="auto" css={{ scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
-              {tabs.map((tab) => (
-                <Box
-                  key={tab.id}
-                  as="button"
-                  pb="3"
-                  borderBottomWidth="2px"
-                  borderColor={activeTab === tab.id ? 'blue.500' : 'transparent'}
-                  color={activeTab === tab.id ? 'blue.500' : 'fg.muted'}
-                  fontWeight={activeTab === tab.id ? 'bold' : 'medium'}
-                  fontSize="sm"
-                  whiteSpace="nowrap"
-                  transition="all 0.15s"
-                  _hover={{ color: activeTab === tab.id ? 'blue.500' : 'fg' }}
-                  onClick={() => setActiveTab(tab.id)}
+          {/* Tabs - Stack vertically on mobile */}
+          {queryParam && queryParam.trim().length >= 2 && (
+            <Box mb="8" borderBottomWidth="1px" borderColor="border">
+              <HStack gap="8" overflowX="auto" pb="2" css={{ scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }} flexWrap="nowrap">
+                {tabs.map((tab) => (
+                  <Box
+                    key={tab.id}
+                    as="button"
+                    pb="3"
+                    borderBottomWidth="2px"
+                    borderColor={activeTab === tab.id ? 'blue.500' : 'transparent'}
+                    color={activeTab === tab.id ? 'blue.500' : 'fg.muted'}
+                    fontWeight={activeTab === tab.id ? 'bold' : 'medium'}
+                    fontSize="sm"
+                    whiteSpace="nowrap"
+                    transition="all 0.15s"
+                    _hover={{ color: activeTab === tab.id ? 'blue.500' : 'fg' }}
+                    onClick={() => setActiveTab(tab.id)}
+                  >
+                    {tab.label}
+                    {tab.id !== 'all' && tab.count > 0 && (
+                      <Text
+                        as="span"
+                        bg="bg.subtle"
+                        color="fg.muted"
+                        fontSize="xs"
+                        px="1.5"
+                        py="0.5"
+                        rounded="full"
+                        mr="1"
+                      >
+                        {tab.count}
+                      </Text>
+                    )}
+                  </Box>
+                ))}
+              </HStack>
+            </Box>
+          )}
+
+          {/* Loading State */}
+          {(isLoading || isFetching) && queryParam && (
+            <Flex justify="center" align="center" py="20">
+              <VStack gap="4">
+                <Spinner size="lg" color="blue.500" borderWidth="3px" />
+                <Text color="fg.muted">מחפש...</Text>
+              </VStack>
+            </Flex>
+          )}
+
+          {/* Initial State */}
+          {!isLoading && !isFetching && showInitialState && renderInitialState()}
+
+          {/* Empty State */}
+          {!isLoading && !isFetching && showEmptyState && renderEmptyState()}
+
+          {/* Results */}
+          {!isLoading && !isFetching && shouldShowResults && (
+            <VStack gap="10" align="stretch">
+              {/* Orders Section */}
+              {(activeTab === 'all' || activeTab === 'orders') && results.orders.length > 0 && (
+                <SearchResultsSection
+                  title="הזמנות"
+                  icon="shopping_bag"
+                  count={results.counts.orders}
+                  viewAllLink="/orders"
+                  viewAllLabel={`צפה בכל ${results.counts.orders} ההזמנות`}
                 >
-                  {tab.label}
-                  {tab.id !== 'all' && tab.count > 0 && (
-                    <Text
-                      as="span"
-                      bg="bg.subtle"
-                      color="fg.muted"
-                      fontSize="xs"
-                      px="1.5"
-                      py="0.5"
-                      rounded="full"
-                      mr="1"
-                    >
-                      {tab.count}
-                    </Text>
-                  )}
-                </Box>
-              ))}
-            </HStack>
-          </Box>
-        )}
+                  <Box
+                    bg="bg.panel"
+                    borderWidth="1px"
+                    borderColor="border"
+                    rounded="xl"
+                    shadow="sm"
+                    overflow="hidden"
+                  >
+                    {results.orders.slice(0, activeTab === 'all' ? 3 : undefined).map((order) => (
+                      <OrderResultCard
+                        key={order._id}
+                        order={order}
+                        searchTerm={searchInput}
+                      />
+                    ))}
+                  </Box>
+                </SearchResultsSection>
+              )}
 
-        {/* Loading State */}
-        {(isLoading || isFetching) && queryParam && (
-          <Flex justify="center" align="center" py="20">
-            <VStack gap="4">
-              <Spinner size="lg" color="blue.500" borderWidth="3px" />
-              <Text color="fg.muted">מחפש...</Text>
+              {/* Users Section */}
+              {(activeTab === 'all' || activeTab === 'users') && results.users.length > 0 && (
+                <SearchResultsSection
+                  title="משתמשים"
+                  icon="group"
+                  count={results.counts.users}
+                  viewAllLink="/users"
+                  viewAllLabel={`צפה בכל ${results.counts.users} המשתמשים`}
+                >
+                  <Grid
+                    templateColumns={{ base: '1fr', sm: '1fr', md: 'repeat(2, 1fr)' }}
+                    gap="4"
+                  >
+                    {results.users.slice(0, activeTab === 'all' ? 4 : undefined).map((user) => (
+                      <UserResultCard
+                        key={user._id}
+                        user={user}
+                        searchTerm={searchInput}
+                      />
+                    ))}
+                  </Grid>
+                </SearchResultsSection>
+              )}
+
+              {/* Products Section */}
+              {(activeTab === 'all' || activeTab === 'products') && results.products.length > 0 && (
+                <SearchResultsSection
+                  title="מוצרים"
+                  icon="inventory_2"
+                  count={results.counts.products}
+                  viewAllLink="/products"
+                  viewAllLabel={`צפה בכל ${results.counts.products} המוצרים`}
+                >
+                  <VStack gap="3" align="stretch">
+                    {results.products.slice(0, activeTab === 'all' ? 3 : undefined).map((product) => (
+                      <ProductResultCard
+                        key={product._id}
+                        product={product}
+                        searchTerm={searchInput}
+                      />
+                    ))}
+                  </VStack>
+                </SearchResultsSection>
+              )}
+
+              {/* Categories Section */}
+              {(activeTab === 'all' || activeTab === 'categories') && results.categories.length > 0 && (
+                <SearchResultsSection
+                  title="קטגוריות"
+                  icon="category"
+                  count={results.counts.categories}
+                  viewAllLink="/categories"
+                  viewAllLabel={`צפה בכל ${results.counts.categories} הקטגוריות`}
+                >
+                  <Grid
+                    templateColumns={{ base: '1fr', sm: '1fr', md: 'repeat(2, 1fr)' }}
+                    gap="4"
+                  >
+                    {results.categories.slice(0, activeTab === 'all' ? 4 : undefined).map((category) => (
+                      <CategoryResultCard
+                        key={category._id}
+                        category={category}
+                        searchTerm={searchInput}
+                      />
+                    ))}
+                  </Grid>
+                </SearchResultsSection>
+              )}
             </VStack>
-          </Flex>
-        )}
-
-        {/* Initial State */}
-        {!isLoading && !isFetching && showInitialState && renderInitialState()}
-
-        {/* Empty State */}
-        {!isLoading && !isFetching && showEmptyState && renderEmptyState()}
-
-        {/* Results */}
-        {!isLoading && !isFetching && shouldShowResults && (
-          <VStack gap="10" align="stretch">
-            {/* Orders Section */}
-            {(activeTab === 'all' || activeTab === 'orders') && results.orders.length > 0 && (
-              <SearchResultsSection
-                title="הזמנות"
-                icon="shopping_bag"
-                count={results.counts.orders}
-                viewAllLink="/orders"
-                viewAllLabel={`צפה בכל ${results.counts.orders} ההזמנות`}
-              >
-                <Box
-                  bg="bg.panel"
-                  borderWidth="1px"
-                  borderColor="border"
-                  rounded="xl"
-                  shadow="sm"
-                  overflow="hidden"
-                >
-                  {results.orders.slice(0, activeTab === 'all' ? 3 : undefined).map((order) => (
-                    <OrderResultCard
-                      key={order._id}
-                      order={order}
-                      searchTerm={queryParam}
-                    />
-                  ))}
-                </Box>
-              </SearchResultsSection>
-            )}
-
-            {/* Users Section */}
-            {(activeTab === 'all' || activeTab === 'users') && results.users.length > 0 && (
-              <SearchResultsSection
-                title="משתמשים"
-                icon="group"
-                count={results.counts.users}
-                viewAllLink="/users"
-                viewAllLabel={`צפה בכל ${results.counts.users} המשתמשים`}
-              >
-                <Grid
-                  templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }}
-                  gap="4"
-                >
-                  {results.users.slice(0, activeTab === 'all' ? 4 : undefined).map((user) => (
-                    <UserResultCard
-                      key={user._id}
-                      user={user}
-                      searchTerm={queryParam}
-                    />
-                  ))}
-                </Grid>
-              </SearchResultsSection>
-            )}
-
-            {/* Products Section */}
-            {(activeTab === 'all' || activeTab === 'products') && results.products.length > 0 && (
-              <SearchResultsSection
-                title="מוצרים"
-                icon="inventory_2"
-                count={results.counts.products}
-                viewAllLink="/products"
-                viewAllLabel={`צפה בכל ${results.counts.products} המוצרים`}
-              >
-                <VStack gap="3" align="stretch">
-                  {results.products.slice(0, activeTab === 'all' ? 3 : undefined).map((product) => (
-                    <ProductResultCard
-                      key={product._id}
-                      product={product}
-                      searchTerm={queryParam}
-                    />
-                  ))}
-                </VStack>
-              </SearchResultsSection>
-            )}
-
-            {/* Categories Section */}
-            {(activeTab === 'all' || activeTab === 'categories') && results.categories.length > 0 && (
-              <SearchResultsSection
-                title="קטגוריות"
-                icon="category"
-                count={results.counts.categories}
-                viewAllLink="/categories"
-                viewAllLabel={`צפה בכל ${results.counts.categories} הקטגוריות`}
-              >
-                <Grid
-                  templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }}
-                  gap="4"
-                >
-                  {results.categories.slice(0, activeTab === 'all' ? 4 : undefined).map((category) => (
-                    <CategoryResultCard
-                      key={category._id}
-                      category={category}
-                      searchTerm={queryParam}
-                    />
-                  ))}
-                </Grid>
-              </SearchResultsSection>
-            )}
-          </VStack>
-        )}
+          )}
+        </VStack>
       </Box>
     </VStack>
   );

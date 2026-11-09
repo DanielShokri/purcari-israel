@@ -20,6 +20,8 @@ interface HeaderProps {
   onSearchSubmit: () => void;
   onSearchKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   user: AuthUser | null;
+  onMenuToggle?: () => void;
+  isSidebarOpen?: boolean;
 }
 
 export default function Header({
@@ -29,6 +31,8 @@ export default function Header({
   onSearchSubmit,
   onSearchKeyDown,
   user,
+  onMenuToggle,
+  isSidebarOpen,
 }: HeaderProps) {
   return (
     <HStack
@@ -45,7 +49,7 @@ export default function Header({
       zIndex={10}
     >
       {/* Left side: Mobile menu + Breadcrumbs */}
-      <HStack gap="4">
+      <HStack gap="4" alignItems="center">
         {/* Mobile menu button */}
         <Button
           variant="ghost"
@@ -54,14 +58,17 @@ export default function Header({
           display={{ base: 'flex', lg: 'none' }}
           color="fg.muted"
           _hover={{ bg: 'bg.subtle' }}
+          onClick={onMenuToggle}
+          aria-expanded={isSidebarOpen}
+          aria-label="פתח תפריט צדדי"
         >
           <Text as="span" className="material-symbols-outlined" fontSize="24px">
-            menu
+            {isSidebarOpen ? 'close' : 'menu'}
           </Text>
         </Button>
-        
+
         {/* Breadcrumbs */}
-        <HStack display={{ base: 'none', md: 'flex' }} fontSize="sm" color="fg.muted">
+        <HStack display={{ base: 'none', md: 'flex' }} fontSize="sm" color="fg.muted" alignItems="center">
           <Text opacity={0.7}>ניהול</Text>
           <Text mx="2">/</Text>
           <Text fontWeight="medium" color="fg">{currentPageLabel}</Text>
@@ -69,15 +76,46 @@ export default function Header({
       </HStack>
 
       {/* Right side: Search, Icons, Profile */}
-      <HStack gap={{ base: '2', md: '6' }} flex="1" justify="flex-end">
-        {/* Global Search */}
+      <HStack gap={{ base: '2', md: '6' }} flex="1" justify="flex-end" alignItems="center">
+        {/* Global Search - visible on mobile via top bar, hidden on tablet+ in favor of inline */}
+        <Box display={{ base: 'block', md: 'none' }} w="full">
+          <InputGroup
+            startElement={
+              <Text
+                as="span"
+                className="material-symbols-outlined"
+                fontSize="20px"
+                color="fg.muted"
+                cursor="pointer"
+                _hover={{ color: 'blue.500' }}
+                onClick={onSearchSubmit}
+              >
+                search
+              </Text>
+            }
+          >
+            <Input
+              placeholder="חיפוש גלובלי..."
+              size="sm"
+              bg="bg.subtle"
+              borderColor="transparent"
+              _hover={{ borderColor: 'border' }}
+              _focus={{ borderColor: 'blue.500', bg: 'bg.panel' }}
+              value={searchInput}
+              onChange={(e) => onSearchChange(e.target.value)}
+              onKeyDown={onSearchKeyDown}
+            />
+          </InputGroup>
+        </Box>
+
+        {/* Global Search - inline on tablet and desktop */}
         <Box display={{ base: 'none', md: 'block' }} w="full" maxW="sm">
           <InputGroup
             startElement={
-              <Text 
-                as="span" 
-                className="material-symbols-outlined" 
-                fontSize="20px" 
+              <Text
+                as="span"
+                className="material-symbols-outlined"
+                fontSize="20px"
                 color="fg.muted"
                 cursor="pointer"
                 _hover={{ color: 'blue.500' }}

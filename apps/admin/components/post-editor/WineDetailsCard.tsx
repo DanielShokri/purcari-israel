@@ -57,7 +57,7 @@ export default function WineDetailsCard({
         borderColor="border"
         bg="bg.subtle"
       >
-        <Flex justify="space-between" alignItems="center">
+        <Flex justify="space-between" alignItems="center" flexWrap="wrap" gap="2">
           <Heading size="md" color="fg">
             פרטי יין
           </Heading>
@@ -109,8 +109,8 @@ export default function WineDetailsCard({
             </Select.Root>
           </VStack>
 
-          {/* Volume and Vintage */}
-          <HStack gap="4">
+          {/* Volume and Vintage - stack vertically on mobile */}
+          <HStack gap="4" direction={{ base: 'column', sm: 'row' }} align="stretch">
             <VStack align="start" gap="2" flex="1">
               <Text fontSize="xs" fontWeight="bold" color="fg.muted" textTransform="uppercase" letterSpacing="wider">
                 נפח

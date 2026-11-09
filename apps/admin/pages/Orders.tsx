@@ -25,7 +25,7 @@ export default function Orders() {
       <VStack align="stretch" gap="4" py="8">
         <HStack justify="space-between" align="start" flexWrap="wrap" gap="4">
           <VStack align="start" gap="1">
-            <Text fontSize="3xl" fontWeight="bold" color="fg" letterSpacing="tight">הזמנות</Text>
+            <Text fontSize={{ base: '2xl', md: '3xl' }} fontWeight="bold" color="fg" letterSpacing="tight">הזמנות</Text>
             <Text color="fg.muted" fontSize="sm">נהל את כל ההזמנות והסטטוסים במקום אחד</Text>
           </VStack>
           <HStack gap="3">

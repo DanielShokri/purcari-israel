@@ -36,11 +36,12 @@ export default function OrdersTable({
   return (
     <Box flex="1" minH="0">
       <Card.Root overflow="hidden" h="full" display="flex" flexDirection="column">
-        <Table.ScrollArea flex="1">
-          <Table.Root size="sm">
+        {/* Table with horizontal scroll wrapper */}
+        <Box flex="1" overflow="auto" w="full" position="relative">
+          <Table.Root size="sm" minW="700px">
             <Table.Header>
-              <Table.Row bg="bg.subtle">
-                <Table.ColumnHeader px="6" py="4" w="12">
+              <Table.Row bg="bg.subtle" position="sticky" top="0" zIndex={2}>
+                <Table.ColumnHeader px={{ base: '4', lg: '6' }} py="4" w="12">
                   <Checkbox.Root
                     size="sm"
                     checked={selectedOrders.length === orders.length && orders.length > 0}
@@ -50,22 +51,22 @@ export default function OrdersTable({
                     <Checkbox.Control />
                   </Checkbox.Root>
                 </Table.ColumnHeader>
-                <Table.ColumnHeader px="6" py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted">
+                <Table.ColumnHeader px={{ base: '4', lg: '6' }} py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted">
                   מזהה הזמנה
                 </Table.ColumnHeader>
-                <Table.ColumnHeader px="6" py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted">
+                <Table.ColumnHeader px={{ base: '4', lg: '6' }} py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted">
                   שם לקוח
                 </Table.ColumnHeader>
-                <Table.ColumnHeader px="6" py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted" display={{ base: 'none', md: 'table-cell' }}>
+                <Table.ColumnHeader px={{ base: '4', lg: '6' }} py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted" display={{ base: 'none', md: 'table-cell' }}>
                   תאריך
                 </Table.ColumnHeader>
-                <Table.ColumnHeader px="6" py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted">
+                <Table.ColumnHeader px={{ base: '4', lg: '6' }} py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted">
                   סה"כ
                 </Table.ColumnHeader>
-                <Table.ColumnHeader px="6" py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted">
+                <Table.ColumnHeader px={{ base: '4', lg: '6' }} py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted">
                   סטטוס
                 </Table.ColumnHeader>
-                <Table.ColumnHeader px="6" py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted" textAlign="start">
+                <Table.ColumnHeader px={{ base: '4', lg: '6' }} py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted" textAlign="start">
                   פעולות
                 </Table.ColumnHeader>
               </Table.Row>
@@ -73,7 +74,7 @@ export default function OrdersTable({
             <Table.Body>
               {orders.length === 0 ? (
                 <Table.Row>
-                  <Table.Cell colSpan={7} px="6" py="8" textAlign="center" color="fg.subtle">
+                  <Table.Cell colSpan={7} px={{ base: '4', lg: '6' }} py="12" textAlign="center" color="fg.subtle">
                     לא נמצאו הזמנות
                   </Table.Cell>
                 </Table.Row>
@@ -92,7 +93,7 @@ export default function OrdersTable({
               )}
             </Table.Body>
           </Table.Root>
-        </Table.ScrollArea>
+        </Box>
 
         <Pagination
           currentPage={currentPage}

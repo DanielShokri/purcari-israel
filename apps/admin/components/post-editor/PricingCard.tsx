@@ -43,7 +43,7 @@ export default function PricingCard({
         borderColor="border"
         bg="bg.subtle"
       >
-        <Flex justify="space-between" alignItems="center">
+        <Flex justify="space-between" alignItems="center" flexWrap="wrap" gap="2">
           <Heading size="md" color="fg">
             תמחור
           </Heading>
@@ -89,8 +89,8 @@ export default function PricingCard({
           </VStack>
 
           {/* On Sale Toggle */}
-          <HStack justify="space-between" py="2">
-            <VStack align="start" gap="0">
+          <HStack justify="space-between" align="center" py="2" flexWrap="wrap" gap="2">
+            <VStack align="start" gap="0" flex="1">
               <Text fontSize="sm" fontWeight="medium" color="fg">
                 במבצע
               </Text>
@@ -115,7 +115,7 @@ export default function PricingCard({
           {/* Sale Price - Only shown when on sale */}
           {onSale && (
             <VStack align="start" gap="2">
-              <HStack justify="space-between" w="full">
+              <HStack justify="space-between" w="full" align="center">
                 <Text fontSize="xs" fontWeight="bold" color="fg.muted" textTransform="uppercase" letterSpacing="wider">
                   מחיר מבצע
                 </Text>

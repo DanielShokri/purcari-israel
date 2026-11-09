@@ -7,11 +7,16 @@ interface SidebarLinkProps {
   icon: string;
   label: string;
   active: boolean;
+  onClose?: () => void;
 }
 
-export default function SidebarLink({ to, icon, label, active }: SidebarLinkProps) {
+export default function SidebarLink({ to, icon, label, active, onClose }: SidebarLinkProps) {
+  const handleClick = () => {
+    onClose?.();
+  };
+
   return (
-    <Link to={to} style={{ textDecoration: 'none' }}>
+    <Link to={to} style={{ textDecoration: 'none' }} onClick={handleClick}>
       <Flex
         alignItems="center"
         gap="3"

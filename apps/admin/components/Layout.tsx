@@ -18,11 +18,14 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
   const convexUser = useQuery(api.users.get);
   const user = convexUser as AuthUser | null;
   const navigate = useNavigate();
-  
+
   // Search state - initialize from URL if on search page
   const [searchInput, setSearchInput] = useState(
     location.pathname === '/search' ? searchParams.get('q') || '' : ''
   );
+
+  // Mobile sidebar state
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const currentPageLabel = getPageLabel(location.pathname);
 
@@ -45,6 +48,11 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
     }
   };
 
+  // Close sidebar on route change
+  React.useEffect(() => {
+    setIsSidebarOpen(false);
+  }, [location.pathname]);
+
   return (
     <Flex
       bg="bg"
@@ -54,7 +62,24 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
       overflow="hidden"
       css={{ '::selection': { bg: 'blue.500/30', color: 'white' } }}
     >
-      <Sidebar currentPath={location.pathname} onLogout={handleLogout} />
+      {/* Mobile backdrop overlay */}
+      <Box
+        as="aside"
+        position="fixed"
+        inset="0"
+        zIndex={40}
+        bg="blackAlpha.700"
+        display={{ base: isSidebarOpen ? 'block' : 'none', lg: 'none' }}
+        onClick={() => setIsSidebarOpen(false)}
+      />
+
+      {/* Sidebar */}
+      <Sidebar
+        currentPath={location.pathname}
+        onLogout={handleLogout}
+        isOpen={isSidebarOpen}
+        onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+      />
 
       {/* Main Content */}
       <Flex as="main" flex="1" flexDirection="column" minW="0" overflow="hidden" bg="bg" position="relative">
@@ -65,12 +90,14 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
           onSearchSubmit={handleSearchSubmit}
           onSearchKeyDown={handleSearchKeyDown}
           user={user}
+          onMenuToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+          isSidebarOpen={isSidebarOpen}
         />
 
         {/* Page Content Container */}
         <Flex flex="1" flexDirection="column" minH="0" overflow="hidden">
           {/* Scrollable Content */}
-          <Box flex="1" overflowY="auto" p="6" css={{ scrollBehavior: 'smooth' }}>
+          <Box flex="1" overflowY="auto" p={{ base: '4', md: '6' }} css={{ scrollBehavior: 'smooth' }}>
             {children}
           </Box>
 

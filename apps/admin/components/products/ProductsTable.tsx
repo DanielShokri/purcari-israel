@@ -38,11 +38,12 @@ export default function ProductsTable({
   return (
     <Box flex="1" minH="0">
       <Card.Root overflow="hidden" h="full" display="flex" flexDirection="column">
-        <Table.ScrollArea flex="1">
-          <Table.Root size="sm">
+        {/* Table with horizontal scroll wrapper */}
+        <Box flex="1" overflow="auto" w="full" position="relative">
+          <Table.Root size="sm" minW="600px">
             <Table.Header>
-              <Table.Row bg="bg.subtle">
-                <Table.ColumnHeader px="6" py="4" w="12">
+              <Table.Row bg="bg.subtle" position="sticky" top="0" zIndex={2}>
+                <Table.ColumnHeader px={{ base: '4', lg: '6' }} py="4" w="12">
                   <Checkbox.Root
                     size="sm"
                     checked={selectedProducts.length === products.length && products.length > 0}
@@ -52,19 +53,13 @@ export default function ProductsTable({
                     <Checkbox.Control />
                   </Checkbox.Root>
                 </Table.ColumnHeader>
-                <Table.ColumnHeader px="6" py="4" w="1/3" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted">
+                <Table.ColumnHeader px={{ base: '4', lg: '6' }} py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted">
                   שם מוצר
                 </Table.ColumnHeader>
-                <Table.ColumnHeader px="6" py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted">
+                <Table.ColumnHeader px={{ base: '4', lg: '6' }} py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted" display={{ base: 'table-cell', md: 'table-cell' }}>
                   קטגוריה
                 </Table.ColumnHeader>
-                <Table.ColumnHeader px="6" py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted">
-                  מחיר
-                </Table.ColumnHeader>
-                <Table.ColumnHeader px="6" py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted">
-                  מלאי
-                </Table.ColumnHeader>
-                <Table.ColumnHeader px="6" py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted" textAlign="start">
+                <Table.ColumnHeader px={{ base: '4', lg: '6' }} py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted" textAlign="start">
                   פעולות
                 </Table.ColumnHeader>
               </Table.Row>
@@ -72,7 +67,7 @@ export default function ProductsTable({
             <Table.Body>
               {products.length === 0 ? (
                 <Table.Row>
-                  <Table.Cell colSpan={6} px="6" py="8" textAlign="center" color="fg.subtle">
+                  <Table.Cell colSpan={4} px={{ base: '4', lg: '6' }} py="12" textAlign="center" color="fg.subtle">
                     לא נמצאו מוצרים
                   </Table.Cell>
                 </Table.Row>
@@ -93,7 +88,7 @@ export default function ProductsTable({
               )}
             </Table.Body>
           </Table.Root>
-        </Table.ScrollArea>
+        </Box>
 
         <Pagination
           currentPage={currentPage}

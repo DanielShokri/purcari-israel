@@ -8,10 +8,10 @@ import { useQuery } from 'convex/react';
 import { api } from '@convex/api';
 import { LoadingState } from '../components/shared';
 import { StatCard } from '../components/dashboard';
-import { 
-  EnhancedAreaChart, 
+import {
+  EnhancedAreaChart,
   SalesAreaChart,
-  PopularProductsChart, 
+  PopularProductsChart,
   ConversionFunnelChart,
   TopSearchesBarList,
   CartMetricsCard,
@@ -28,7 +28,7 @@ export default function Analytics() {
   const summary = useQuery(api.analytics.getSummary);
   const viewsSeries = useQuery(api.analytics.getViewsSeries, { interval: viewsInterval });
   const newUsersSeries = useQuery(api.analytics.getNewUsersSeries, { interval: viewsInterval });
-  
+
   // New queries
   const salesSeries = useQuery(api.analytics.getSalesSeries, { interval: salesInterval });
   const conversionMetrics = useQuery(api.analytics.getConversionMetrics);
@@ -47,10 +47,6 @@ export default function Analytics() {
 
   // Only show spinner on first load (cold cache), show data instantly on return visits
   const isLoading = !hasEverLoaded && !allLoaded;
-
-  if (isLoading) {
-    return <LoadingState message="טוען נתוני אנליטיקות..." />;
-  }
 
   const formatChange = (value: number): string => {
     const sign = value >= 0 ? '+' : '';
@@ -77,36 +73,36 @@ export default function Analytics() {
         </Text>
       </Box>
 
-      {/* Primary Stats Grid */}
+      {/* Primary Stats Grid - Stack on mobile */}
       <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} gap="4">
         <StatCard
           title="הכנסות היום"
-          value={salesSeries && salesSeries.length > 0 
+          value={salesSeries && salesSeries.length > 0
             ? formatCurrency(salesSeries[salesSeries.length - 1]?.value || 0)
             : '₪0'
           }
           icon="payments"
           iconBg="green.500/10"
           iconColor="green.500"
-          trend={{ 
-            value: formatChange(summary?.viewsTodayChange || 0), 
-            isPositive: (summary?.viewsTodayChange || 0) >= 0, 
-            label: 'מהיום אתמול' 
+          trend={{
+            value: formatChange(summary?.viewsTodayChange || 0),
+            isPositive: (summary?.viewsTodayChange || 0) >= 0,
+            label: 'מהיום אתמול'
           }}
         />
         <StatCard
           title="הזמנות היום"
-          value={salesSeries && salesSeries.length > 0 
+          value={salesSeries && salesSeries.length > 0
             ? (salesSeries[salesSeries.length - 1]?.orders || 0).toLocaleString('he-IL')
             : '0'
           }
           icon="shopping_bag"
           iconBg="blue.500/10"
           iconColor="blue.500"
-          trend={{ 
-            value: formatChange(summary?.viewsTodayChange || 0), 
-            isPositive: (summary?.viewsTodayChange || 0) >= 0, 
-            label: 'מהיום אתמול' 
+          trend={{
+            value: formatChange(summary?.viewsTodayChange || 0),
+            isPositive: (summary?.viewsTodayChange || 0) >= 0,
+            label: 'מהיום אתמול'
           }}
         />
         <StatCard
@@ -115,10 +111,10 @@ export default function Analytics() {
           icon="trending_up"
           iconBg="purple.500/10"
           iconColor="purple.500"
-          trend={{ 
-            value: formatChange(conversionMetrics?.overallConversionRateChange || 0), 
-            isPositive: (conversionMetrics?.overallConversionRateChange || 0) >= 0, 
-            label: 'מהיום אתמול' 
+          trend={{
+            value: formatChange(conversionMetrics?.overallConversionRateChange || 0),
+            isPositive: (conversionMetrics?.overallConversionRateChange || 0) >= 0,
+            label: 'מהיום אתמול'
           }}
         />
         <StatCard
@@ -127,23 +123,23 @@ export default function Analytics() {
           icon="shopping_cart"
           iconBg="orange.500/10"
           iconColor="orange.500"
-          trend={{ 
-            value: formatChange(0), 
-            isPositive: true, 
-            label: 'משבוע שעבר' 
+          trend={{
+            value: formatChange(0),
+            isPositive: true,
+            label: 'משבוע שעבר'
           }}
         />
       </SimpleGrid>
 
-      {/* Sales & Views Charts */}
+      {/* Sales & Views Charts - Stack on mobile */}
       <SimpleGrid columns={{ base: 1, lg: 2 }} gap="6">
-        <SalesAreaChart 
-          data={salesSeries || []} 
+        <SalesAreaChart
+          data={salesSeries || []}
           interval={salesInterval}
           onIntervalChange={setSalesInterval}
         />
-        <EnhancedAreaChart 
-          data={viewsSeries || []} 
+        <EnhancedAreaChart
+          data={viewsSeries || []}
           title="צפיות והמרות"
           interval={viewsInterval}
           onIntervalChange={setViewsInterval}
@@ -165,9 +161,9 @@ export default function Analytics() {
         ordersCompletedToday: 0,
       }} />
 
-      {/* Funnel & Cart Metrics */}
+      {/* Funnel & Cart Metrics - Stack on mobile */}
       <SimpleGrid columns={{ base: 1, lg: 2 }} gap="6">
-        <ConversionFunnelChart 
+        <ConversionFunnelChart
           steps={checkoutFunnel?.steps || []}
           totalConversion={checkoutFunnel?.totalConversion || 0}
         />
@@ -184,17 +180,17 @@ export default function Analytics() {
         }} />
       </SimpleGrid>
 
-      {/* Top Products & Searches */}
+      {/* Top Products & Searches - Stack on mobile */}
       <SimpleGrid columns={{ base: 1, lg: 2 }} gap="6">
         <PopularProductsChart data={summary?.topProducts || []} />
-        <TopSearchesBarList 
+        <TopSearchesBarList
           data={searchMetrics?.topSearches || []}
           title={`חיפושים פופולריים (${searchMetrics?.totalSearchesThisMonth || 0} החודש)`}
         />
       </SimpleGrid>
 
-      {/* Coupon & User Metrics */}
-      <SimpleGrid columns={{ base: 1, lg: 2 }} gap="6">
+      {/* Coupon & User Metrics - Full width on mobile */}
+      <SimpleGrid columns={{ base: 1 }} gap="6">
         <Card.Root bg="bg.panel" borderWidth="1px" borderColor="border">
           <Card.Body p="6">
             <Heading size="md" fontWeight="bold" color="fg" mb="4">
@@ -240,63 +236,34 @@ export default function Analytics() {
               נתוני משתמשים
             </Heading>
             <SimpleGrid columns={2} gap="4">
-              <StatBox
-                label="משתמשים פעילים יומי"
-                value={(summary?.dau || 0).toLocaleString('he-IL')}
-                change={summary?.dauChange}
-                icon="person"
-              />
-              <StatBox
-                label="משתמשים פעילים שבועי"
-                value={(summary?.wau || 0).toLocaleString('he-IL')}
-                change={summary?.wauChange}
-                icon="groups"
-              />
-              <StatBox
-                label="משתמשים פעילים חודשי"
-                value={(summary?.mau || 0).toLocaleString('he-IL')}
-                change={summary?.mauChange}
-                icon="group"
-              />
-              <StatBox
-                label='סה"כ צפיות'
-                value={(summary?.totalVisitors || 0).toLocaleString('he-IL')}
-                change={0}
-                icon="visibility"
-              />
+              <Box p="4" bg="bg.muted" rounded="lg" textAlign="center">
+                <Text fontSize="xl" fontWeight="bold" color="fg">
+                  {(summary?.dau || 0).toLocaleString('he-IL')}
+                </Text>
+                <Text fontSize="sm" color="fg.muted">DAU</Text>
+              </Box>
+              <Box p="4" bg="bg.muted" rounded="lg" textAlign="center">
+                <Text fontSize="xl" fontWeight="bold" color="fg">
+                  {(summary?.wau || 0).toLocaleString('he-IL')}
+                </Text>
+                <Text fontSize="sm" color="fg.muted">WAU</Text>
+              </Box>
+              <Box p="4" bg="bg.muted" rounded="lg" textAlign="center">
+                <Text fontSize="xl" fontWeight="bold" color="fg">
+                  {(summary?.mau || 0).toLocaleString('he-IL')}
+                </Text>
+                <Text fontSize="sm" color="fg.muted">MAU</Text>
+              </Box>
+              <Box p="4" bg="bg.muted" rounded="lg" textAlign="center">
+                <Text fontSize="xl" fontWeight="bold" color="fg">
+                  {(summary?.totalVisitors || 0).toLocaleString('he-IL')}
+                </Text>
+                <Text fontSize="sm" color="fg.muted">צפיות</Text>
+              </Box>
             </SimpleGrid>
           </Card.Body>
         </Card.Root>
       </SimpleGrid>
     </VStack>
-  );
-}
-
-// Helper component for stat boxes
-interface StatBoxProps {
-  label: string;
-  value: string;
-  change: number;
-  icon: string;
-}
-
-function StatBox({ label, value, change, icon }: StatBoxProps) {
-  return (
-    <Box p="4" bg="bg.muted" rounded="lg">
-      <HStack gap="2" mb="1">
-        <Text as="span" className="material-symbols-outlined" fontSize="16px" color="fg.muted">
-          {icon}
-        </Text>
-        <Text fontSize="xs" color="fg.muted">{label}</Text>
-      </HStack>
-      <Text fontSize="xl" fontWeight="bold" color="fg">
-        {value}
-      </Text>
-      {change !== 0 && (
-        <Text fontSize="xs" color={change > 0 ? 'green.500' : 'red.500'}>
-          {change > 0 ? '↗' : '↘'} {Math.abs(change).toFixed(1)}%
-        </Text>
-      )}
-    </Box>
   );
 }

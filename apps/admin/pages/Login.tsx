@@ -13,11 +13,11 @@ import {
   Alert,
   Field,
   Image,
+  InputGroup,
 } from '@chakra-ui/react';
 import { ColorModeButton } from '../components/ui/color-mode';
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-import { InputGroup, IconButton } from '@chakra-ui/react';
 
 const PURCARI_LOGO_URL = 'https://cdn.8wines.com/media/amasty/shopby/option_images/purcari-winery-logo.png';
 
@@ -59,19 +59,20 @@ export default function Login() {
         shadow="xl"
         borderWidth="1px"
         borderColor="border.muted"
+        borderRadius="lg"
       >
         <Card.Body p="8">
           <VStack gap="8" align="stretch">
             {/* Header */}
             <VStack gap="4" textAlign="center">
-              <Image 
-                src={PURCARI_LOGO_URL} 
-                alt="Purcari" 
-                h="16" 
+              <Image
+                src={PURCARI_LOGO_URL}
+                alt="Purcari"
+                h="20"
                 objectFit="contain"
-                mb="2"
+                mb="4"
               />
-              <Heading size="2xl" color="fg">
+              <Heading size={{ base: 'xl', md: '2xl' }} color="fg">
                 כניסה למערכת
               </Heading>
               <Text color="fg.muted">
@@ -93,7 +94,7 @@ export default function Login() {
 
             {/* Form */}
             <form onSubmit={handleSubmit(onSubmit)}>
-              <VStack gap="5" align="stretch">
+              <VStack gap="6" align="stretch" px="2">
                 <Field.Root invalid={!!errors.email}>
                   <Field.Label fontSize="sm" fontWeight="medium" color="fg.muted">
                     אימייל
@@ -104,9 +105,12 @@ export default function Login() {
                     placeholder="your@email.com"
                     dir="ltr"
                     size="lg"
+                    px="4"
                   />
                   {errors.email && (
-                    <Field.ErrorText>{errors.email.message}</Field.ErrorText>
+                    <Text fontSize="xs" color="red.400" textAlign="center">
+                      {errors.email.message}
+                    </Text>
                   )}
                 </Field.Root>
 
@@ -115,14 +119,13 @@ export default function Login() {
                     סיסמה
                   </Field.Label>
                   <InputGroup endElement={
-                    <IconButton
-                      aria-label={showPassword ? 'הסתר סיסמה' : 'הצג סיסמה'}
-                      variant="ghost"
-                      size="sm"
+                    <Box
                       onClick={() => setShowPassword((s) => !s)}
+                      cursor="pointer"
+                      userSelect="none"
                     >
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </IconButton>
+                    </Box>
                   }>
                     <Input
                       {...register('password', { required: 'שדה חובה' })}
@@ -130,10 +133,13 @@ export default function Login() {
                       placeholder="********"
                       dir="ltr"
                       size="lg"
+                      px="4"
                     />
                   </InputGroup>
                   {errors.password && (
-                    <Field.ErrorText>{errors.password.message}</Field.ErrorText>
+                    <Text fontSize="xs" color="red.400" textAlign="center">
+                      {errors.password.message}
+                    </Text>
                   )}
                 </Field.Root>
 

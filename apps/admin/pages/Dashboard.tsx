@@ -132,9 +132,9 @@ export default function Dashboard() {
   return (
     <VStack gap="6" align="stretch">
       {/* Page Header */}
-      <Flex justify="space-between" align="end" mb="2">
+      <Flex justify="space-between" align="end" mb="2" flexWrap="wrap" gap="2">
         <Box>
-          <Heading size="xl" fontWeight="bold" color="fg" mb="1">
+          <Heading size={{ base: 'lg', md: 'xl' }} fontWeight="bold" color="fg" mb="1">
             סקירה כללית
           </Heading>
           <Text color="fg.muted" fontSize="sm">
@@ -144,17 +144,17 @@ export default function Dashboard() {
       </Flex>
 
       {/* Stats Grid */}
-      <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} gap="6">
+      <SimpleGrid columns={{ base: 1, sm: 2, lg: 4 }} gap="6">
         <StatCard
           title="סה״כ הכנסות"
           value={formatCurrency(stats?.totalRevenue || 0)}
           icon="payments"
           iconBg="green.500/10"
           iconColor="green.500"
-          trend={{ 
-            value: formatChange(stats?.revenueChange || 0), 
-            isPositive: (stats?.revenueChange || 0) >= 0, 
-            label: 'מהחודש שעבר' 
+          trend={{
+            value: formatChange(stats?.revenueChange || 0),
+            isPositive: (stats?.revenueChange || 0) >= 0,
+            label: 'מהחודש שעבר'
           }}
         />
         <StatCard
@@ -163,10 +163,10 @@ export default function Dashboard() {
           icon="group"
           iconBg="blue.500/10"
           iconColor="blue.500"
-          trend={{ 
-            value: formatChange(stats?.usersChange || 0), 
-            isPositive: (stats?.usersChange || 0) >= 0, 
-            label: 'מהשבוע האחרון' 
+          trend={{
+            value: formatChange(stats?.usersChange || 0),
+            isPositive: (stats?.usersChange || 0) >= 0,
+            label: 'מהשבוע האחרון'
           }}
         />
         <StatCard
@@ -175,10 +175,10 @@ export default function Dashboard() {
           icon="shopping_bag"
           iconBg="purple.500/10"
           iconColor="purple.500"
-          trend={{ 
-            value: formatChange(stats?.ordersChange || 0), 
-            isPositive: (stats?.ordersChange || 0) >= 0, 
-            label: 'מהיום אתמול' 
+          trend={{
+            value: formatChange(stats?.ordersChange || 0),
+            isPositive: (stats?.ordersChange || 0) >= 0,
+            label: 'מהיום אתמול'
           }}
           infoItems={[
             ...(stats?.cancelledOrders ? [{ label: 'בוטלו', value: stats.cancelledOrders, color: 'red.400', icon: 'cancel' }] : []),
@@ -191,10 +191,10 @@ export default function Dashboard() {
           icon="bar_chart"
           iconBg="orange.500/10"
           iconColor="orange.500"
-          trend={{ 
-            value: '+1.2%', 
-            isPositive: true, 
-            label: 'יחסית לממוצע' 
+          trend={{
+            value: '+1.2%',
+            isPositive: true,
+            label: 'יחסית לממוצע'
           }}
         />
       </SimpleGrid>
@@ -220,4 +220,3 @@ export default function Dashboard() {
     </VStack>
   );
 }
-
