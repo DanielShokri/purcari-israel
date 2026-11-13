@@ -19,8 +19,8 @@ export default function TopSearchesBarList({
   title = 'חיפושים פופולריים',
   maxItems = 10
 }: TopSearchesBarListProps) {
-  const barBg = useColorModeValue('blue.100', 'blue.900');
-  const barColor = useColorModeValue('blue.500', 'blue.400');
+  const barBg = useColorModeValue('brand.100', 'brand.900');
+  const barColor = useColorModeValue('brand.500', 'brand.400');
   
   const sortedData = [...data]
     .sort((a, b) => b.count - a.count)
@@ -32,7 +32,7 @@ export default function TopSearchesBarList({
     return (
       <Card.Root bg="bg.panel" borderWidth="1px" borderColor="border">
         <Card.Body p="6">
-          <Heading size="md" fontWeight="bold" color="fg" mb="4">
+          <Heading size="md" fontWeight="medium" color="fg" mb="4">
             {title}
           </Heading>
           <Text color="fg.muted" textAlign="center" py="8">
@@ -46,7 +46,7 @@ export default function TopSearchesBarList({
   return (
     <Card.Root bg="bg.panel" borderWidth="1px" borderColor="border">
       <Card.Body p="6">
-        <Heading size="md" fontWeight="bold" color="fg" mb="6">
+        <Heading size="md" fontWeight="medium" color="fg" mb="6">
           {title}
         </Heading>
         
@@ -65,8 +65,8 @@ export default function TopSearchesBarList({
                 <Text 
                   w="6" 
                   textAlign="center" 
-                  fontWeight="bold" 
-                  color={index < 3 ? 'blue.500' : 'fg.muted'}
+                  fontWeight="medium" 
+                  color={index < 3 ? 'brand.500' : 'fg.muted'}
                   fontSize="sm"
                 >
                   {index + 1}
@@ -84,7 +84,7 @@ export default function TopSearchesBarList({
                         </Badge>
                       )}
                     </HStack>
-                    <Text fontSize="sm" fontWeight="bold" color="fg">
+                    <Text fontSize="sm" fontWeight="medium" color="fg">
                       {item.count.toLocaleString('he-IL')}
                     </Text>
                   </Flex>

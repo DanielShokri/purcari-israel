@@ -54,7 +54,7 @@ export default function PublishCard({
           <Heading size="md" color="fg">
             פרסום
           </Heading>
-          <Text as="span" className="material-symbols-outlined" fontSize="lg" color="fg.muted">
+          <Text as="span" className="material-symbols-outlined" fontSize="18px" color="fg.muted">
             public
           </Text>
         </Flex>
@@ -63,7 +63,7 @@ export default function PublishCard({
         <VStack gap="4" align="stretch">
           {/* Status */}
           <VStack align="start" gap="2">
-            <Text fontSize="xs" fontWeight="bold" color="fg.muted" textTransform="uppercase" letterSpacing="wider">
+            <Text fontSize="xs" fontWeight="medium" color="fg.muted">
               סטטוס
             </Text>
             <Controller
@@ -82,12 +82,12 @@ export default function PublishCard({
                     <Select.Trigger
                       bg="bg.subtle"
                       borderColor="border"
-                      _focus={{ ringColor: 'blue.500', borderColor: 'blue.500' }}
+                      _focus={{ ringColor: 'brand.500', borderColor: 'brand.500' }}
                     >
                       <Select.ValueText placeholder="בחר סטטוס" />
                     </Select.Trigger>
                     <Select.IndicatorGroup>
-                      <Text as="span" className="material-symbols-outlined" fontSize="xl" color="fg.muted">
+                      <Text as="span" className="material-symbols-outlined" fontSize="18px" color="fg.muted">
                         expand_more
                       </Text>
                     </Select.IndicatorGroup>
@@ -111,11 +111,11 @@ export default function PublishCard({
 
           {/* Publish Date */}
           <VStack align="start" gap="2">
-            <Text fontSize="xs" fontWeight="bold" color="fg.muted" textTransform="uppercase" letterSpacing="wider">
+            <Text fontSize="xs" fontWeight="medium" color="fg.muted">
               תאריך פרסום
             </Text>
             <Box position="relative" w="full">
-              <Text as="span" className="material-symbols-outlined" position="absolute" top="50%" right="3" transform="translateY(-50%)" color="fg.muted" fontSize="lg" pointerEvents="none">
+              <Text as="span" className="material-symbols-outlined" position="absolute" top="50%" right="3" transform="translateY(-50%)" color="fg.muted" fontSize="18px" pointerEvents="none">
                 calendar_today
               </Text>
               <Input
@@ -125,14 +125,14 @@ export default function PublishCard({
                 defaultValue={new Date().toLocaleString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                 bg="bg.subtle"
                 borderColor="border"
-                _focus={{ ringColor: 'blue.500', borderColor: 'blue.500' }}
+                _focus={{ ringColor: 'brand.500', borderColor: 'brand.500' }}
               />
             </Box>
           </VStack>
 
           {/* Author */}
           <VStack align="start" gap="2">
-            <Text fontSize="xs" fontWeight="bold" color="fg.muted" textTransform="uppercase" letterSpacing="wider">
+            <Text fontSize="xs" fontWeight="medium" color="fg.muted">
               מחבר
             </Text>
             <HStack gap="2" p="2" rounded="lg" bg="bg.subtle" borderWidth="1px" borderColor="border" w="full">
@@ -168,7 +168,7 @@ export default function PublishCard({
             onClick={onDelete}
             loading={isDeleting}
           >
-            <Text as="span" className="material-symbols-outlined" fontSize="base">
+            <Text as="span" className="material-symbols-outlined" fontSize="18px">
               delete
             </Text>
             מחק
@@ -176,7 +176,7 @@ export default function PublishCard({
         )}
         <Button
           type="submit"
-          colorPalette="blue"
+          colorPalette="brand"
           size="sm"
           loading={isCreating || isUpdating}
           loadingText={isEditMode ? 'מעדכן...' : 'שומר...'}

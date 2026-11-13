@@ -70,7 +70,7 @@ export default function InventoryCard({
           <Heading size="md" color="fg">
             מלאי
           </Heading>
-          <Text as="span" className="material-symbols-outlined" fontSize="lg" color="fg.muted">
+          <Text as="span" className="material-symbols-outlined" fontSize="18px" color="fg.muted">
             inventory_2
           </Text>
         </Flex>
@@ -79,7 +79,7 @@ export default function InventoryCard({
         <VStack gap="4" align="stretch">
           {/* SKU */}
           <VStack align="start" gap="2">
-            <Text fontSize="xs" fontWeight="bold" color="fg.muted" textTransform="uppercase" letterSpacing="wider">
+            <Text fontSize="xs" fontWeight="medium" color="fg.muted">
               מק"ט (SKU)
             </Text>
             <Input
@@ -91,13 +91,13 @@ export default function InventoryCard({
               placeholder="SKU-001"
               bg="bg.subtle"
               borderColor="border"
-              _focus={{ ringColor: 'blue.500', borderColor: 'blue.500' }}
+              _focus={{ ringColor: 'brand.500', borderColor: 'brand.500' }}
             />
           </VStack>
 
           {/* Quantity in Stock */}
           <VStack align="start" gap="2">
-            <Text fontSize="xs" fontWeight="bold" color="fg.muted" textTransform="uppercase" letterSpacing="wider">
+            <Text fontSize="xs" fontWeight="medium" color="fg.muted">
               כמות במלאי
             </Text>
             <Input
@@ -111,13 +111,13 @@ export default function InventoryCard({
               min={0}
               bg="bg.subtle"
               borderColor="border"
-              _focus={{ ringColor: 'blue.500', borderColor: 'blue.500' }}
+              _focus={{ ringColor: 'brand.500', borderColor: 'brand.500' }}
             />
           </VStack>
 
           {/* Stock Status */}
           <VStack align="start" gap="2">
-            <Text fontSize="xs" fontWeight="bold" color="fg.muted" textTransform="uppercase" letterSpacing="wider">
+            <Text fontSize="xs" fontWeight="medium" color="fg.muted">
               סטטוס מלאי
             </Text>
             <Select.Root
@@ -131,12 +131,12 @@ export default function InventoryCard({
                 <Select.Trigger
                   bg="bg.subtle"
                   borderColor="border"
-                  _focus={{ ringColor: 'blue.500', borderColor: 'blue.500' }}
+                  _focus={{ ringColor: 'brand.500', borderColor: 'brand.500' }}
                 >
                   <Select.ValueText placeholder="בחר סטטוס" />
                 </Select.Trigger>
                 <Select.IndicatorGroup>
-                  <Text as="span" className="material-symbols-outlined" fontSize="xl" color="fg.muted">
+                  <Text as="span" className="material-symbols-outlined" fontSize="18px" color="fg.muted">
                     expand_more
                   </Text>
                 </Select.IndicatorGroup>
@@ -177,7 +177,7 @@ export default function InventoryCard({
                   <Text fontSize="sm" fontWeight="medium" color="fg">
                     מוצר מומלץ
                   </Text>
-                  <Text as="span" className="material-symbols-outlined" fontSize="lg" color="yellow.500">
+                  <Text as="span" className="material-symbols-outlined" fontSize="18px" color="yellow.500">
                     star
                   </Text>
                 </HStack>

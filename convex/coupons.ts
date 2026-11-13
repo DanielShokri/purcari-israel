@@ -8,12 +8,34 @@ import { DEFAULT_SHIPPING_COST } from "./pricing";
 export const normalizeEmail = (email: string) => email.trim().toLowerCase();
 
 /**
+ * Derive the *effective* status of a coupon at read time.
+ * The stored status ("active") is never flipped when an end date passes or a
+ * usage limit is reached, so the admin table would otherwise show expired
+ * coupons as active. This is the single place that computes the truth - no
+ * DB writes, no cron needed, and it can never drift.
+ */
+export function effectiveCouponStatus(
+  coupon: { status: string; startDate: string; endDate?: string | null; usageLimit?: number | null; usageCount?: number | null },
+  now: Date = new Date()
+): "active" | "paused" | "expired" | "scheduled" {
+  // Manual pause always wins
+  if (coupon.status === "paused") return "paused";
+  if (new Date(coupon.startDate) > now) return "scheduled";
+  if (coupon.endDate && new Date(coupon.endDate) < now) return "expired";
+  if (coupon.usageLimit && (coupon.usageCount ?? 0) >= coupon.usageLimit) return "expired";
+  // Not expired yet - respect whatever the admin chose ("active" or other)
+  return (coupon.status as "active" | "paused" | "expired" | "scheduled") ?? "active";
+}
+
+/**
  * Admin: Get coupon by ID.
  */
 export const get = adminQuery({
   args: { id: v.id("coupons") },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.id);
+    const coupon = await ctx.db.get(args.id);
+    if (!coupon) return coupon;
+    return { ...coupon, status: effectiveCouponStatus(coupon) };
   },
 });
 
@@ -23,7 +45,9 @@ export const get = adminQuery({
 export const list = adminQuery({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("coupons").order("desc").collect();
+    const coupons = await ctx.db.query("coupons").order("desc").collect();
+    // Derive the effective status so expired/used-up coupons display correctly
+    return coupons.map((coupon) => ({ ...coupon, status: effectiveCouponStatus(coupon) }));
   },
 });
 
@@ -33,10 +57,12 @@ export const list = adminQuery({
 export const getByCode = query({
   args: { code: v.string() },
   handler: async (ctx, args) => {
-    return await ctx.db
+    const coupon = await ctx.db
       .query("coupons")
       .withIndex("by_code", (q) => q.eq("code", args.code.toUpperCase()))
       .unique();
+    if (!coupon) return coupon;
+    return { ...coupon, status: effectiveCouponStatus(coupon) };
   },
 });
 

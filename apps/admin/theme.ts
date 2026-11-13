@@ -16,7 +16,7 @@ const switchSlotRecipe = defineSlotRecipe({
 const config = defineConfig({
   globalCss: {
     html: {
-      colorPalette: "blue",
+      colorPalette: "brand",
     },
     // Custom scrollbar styles for dark mode
     ".dark ::-webkit-scrollbar": {
@@ -33,6 +33,12 @@ const config = defineConfig({
     ".dark ::-webkit-scrollbar-thumb:hover": {
       background: "#4B5563",
     },
+    // Dialogs are width:100% of the viewport, so on mobile they touch the
+    // screen edges. Add side padding on the positioner - the backdrop still
+    // covers the full screen, only the content is inset.
+    ".chakra-dialog__positioner": {
+      paddingInline: { base: "4", md: "0" },
+    },
   },
   theme: {
     tokens: {
@@ -41,19 +47,19 @@ const config = defineConfig({
         body: { value: "Inter, system-ui, sans-serif" },
       },
       colors: {
-        // Custom brand colors matching the design (primary: #3B82F6)
+        // Purcari wine burgundy — accent of the estate, not a template color
         brand: {
-          50: { value: "#eff6ff" },
-          100: { value: "#dbeafe" },
-          200: { value: "#bfdbfe" },
-          300: { value: "#93c5fd" },
-          400: { value: "#60a5fa" },
-          500: { value: "#3B82F6" },
-          600: { value: "#2563eb" },
-          700: { value: "#1d4ed8" },
-          800: { value: "#1e40af" },
-          900: { value: "#1e3a8a" },
-          950: { value: "#172554" },
+          50: { value: "#fdf3f4" },
+          100: { value: "#f9e2e4" },
+          200: { value: "#f2c3c8" },
+          300: { value: "#e6959e" },
+          400: { value: "#d55c6a" },
+          500: { value: "#b13a48" },
+          600: { value: "#992e3c" },
+          700: { value: "#7d2532" },
+          800: { value: "#66202a" },
+          900: { value: "#541c24" },
+          950: { value: "#2e0e12" },
         },
         // Dark mode specific colors from design
         dark: {

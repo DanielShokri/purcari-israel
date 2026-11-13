@@ -29,12 +29,12 @@ export default function CartRuleEditor() {
     return (
       <Box h="full" display="flex" alignItems="center" justifyContent="center">
         <VStack gap="4">
-          <Text fontSize="4xl" className="material-symbols-outlined" color="red.500">
+          <Text fontSize="18px" className="material-symbols-outlined" color="red.500">
             error
           </Text>
           <Heading size="lg" color="fg">חוק עגלה לא נמצא</Heading>
           <Text color="fg.muted">חוק העגלה המבוקש לא קיים או נמחק</Text>
-          <Button onClick={() => navigate('/cart-rules')} colorScheme="blue">
+          <Button onClick={() => navigate('/cart-rules')} colorScheme="brand">
             חזור לרשימת חוקים
           </Button>
         </VStack>

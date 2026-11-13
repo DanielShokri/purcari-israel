@@ -13,7 +13,7 @@ export default function LoadingState({ message = 'טוען נתונים...', var
     return (
       <Flex p="10" justifyContent="center" alignItems="center" minH="400px">
         <VStack gap="4">
-          <Spinner size="lg" color="blue.500" />
+          <Spinner size="lg" color="brand.500" />
           <Text color="fg.muted">{message}</Text>
         </VStack>
       </Flex>
@@ -23,7 +23,7 @@ export default function LoadingState({ message = 'טוען נתונים...', var
   // Subtle variant: small inline spinner for background refresh
   return (
     <Flex p="4" justifyContent="center" alignItems="center" gap="2">
-      <Spinner size="sm" color="blue.500" />
+      <Spinner size="sm" color="brand.500" />
       <Text color="fg.muted" fontSize="sm">{message}</Text>
     </Flex>
   );

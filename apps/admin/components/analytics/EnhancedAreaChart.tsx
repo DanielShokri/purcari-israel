@@ -28,9 +28,9 @@ export default function EnhancedAreaChart({
   title = 'נתונים לאורך זמן',
   interval,
   onIntervalChange,
-  color = '#3b82f6',
+  color = '#9CA3AF',
   secondaryDataKey,
-  secondaryColor = '#8b5cf6',
+  secondaryColor = '#b13a48',
   valueFormatter = (v) => v.toLocaleString('he-IL'),
   showGrid = true,
 }: EnhancedAreaChartProps) {
@@ -38,6 +38,13 @@ export default function EnhancedAreaChart({
   const chartAxisStroke = useColorModeValue('#94a3b8', '#9CA3AF');
   const tooltipBg = useColorModeValue('#fff', '#1F2937');
   const tooltipBorder = useColorModeValue('#e5e7eb', '#374151');
+
+  // Compact axis formatter - large numbers get clipped on the Y axis
+  const formatAxisNumber = (value: number) => {
+    if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`;
+    if (value >= 1_000) return `${(value / 1_000).toFixed(1).replace(/\.0$/, '')}K`;
+    return value.toLocaleString('he-IL', { maximumFractionDigits: 0 });
+  };
 
   const intervalOptions = useMemo(() => {
     return createListCollection({
@@ -54,18 +61,20 @@ export default function EnhancedAreaChart({
       bg="bg.panel"
       borderWidth="1px"
       borderColor="border"
+      h="full"
     >
-       <Card.Body p="6">
-         <Flex 
-           justify="space-between" 
-           align="center" 
-           mb="6"
-           gap="4"
-           flexDir={{ base: "column", md: "row" }}
-         >
-           <Heading size="md" fontWeight="bold" color="fg">
-             {title}
-           </Heading>
+      <Card.Body p="6" display="flex" flexDirection="column">
+        <Flex
+          justify="space-between"
+          align="center"
+          mb="4"
+          gap="4"
+          flexDir={{ base: "column", md: "row" }}
+          flexShrink={0}
+        >
+          <Heading size="md" fontWeight="medium" color="fg">
+            {title}
+          </Heading>
             <Select.Root
               collection={intervalOptions}
               size="md"
@@ -83,7 +92,7 @@ export default function EnhancedAreaChart({
                 rounded="lg"
                 px="3"
                 py="1"
-                _focus={{ borderColor: 'blue.500' }}
+                _focus={{ borderColor: 'brand.500' }}
               >
                 <Select.ValueText placeholder="בחר תקופה" />
               </Select.Trigger>
@@ -103,9 +112,9 @@ export default function EnhancedAreaChart({
                 </Select.Content>
               </Select.Positioner>
             </Portal>
-          </Select.Root>
+            </Select.Root>
         </Flex>
-        <Box h="72" w="full" style={{ direction: 'ltr' }}>
+        <Box flex="1" minH="320px" w="full" style={{ direction: 'ltr' }}>
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <defs>
@@ -140,7 +149,8 @@ export default function EnhancedAreaChart({
                 fontSize={12} 
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={valueFormatter}
+                width={64}
+                tickFormatter={formatAxisNumber}
               />
               <Tooltip
                 contentStyle={{ 
@@ -150,7 +160,10 @@ export default function EnhancedAreaChart({
                   boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' 
                 }}
                 labelStyle={{ color: '#64748b' }}
-                formatter={(value: number) => [valueFormatter(value), '']}
+                formatter={(value: number, name: string) => [
+                  valueFormatter(value),
+                  name === 'value' ? 'צפיות' : 'המרות',
+                ]}
               />
               <Area 
                 type="monotone" 

@@ -20,9 +20,18 @@ export function formatRelativeTime(dateStr: string): string {
   }).format(date);
 }
 
+// Neutral tile for category notifications — the glyph, not a hue, tells them apart
+const NEUTRAL = {
+  iconBg: 'bg.subtle',
+  iconBgDark: 'bg.muted',
+  iconColor: 'fg.muted',
+  iconColorDark: 'fg.muted',
+} as const;
+
 // Get icon and colors based on notification type
 function getNotificationStyle(type: NotificationType) {
   switch (type) {
+    // Semantic types keep their color: success, warning, error.
     case NotificationType.SUCCESS:
       return {
         icon: 'check_circle',
@@ -30,14 +39,6 @@ function getNotificationStyle(type: NotificationType) {
         iconBgDark: 'green.900/30',
         iconColor: 'green.600',
         iconColorDark: 'green.400',
-      };
-    case NotificationType.INFO:
-      return {
-        icon: 'info',
-        iconBg: 'blue.100',
-        iconBgDark: 'blue.900/30',
-        iconColor: 'blue.600',
-        iconColorDark: 'blue.400',
       };
     case NotificationType.WARNING:
       return {
@@ -55,71 +56,26 @@ function getNotificationStyle(type: NotificationType) {
         iconColor: 'red.600',
         iconColorDark: 'red.400',
       };
+    // Category types are neutral: the glyph says what it is, no hue needed.
+    case NotificationType.INFO:
+      return { icon: 'info', ...NEUTRAL };
     case NotificationType.ORDER:
-      return {
-        icon: 'shopping_cart',
-        iconBg: 'purple.100',
-        iconBgDark: 'purple.900/30',
-        iconColor: 'purple.600',
-        iconColorDark: 'purple.400',
-      };
+      return { icon: 'shopping_cart', ...NEUTRAL };
     case NotificationType.INVENTORY:
-      return {
-        icon: 'warehouse',
-        iconBg: 'cyan.100',
-        iconBgDark: 'cyan.900/30',
-        iconColor: 'cyan.600',
-        iconColorDark: 'cyan.400',
-      };
+      return { icon: 'warehouse', ...NEUTRAL };
     case NotificationType.USER_ACTION:
-      return {
-        icon: 'person_add',
-        iconBg: 'indigo.100',
-        iconBgDark: 'indigo.900/30',
-        iconColor: 'indigo.600',
-        iconColorDark: 'indigo.400',
-      };
+      return { icon: 'person_add', ...NEUTRAL };
     case NotificationType.PAYMENT:
-      return {
-        icon: 'payment',
-        iconBg: 'emerald.100',
-        iconBgDark: 'emerald.900/30',
-        iconColor: 'emerald.600',
-        iconColorDark: 'emerald.400',
-      };
+      return { icon: 'payment', ...NEUTRAL };
     case NotificationType.PROMOTION:
-      return {
-        icon: 'sell',
-        iconBg: 'yellow.100',
-        iconBgDark: 'yellow.900/30',
-        iconColor: 'yellow.600',
-        iconColorDark: 'yellow.500',
-      };
+      return { icon: 'sell', ...NEUTRAL };
     case NotificationType.PRICE_CHANGE:
-      return {
-        icon: 'trending_up',
-        iconBg: 'lime.100',
-        iconBgDark: 'lime.900/30',
-        iconColor: 'lime.600',
-        iconColorDark: 'lime.400',
-      };
+      return { icon: 'trending_up', ...NEUTRAL };
     case NotificationType.SYSTEM_ERROR:
-      return {
-        icon: 'bug_report',
-        iconBg: 'rose.100',
-        iconBgDark: 'rose.900/30',
-        iconColor: 'rose.600',
-        iconColorDark: 'rose.400',
-      };
+      return { icon: 'bug_report', ...NEUTRAL };
     case NotificationType.SYSTEM:
     default:
-      return {
-        icon: 'description',
-        iconBg: 'gray.100',
-        iconBgDark: 'gray.800',
-        iconColor: 'gray.600',
-        iconColorDark: 'gray.400',
-      };
+      return { icon: 'description', ...NEUTRAL };
   }
 }
 
@@ -160,12 +116,12 @@ export default function NotificationItem({
       rounded="xl"
       shadow={notification.isRead ? 'none' : 'sm'}
       borderWidth="1px"
-      borderColor={notification.isRead ? 'transparent' : 'blue.500/20'}
-      transition="all 0.2s"
+      borderColor={notification.isRead ? 'transparent' : 'brand.500/20'}
+      transition="colors 0.15s ease-out"
       cursor="pointer"
       onClick={handleClick}
       _hover={{
-        borderColor: 'blue.500/30',
+        borderColor: 'brand.500/30',
         shadow: 'md',
       }}
     >
@@ -174,7 +130,7 @@ export default function NotificationItem({
         <Box
           position="absolute"
           inset="0"
-          bg="blue.500/5"
+          bg="brand.500/5"
           rounded="xl"
           pointerEvents="none"
         />
@@ -196,7 +152,7 @@ export default function NotificationItem({
             color: style.iconColorDark,
           }}
         >
-          <Text as="span" className="material-symbols-outlined" fontSize={isCompact ? '20px' : '24px'}>
+          <Text as="span" className="material-symbols-outlined" fontSize="18px">
             {iconName}
           </Text>
         </Flex>
@@ -218,8 +174,8 @@ export default function NotificationItem({
                 display={{ base: 'block', sm: 'none' }}
                 fontSize="xs"
                 fontWeight="medium"
-                color="blue.600"
-                bg="blue.500/10"
+                color="brand.600"
+                bg="brand.500/10"
                 px="2"
                 py="0.5"
                 rounded="full"
@@ -252,7 +208,7 @@ export default function NotificationItem({
             w="3"
             h="3"
             rounded="full"
-            bg="blue.500"
+            bg="brand.500"
             shadow="sm"
             ring="4px"
             ringColor="bg.panel"
@@ -270,7 +226,7 @@ export default function NotificationItem({
               // Options menu can be added here
             }}
           >
-            <Text as="span" className="material-symbols-outlined" fontSize="20px">
+            <Text as="span" className="material-symbols-outlined" fontSize="18px">
               more_vert
             </Text>
           </IconButton>

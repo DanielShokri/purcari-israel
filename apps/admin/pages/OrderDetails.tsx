@@ -75,7 +75,10 @@ export default function OrderDetails() {
   const navigate = useNavigate();
   const [hasEverLoaded, setHasEverLoaded] = useState(false);
   
-  const orderId = id ? id as Id<"orders"> : null;
+  // Convex throws on malformed IDs, which crashes into the ErrorBoundary.
+  // Validate the shape first so bad URLs land in the not-found state instead.
+  const isValidId = !!id && /^[0-9a-z]{20,60}$/.test(id);
+  const orderId = isValidId ? id as Id<"orders"> : null;
   const order = useQuery(api.orders.get, orderId ? { orderId } : "skip");
   
   // Track when order has loaded for the first time
@@ -85,7 +88,7 @@ export default function OrderDetails() {
   }, [allLoaded]);
 
   // Only show spinner on first load (cold cache), show data instantly on return visits
-  const isLoading = !hasEverLoaded && !allLoaded;
+  const isLoading = !hasEverLoaded && !allLoaded && isValidId;
   const updateStatus = useMutation(api.orders.updateStatus);
   const [isUpdating, setIsUpdating] = React.useState(false);
   const [pendingCancel, setPendingCancel] = useState(false);
@@ -100,7 +103,7 @@ export default function OrderDetails() {
   if (!order) {
     return (
       <VStack gap="4" py="20" align="center">
-        <Text as="span" className="material-symbols-outlined" fontSize="48px" color="fg.subtle">
+        <Text as="span" className="material-symbols-outlined" fontSize="18px" color="fg.subtle">
           error
         </Text>
         <Text fontSize="lg" color="fg.muted">
@@ -189,7 +192,7 @@ export default function OrderDetails() {
         py="6"
       >
          <Box>
-             <Text fontSize="2xl" fontWeight="bold" color="fg" letterSpacing="tight">
+             <Text fontSize="2xl" fontWeight="medium" color="fg">
                הזמנה #{order.orderNumber || order._id.slice(-6)}
              </Text>
             <HStack gap="2" fontSize="sm" color="fg.muted" mt="1">
@@ -206,7 +209,7 @@ export default function OrderDetails() {
           bg="bg.panel"
           _hover={{ bg: 'bg.subtle' }}
         >
-          <Text as="span" className="material-symbols-outlined" fontSize="20px">
+          <Text as="span" className="material-symbols-outlined" fontSize="18px">
             print
           </Text>
           <Text as="span">הדפס חשבונית</Text>
@@ -221,7 +224,7 @@ export default function OrderDetails() {
             <Text fontSize="sm" fontWeight="medium" color="fg.muted" mb="1">
               תאריך הזמנה
             </Text>
-            <Text fontSize="xl" fontWeight="bold" color="fg" dir="ltr">
+            <Text fontSize="xl" fontWeight="medium" color="fg" dir="ltr">
               {formatShortDate(order.createdAt)}
             </Text>
           </Card.Body>
@@ -275,7 +278,7 @@ export default function OrderDetails() {
             <Text fontSize="sm" fontWeight="medium" color="fg.muted" mb="1">
               סה״כ לתשלום
             </Text>
-            <Text fontSize="xl" fontWeight="bold" color="blue.500">
+            <Text fontSize="xl" fontWeight="medium" color="brand.500">
               {formatCurrency(order.total)}
             </Text>
           </Card.Body>
@@ -300,7 +303,7 @@ export default function OrderDetails() {
             bg="bg.subtle"
           >
             <HStack gap="2">
-              <Text as="span" className="material-symbols-outlined" fontSize="20px" color="fg.muted">
+              <Text as="span" className="material-symbols-outlined" fontSize="18px" color="fg.muted">
                 person
               </Text>
               <Text fontWeight="semibold" color="fg">
@@ -327,14 +330,14 @@ export default function OrderDetails() {
                     align="center"
                     justify="center"
                     fontSize="xl"
-                    fontWeight="bold"
+                    fontWeight="medium"
                     color="fg.muted"
                   >
                     {getInitials(order.customerName)}
                   </Flex>
                 )}
                 <Box>
-                  <Text fontWeight="bold" color="fg">
+                  <Text fontWeight="medium" color="fg">
                     {order.customerName}
                   </Text>
                   <Text fontSize="sm" color="fg.muted">
@@ -345,13 +348,13 @@ export default function OrderDetails() {
 
               <VStack gap="3" align="stretch" pt="2">
                 <HStack gap="3" fontSize="sm">
-                  <Text as="span" className="material-symbols-outlined" fontSize="20px" color="fg.muted">
+                  <Text as="span" className="material-symbols-outlined" fontSize="18px" color="fg.muted">
                     mail
                   </Text>
                   <Link
                     href={`mailto:${order.customerEmail}`}
                     color="fg"
-                    _hover={{ color: 'blue.500' }}
+                    _hover={{ color: 'brand.500' }}
                     dir="ltr"
                     truncate
                   >
@@ -360,13 +363,13 @@ export default function OrderDetails() {
                 </HStack>
                 {order.customerPhone && (
                   <HStack gap="3" fontSize="sm">
-                    <Text as="span" className="material-symbols-outlined" fontSize="20px" color="fg.muted">
+                    <Text as="span" className="material-symbols-outlined" fontSize="18px" color="fg.muted">
                       call
                     </Text>
                     <Link
                       href={`tel:${order.customerPhone}`}
                       color="fg"
-                      _hover={{ color: 'blue.500' }}
+                      _hover={{ color: 'brand.500' }}
                       dir="ltr"
                     >
                       {order.customerPhone}
@@ -387,7 +390,7 @@ export default function OrderDetails() {
             bg="bg.subtle"
           >
             <HStack gap="2">
-              <Text as="span" className="material-symbols-outlined" fontSize="20px" color="fg.muted">
+              <Text as="span" className="material-symbols-outlined" fontSize="18px" color="fg.muted">
                 local_shipping
               </Text>
               <Text fontWeight="semibold" color="fg">
@@ -397,7 +400,7 @@ export default function OrderDetails() {
           </Box>
           <Card.Body p="5">
             <HStack gap="3" align="start">
-              <Text as="span" className="material-symbols-outlined" fontSize="20px" color="fg.muted" mt="0.5">
+              <Text as="span" className="material-symbols-outlined" fontSize="18px" color="fg.muted" mt="0.5">
                 location_on
               </Text>
               <Box fontSize="sm" color="fg" lineHeight="relaxed">
@@ -425,7 +428,7 @@ export default function OrderDetails() {
         >
           <HStack justify="space-between">
             <HStack gap="2">
-              <Text as="span" className="material-symbols-outlined" fontSize="20px" color="fg.muted">
+              <Text as="span" className="material-symbols-outlined" fontSize="18px" color="fg.muted">
                 list_alt
               </Text>
               <Text fontWeight="semibold" color="fg">
@@ -436,7 +439,7 @@ export default function OrderDetails() {
               bg="bg.muted"
               color="fg.muted"
               fontSize="xs"
-              fontWeight="bold"
+              fontWeight="medium"
               px="2"
               py="0.5"
               rounded="full"
@@ -527,7 +530,7 @@ export default function OrderDetails() {
             bg="bg.subtle"
           >
             <HStack gap="2">
-              <Text as="span" className="material-symbols-outlined" fontSize="20px" color="fg.muted">
+              <Text as="span" className="material-symbols-outlined" fontSize="18px" color="fg.muted">
                 credit_card
               </Text>
               <Text fontWeight="semibold" color="fg">
@@ -554,7 +557,7 @@ export default function OrderDetails() {
                 align="center"
                 justify="center"
               >
-                <Text fontWeight="bold" color="blue.800" fontStyle="italic" fontSize="xs">
+                <Text fontWeight="medium" color="brand.800" fontSize="xs">
                   {order.paymentMethod.toUpperCase()}
                 </Text>
               </Flex>
@@ -589,7 +592,7 @@ export default function OrderDetails() {
             bg="bg.subtle"
           >
             <HStack gap="2">
-              <Text as="span" className="material-symbols-outlined" fontSize="20px" color="fg.muted">
+              <Text as="span" className="material-symbols-outlined" fontSize="18px" color="fg.muted">
                 receipt_long
               </Text>
               <Text fontWeight="semibold" color="fg">
@@ -612,7 +615,7 @@ export default function OrderDetails() {
                 <Text>{formatCurrency(order.tax)}</Text>
               </HStack>
               <Separator />
-              <HStack justify="space-between" fontWeight="bold" color="fg">
+              <HStack justify="space-between" fontWeight="medium" color="fg">
                 <Text>סה״כ לתשלום</Text>
                 <Text fontSize="lg">{formatCurrency(order.total)}</Text>
               </HStack>

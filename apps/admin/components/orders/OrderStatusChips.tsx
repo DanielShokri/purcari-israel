@@ -36,19 +36,20 @@ export default function OrderStatusChips({
           <Button
             key={chip.key}
             size="sm"
-            rounded="full"
-            px="4"
+            rounded="md"
+            px="3"
             fontWeight="medium"
             whiteSpace="nowrap"
             flexShrink={0}
             variant={activeChip === chip.key ? 'solid' : 'outline'}
-            colorPalette={activeChip === chip.key ? 'gray' : 'gray'}
-            bg={activeChip === chip.key ? 'fg' : 'bg.panel'}
-            color={activeChip === chip.key ? 'bg' : 'fg.muted'}
-            borderColor={activeChip === chip.key ? 'fg' : 'border'}
+            colorPalette={activeChip === chip.key ? 'brand' : 'gray'}
+            bg={activeChip === chip.key ? 'brand.solid' : 'bg.panel'}
+            color={activeChip === chip.key ? 'brand.contrast' : 'fg.muted'}
+            borderColor={activeChip === chip.key ? 'brand.solid' : 'border'}
             _hover={{
-              bg: activeChip === chip.key ? 'fg' : 'bg.subtle',
+              bg: activeChip === chip.key ? 'brand.solid' : 'bg.subtle',
             }}
+            style={{ fontVariantNumeric: 'tabular-nums' }}
             onClick={() => onChipChange(chip.key)}
           >
             {chip.label} ({chip.count})

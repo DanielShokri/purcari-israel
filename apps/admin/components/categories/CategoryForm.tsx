@@ -221,7 +221,7 @@ export default function CategoryForm({
                 rounded="lg"
                 textAlign="center"
                 cursor="pointer"
-                _hover={{ borderColor: 'blue.500' }}
+                _hover={{ borderColor: 'brand.500' }}
                 transition="colors"
                 bg="bg.subtle"
               >
@@ -229,14 +229,14 @@ export default function CategoryForm({
                   <Text
                     as="span"
                     className="material-symbols-outlined"
-                    fontSize="4xl"
+                    fontSize="18px"
                     color="fg.muted"
                   >
                     image
                   </Text>
                   <VStack gap="1">
                     <HStack gap="1" justify="center">
-                      <Text fontSize="sm" color="blue.500" fontWeight="semibold" _hover={{ color: 'blue.600' }}>
+                      <Text fontSize="sm" color="brand.500" fontWeight="semibold" _hover={{ color: 'brand.600' }}>
                         העלה קובץ
                       </Text>
                       <Text fontSize="sm" color="fg.muted">
@@ -255,7 +255,7 @@ export default function CategoryForm({
             <Flex gap="3" pt="4">
               <Button
                 type="submit"
-                colorPalette="blue"
+                colorPalette="brand"
                 flex="1"
                 size="md"
                 shadow="sm"

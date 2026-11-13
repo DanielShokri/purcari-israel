@@ -47,7 +47,7 @@ export default function ViewsLineChart({
            gap="4"
            flexDir={{ base: "column", md: "row" }}
          >
-           <Heading size="md" fontWeight="bold" color="fg">
+           <Heading size="md" fontWeight="medium" color="fg">
              {title}
            </Heading>
             <Select.Root
@@ -67,7 +67,7 @@ export default function ViewsLineChart({
                 rounded="lg"
                 px="3"
                 py="1"
-                _focus={{ borderColor: 'blue.500' }}
+                _focus={{ borderColor: 'brand.500' }}
               >
                 <Select.ValueText placeholder="בחר תקופה" />
               </Select.Trigger>

@@ -28,7 +28,9 @@ export type PaymentStatus = Doc<"paymentTransactions">["status"];
 
 const ORDER_TRANSITIONS: Record<OrderStatus, readonly OrderStatus[]> = {
   pending: ["processing", "cancelled"],
-  processing: ["shipped", "cancelled"],
+  // "completed" is reachable straight from processing for fulfilled orders that
+  // don't need a shipment step (pickup, direct delivery).
+  processing: ["shipped", "completed", "cancelled"],
   shipped: ["completed"],
   completed: [],
   cancelled: [],

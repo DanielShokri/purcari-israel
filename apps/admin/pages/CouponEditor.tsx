@@ -87,7 +87,7 @@ export default function CouponEditor() {
             mb="8"
           >
             <Box>
-              <Heading size="2xl" color="fg" mb="1" letterSpacing="tight">
+              <Heading size="2xl" color="fg" mb="1">
                 {isEditMode ? 'עריכת קופון' : 'יצירת קופון'}
               </Heading>
               <Text color="fg.muted" fontSize="sm">

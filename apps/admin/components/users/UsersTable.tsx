@@ -48,19 +48,19 @@ export default function UsersTable({
                     <Checkbox.Control />
                   </Checkbox.Root>
                 </Table.ColumnHeader>
-                <Table.ColumnHeader px="6" py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted">
+                <Table.ColumnHeader px="6" py="4" fontSize="xs" fontWeight="semibold" color="fg.muted">
                   משתמש
                 </Table.ColumnHeader>
-                <Table.ColumnHeader px="6" py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted" display={{ base: 'none', md: 'table-cell' }}>
+                <Table.ColumnHeader px="6" py="4" fontSize="xs" fontWeight="semibold" color="fg.muted" display={{ base: 'none', md: 'table-cell' }}>
                   אימייל
                 </Table.ColumnHeader>
-                <Table.ColumnHeader px="6" py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted">
+                <Table.ColumnHeader px="6" py="4" fontSize="xs" fontWeight="semibold" color="fg.muted">
                   תפקיד
                 </Table.ColumnHeader>
-                <Table.ColumnHeader px="6" py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted" display={{ base: 'none', lg: 'table-cell' }}>
+                <Table.ColumnHeader px="6" py="4" fontSize="xs" fontWeight="semibold" color="fg.muted" display={{ base: 'none', lg: 'table-cell' }}>
                   תאריך הצטרפות
                 </Table.ColumnHeader>
-                <Table.ColumnHeader px="6" py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted" textAlign="start">
+                <Table.ColumnHeader px="6" py="4" fontSize="xs" fontWeight="semibold" color="fg.muted" textAlign="start">
                   פעולות
                 </Table.ColumnHeader>
               </Table.Row>

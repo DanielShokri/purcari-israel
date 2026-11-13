@@ -29,19 +29,19 @@ export default function OrderResultCard({ order, searchTerm }: OrderResultCardPr
           w="10"
           h="10"
           rounded="lg"
-          bg="blue.50"
+          bg="brand.50"
           alignItems="center"
           justifyContent="center"
-          color="blue.500"
+          color="brand.500"
           flexShrink={0}
-          _dark={{ bg: 'blue.900/20' }}
+          _dark={{ bg: 'brand.900/20' }}
         >
           <Text as="span" className="material-symbols-outlined">
             receipt_long
           </Text>
         </Flex>
         <Box>
-          <Text fontSize="sm" fontWeight="bold" color="fg">
+          <Text fontSize="sm" fontWeight="medium" color="fg">
             הזמנה #{order._id.slice(-4).toUpperCase()}
           </Text>
           <Text fontSize="sm" color="fg.muted">
@@ -63,8 +63,8 @@ export default function OrderResultCard({ order, searchTerm }: OrderResultCardPr
           <Button
             size="sm"
             variant="outline"
-            colorPalette="blue"
-            fontWeight="bold"
+            colorPalette="brand"
+            fontWeight="medium"
           >
             צפייה
           </Button>

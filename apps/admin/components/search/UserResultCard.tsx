@@ -20,7 +20,7 @@ export default function UserResultCard({ user, searchTerm }: UserResultCardProps
       alignItems="center"
       justifyContent="space-between"
       shadow="sm"
-      transition="all 0.15s"
+      transition="colors 0.15s ease-out"
       _hover={{ shadow: 'md' }}
     >
       <HStack gap="3">
@@ -39,7 +39,7 @@ export default function UserResultCard({ user, searchTerm }: UserResultCardProps
           }}
         />
         <Box>
-          <Text fontSize="sm" fontWeight="bold" color="fg">
+          <Text fontSize="sm" fontWeight="medium" color="fg">
             <HighlightText text={user.name} searchTerm={searchTerm} />
           </Text>
           <Text fontSize="xs" color="fg.muted">
@@ -59,7 +59,7 @@ export default function UserResultCard({ user, searchTerm }: UserResultCardProps
         color="fg.muted"
         _hover={{ bg: 'bg.subtle' }}
       >
-        <Text as="span" className="material-symbols-outlined" fontSize="20px">
+        <Text as="span" className="material-symbols-outlined" fontSize="18px">
           visibility
         </Text>
       </Button>

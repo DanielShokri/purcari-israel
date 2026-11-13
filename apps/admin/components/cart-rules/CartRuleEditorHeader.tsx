@@ -25,7 +25,7 @@ export default function CartRuleEditorHeader({ isEditMode }: CartRuleEditorHeade
         mb="8"
       >
         <Box>
-          <Heading size="2xl" color="fg" mb="1" letterSpacing="tight">
+          <Heading size="2xl" color="fg" mb="1">
             {isEditMode ? 'עריכת חוק עגלה' : 'יצירת חוק עגלה'}
           </Heading>
           <Text color="fg.muted" fontSize="sm">

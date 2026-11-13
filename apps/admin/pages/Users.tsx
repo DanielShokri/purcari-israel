@@ -81,7 +81,7 @@ export default function Users() {
       />
 
       {/* Create User Dialog */}
-      <Dialog.Root lazyMount open={create.isOpen} onOpenChange={(e) => !e.open && create.close()}>
+      <Dialog.Root placement="center" lazyMount open={create.isOpen} onOpenChange={(e) => !e.open && create.close()}>
         <Portal>
           <Dialog.Backdrop />
           <Dialog.Positioner>
@@ -158,7 +158,7 @@ export default function Users() {
                 <Dialog.ActionTrigger asChild>
                   <Button variant="outline" onClick={create.close}>ביטול</Button>
                 </Dialog.ActionTrigger>
-                <Button colorPalette="blue" onClick={create.submit} loading={create.isSubmitting}>
+                <Button colorPalette="brand" onClick={create.submit} loading={create.isSubmitting}>
                   צור משתמש
                 </Button>
               </Dialog.Footer>
@@ -171,7 +171,7 @@ export default function Users() {
       </Dialog.Root>
 
       {/* Edit User Dialog */}
-      <Dialog.Root lazyMount open={edit.isOpen} onOpenChange={(e) => !e.open && edit.close()}>
+      <Dialog.Root placement="center" lazyMount open={edit.isOpen} onOpenChange={(e) => !e.open && edit.close()}>
         <Portal>
           <Dialog.Backdrop />
           <Dialog.Positioner>
@@ -256,7 +256,7 @@ export default function Users() {
                 <Dialog.ActionTrigger asChild>
                   <Button variant="outline" onClick={edit.close}>ביטול</Button>
                 </Dialog.ActionTrigger>
-                <Button colorPalette="blue" onClick={edit.submit} loading={edit.isSubmitting}>
+                <Button colorPalette="brand" onClick={edit.submit} loading={edit.isSubmitting}>
                   שמור שינויים
                 </Button>
               </Dialog.Footer>

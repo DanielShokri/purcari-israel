@@ -19,9 +19,9 @@ import { LoadingState } from '../components/shared';
 import { StatCard, SalesChart, ActivityFeed, OrdersTable } from '../components/dashboard';
 import type { ActivityItem, Order as DashboardOrder } from '../components/dashboard';
 
-// Helper to format currency
+// Helper to format currency — one format everywhere: ₪1,234.56
 const formatCurrency = (amount: number): string => {
-  return `₪${amount.toLocaleString('he-IL')}`;
+  return `₪${amount.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
 // Helper to format percentage change
@@ -39,12 +39,8 @@ const getInitials = (name: string): string => {
   return name.substring(0, 2);
 };
 
-// Helper to get avatar color based on name
-const getAvatarColor = (name: string): string => {
-  const colors = ['blue', 'purple', 'orange', 'teal', 'pink', 'cyan'];
-  const index = name.charCodeAt(0) % colors.length;
-  return colors[index];
-};
+// Avatars stay neutral — one quiet tint from the ramp
+const getAvatarColor = (_name: string): string => 'gray';
 
 // Helper to format date in Hebrew
 const formatDate = (dateStr: string): string => {
@@ -134,11 +130,11 @@ export default function Dashboard() {
       {/* Page Header */}
       <Flex justify="space-between" align="end" mb="2" flexWrap="wrap" gap="2">
         <Box>
-          <Heading size={{ base: 'lg', md: 'xl' }} fontWeight="bold" color="fg" mb="1">
+          <Heading size={{ base: 'lg', md: 'xl' }} fontWeight="medium" color="fg" mb="1">
             סקירה כללית
           </Heading>
           <Text color="fg.muted" fontSize="sm">
-            ברוך הבא למערכת הניהול, להלן הנתונים להיום.
+            נתוני החנות להיום.
           </Text>
         </Box>
       </Flex>
@@ -148,9 +144,6 @@ export default function Dashboard() {
         <StatCard
           title="סה״כ הכנסות"
           value={formatCurrency(stats?.totalRevenue || 0)}
-          icon="payments"
-          iconBg="green.500/10"
-          iconColor="green.500"
           trend={{
             value: formatChange(stats?.revenueChange || 0),
             isPositive: (stats?.revenueChange || 0) >= 0,
@@ -160,9 +153,6 @@ export default function Dashboard() {
         <StatCard
           title="משתמשים רשומים"
           value={(stats?.totalUsers || 0).toLocaleString('he-IL')}
-          icon="group"
-          iconBg="blue.500/10"
-          iconColor="blue.500"
           trend={{
             value: formatChange(stats?.usersChange || 0),
             isPositive: (stats?.usersChange || 0) >= 0,
@@ -172,9 +162,6 @@ export default function Dashboard() {
         <StatCard
           title="הזמנות החודש"
           value={(stats?.newOrders || 0).toLocaleString('he-IL')}
-          icon="shopping_bag"
-          iconBg="purple.500/10"
-          iconColor="purple.500"
           trend={{
             value: formatChange(stats?.ordersChange || 0),
             isPositive: (stats?.ordersChange || 0) >= 0,
@@ -188,14 +175,6 @@ export default function Dashboard() {
         <StatCard
           title="אחוז המרה"
           value={`${(stats?.conversionRate || 0).toFixed(2)}%`}
-          icon="bar_chart"
-          iconBg="orange.500/10"
-          iconColor="orange.500"
-          trend={{
-            value: '+1.2%',
-            isPositive: true,
-            label: 'יחסית לממוצע'
-          }}
         />
       </SimpleGrid>
 

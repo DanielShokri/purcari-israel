@@ -34,13 +34,13 @@ export default function EditorFooter({
         <HStack gap="3">
           <Button
             type="button"
-            colorPalette="blue"
+            colorPalette="brand"
             size="md"
             loading={isCreating || isUpdating}
             loadingText="שומר..."
             onClick={onSave}
           >
-            <Text as="span" className="material-symbols-outlined" fontSize="lg">
+            <Text as="span" className="material-symbols-outlined" fontSize="18px">
               save
             </Text>
             שמור שינויים
@@ -62,7 +62,7 @@ export default function EditorFooter({
             onClick={onDelete}
             loading={isDeleting}
           >
-            <Text as="span" className="material-symbols-outlined" fontSize="lg">
+            <Text as="span" className="material-symbols-outlined" fontSize="18px">
               delete
             </Text>
             <Text as="span" display={{ base: 'none', sm: 'inline' }}>

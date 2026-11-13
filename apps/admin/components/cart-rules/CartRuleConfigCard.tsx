@@ -35,7 +35,7 @@ export default function CartRuleConfigCard({
         bg="bg.subtle"
       >
         <HStack gap="2">
-          <Text as="span" className="material-symbols-outlined" fontSize="lg" color="blue.500">
+          <Text as="span" className="material-symbols-outlined" fontSize="18px" color="brand.500">
             tune
           </Text>
           <Heading size="md" color="fg">
@@ -60,7 +60,7 @@ export default function CartRuleConfigCard({
               placeholder="10"
               bg="bg.subtle"
               borderColor="border"
-              _focus={{ ring: 2, ringColor: 'blue.500/20', borderColor: 'blue.500' }}
+              _focus={{ ring: 2, ringColor: 'brand.500/20', borderColor: 'brand.500' }}
             />
             <Text fontSize="xs" color="fg.muted">
               מספר נמוך יותר = עדיפות גבוהה יותר
@@ -88,7 +88,7 @@ export default function CartRuleConfigCard({
               placeholder="0"
               bg="bg.subtle"
               borderColor="border"
-              _focus={{ ring: 2, ringColor: 'blue.500/20', borderColor: 'blue.500' }}
+              _focus={{ ring: 2, ringColor: 'brand.500/20', borderColor: 'brand.500' }}
             />
             {errors.value && (
               <Text fontSize="xs" color="red.500">{errors.value.message}</Text>
@@ -108,7 +108,7 @@ export default function CartRuleConfigCard({
                 placeholder="1"
                 bg="bg.subtle"
                 borderColor="border"
-                _focus={{ ring: 2, ringColor: 'blue.500/20', borderColor: 'blue.500' }}
+                _focus={{ ring: 2, ringColor: 'brand.500/20', borderColor: 'brand.500' }}
               />
               {errors.getQuantity && (
                 <Text fontSize="xs" color="red.500">{errors.getQuantity.message}</Text>

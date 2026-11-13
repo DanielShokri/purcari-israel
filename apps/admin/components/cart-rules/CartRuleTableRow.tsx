@@ -36,7 +36,7 @@ export default function CartRuleTableRow({
 
     switch (config.type) {
       case 'shipping':
-        return `מעל ₪${config.minOrderAmount}`;
+        return `מעל ₪${config.minOrderAmount.toFixed(2)}`;
       case 'bulk_discount':
         return `${config.discountPercentage}%`;
       case 'buy_x_get_y':
@@ -71,7 +71,7 @@ export default function CartRuleTableRow({
             fontSize="sm"
             fontWeight="medium"
             color="fg"
-            _hover={{ color: 'blue.500' }}
+            _hover={{ color: 'brand.500' }}
             cursor="pointer"
             transition="colors"
             onClick={onEdit}
@@ -127,11 +127,11 @@ export default function CartRuleTableRow({
             variant="ghost"
             size="sm"
             color="fg.muted"
-            _hover={{ bg: 'gray.100', color: 'blue.500' }}
+            _hover={{ bg: 'gray.100', color: 'brand.500' }}
             aria-label="ערוך"
             onClick={onEdit}
           >
-            <Text as="span" className="material-symbols-outlined" fontSize="20px">
+            <Text as="span" className="material-symbols-outlined" fontSize="18px">
               edit
             </Text>
           </IconButton>
@@ -143,7 +143,7 @@ export default function CartRuleTableRow({
             aria-label="מחק"
             onClick={onDelete}
           >
-            <Text as="span" className="material-symbols-outlined" fontSize="20px">
+            <Text as="span" className="material-symbols-outlined" fontSize="18px">
               delete
             </Text>
           </IconButton>

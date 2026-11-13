@@ -59,13 +59,13 @@ export default function HighlightText({
             <Box
               as="span"
               key={index}
-              bg="blue.100"
-              color="blue.700"
+              bg="brand.100"
+              color="brand.700"
               px="1"
               rounded="sm"
               _dark={{
-                bg: 'blue.900/30',
-                color: 'blue.300',
+                bg: 'brand.900/30',
+                color: 'brand.300',
               }}
             >
               {part}

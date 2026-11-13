@@ -22,7 +22,6 @@ export default function Sidebar({ currentPath, onLogout, isOpen = false, onToggl
       display="flex"
       flexDirection="column"
       h="full"
-      shadow="xl"
       zIndex={50}
       /* Mobile: fixed drawer anchored to the inline-start edge (right side in RTL).
          Desktop: normal in-flow relative panel, always visible. */
@@ -43,19 +42,18 @@ export default function Sidebar({ currentPath, onLogout, isOpen = false, onToggl
           w="8"
           h="8"
           rounded="lg"
-          bg="blue.100"
+          bg="bg.subtle"
           alignItems="center"
           justifyContent="center"
-          color="blue.600"
+          color="fg.muted"
           ml="3"
-          _dark={{ bg: 'blue.900', color: 'blue.400' }}
         >
-          <Text as="span" className="material-symbols-outlined" fontSize="20px">
+          <Text as="span" className="material-symbols-outlined" fontSize="18px">
             wine_bar
           </Text>
         </Flex>
-        <Text fontSize="xl" fontWeight="bold" color="fg">
-          פורקרי<Text as="span" color="blue.500"> אדמין</Text>
+        <Text fontSize="lg" fontWeight="medium" color="fg">
+          פורקרי<Text as="span" color="fg.muted"> אדמין</Text>
         </Text>
 
         {/* Close button — mobile only */}
@@ -70,7 +68,7 @@ export default function Sidebar({ currentPath, onLogout, isOpen = false, onToggl
             ms="auto"
             display={{ base: 'flex', lg: 'none' }}
           >
-            <Text as="span" className="material-symbols-outlined" fontSize="24px">
+            <Text as="span" className="material-symbols-outlined" fontSize="18px">
               close
             </Text>
           </IconButton>
@@ -84,10 +82,8 @@ export default function Sidebar({ currentPath, onLogout, isOpen = false, onToggl
             <Text
               px="3"
               fontSize="xs"
-              fontWeight="semibold"
-              color="fg.muted"
-              textTransform="uppercase"
-              letterSpacing="wider"
+              fontWeight="medium"
+              color="fg.subtle"
               mb="2"
             >
               {section.title}
@@ -133,7 +129,7 @@ export default function Sidebar({ currentPath, onLogout, isOpen = false, onToggl
           justifyContent="center"
           gap="2"
         >
-          <Text as="span" className="material-symbols-outlined" fontSize="20px">
+          <Text as="span" className="material-symbols-outlined" fontSize="18px">
             logout
           </Text>
           <Text as="span" fontSize="sm" fontWeight="semibold">

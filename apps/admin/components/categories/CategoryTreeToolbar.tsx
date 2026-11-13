@@ -23,7 +23,7 @@ export default function CategoryTreeToolbar({
               color="fg.muted"
               pointerEvents="none"
             >
-              <Text as="span" className="material-symbols-outlined" fontSize="20px">
+              <Text as="span" className="material-symbols-outlined" fontSize="18px">
                 search
               </Text>
             </Box>
@@ -36,7 +36,7 @@ export default function CategoryTreeToolbar({
             />
           </Box>
           <Button variant="outline" size="md" px="4" h="10">
-            <Text as="span" className="material-symbols-outlined" fontSize="20px">
+            <Text as="span" className="material-symbols-outlined" fontSize="18px">
               filter_list
             </Text>
             <Text as="span">סינון</Text>

@@ -11,7 +11,8 @@ import { useOrders } from '../hooks/useOrders';
 export default function Orders() {
   const navigate = useNavigate();
   const { orders, isLoading, hasEverLoaded, state, handlers } = useOrders();
-  const { paginatedOrders, totalPages, currentPage, ordersPerPage, selectedOrders, statusCounts, deleteDialog, filters } = state;
+  const { paginatedOrders, selectedOrders, statusCounts, deleteDialog, filters, pagination } = state;
+  const { currentPage, totalPages, ordersPerPage } = pagination;
   const { setActiveChip, setSearchTerm, setStatusFilter, setDateFilter, setCurrentPage, toggleOrderSelection, selectAllOrders, openDeleteDialog, closeDeleteDialog, confirmDelete } = handlers;
   const handleView = (orderId: string) => navigate(`/orders/${orderId}`);
   const handleEdit = (orderId: string) => navigate(`/orders/${orderId}`);
@@ -25,12 +26,12 @@ export default function Orders() {
       <VStack align="stretch" gap="4" py="8">
         <HStack justify="space-between" align="start" flexWrap="wrap" gap="4">
           <VStack align="start" gap="1">
-            <Text fontSize={{ base: '2xl', md: '3xl' }} fontWeight="bold" color="fg" letterSpacing="tight">הזמנות</Text>
+            <Text fontSize={{ base: '2xl', md: '3xl' }} fontWeight="medium" color="fg">הזמנות</Text>
             <Text color="fg.muted" fontSize="sm">נהל את כל ההזמנות והסטטוסים במקום אחד</Text>
           </VStack>
           <HStack gap="3">
             <Button variant="outline" size="md" borderColor="border" _hover={{ bg: 'bg.subtle' }}>
-              <Text as="span" className="material-symbols-outlined" fontSize="20px">download</Text>
+              <Text as="span" className="material-symbols-outlined" fontSize="18px">download</Text>
               <Text as="span">ייצוא דוח</Text>
             </Button>
           </HStack>

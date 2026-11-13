@@ -5,5 +5,4 @@ export { default as EnhancedAreaChart } from './EnhancedAreaChart';
 export { default as SalesAreaChart } from './SalesAreaChart';
 export { default as ConversionFunnelChart } from './ConversionFunnelChart';
 export { default as TopSearchesBarList } from './TopSearchesBarList';
-export { default as CartMetricsCard } from './CartMetricsCard';
 export { default as ConversionMetricsCard } from './ConversionMetricsCard';

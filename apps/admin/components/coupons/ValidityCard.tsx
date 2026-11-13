@@ -25,7 +25,7 @@ export function ValidityCard({ register, errors, validateEndDate }: ValidityCard
         bg="bg.subtle"
       >
         <HStack gap="2">
-          <Text as="span" className="material-symbols-outlined" fontSize="lg" color="blue.500">
+          <Text as="span" className="material-symbols-outlined" fontSize="18px" color="brand.500">
             calendar_month
           </Text>
           <Heading size="md" color="fg">
@@ -44,7 +44,7 @@ export function ValidityCard({ register, errors, validateEndDate }: ValidityCard
               type="date"
               bg="bg.subtle"
               borderColor="border"
-              _focus={{ ring: 2, ringColor: 'blue.500/20', borderColor: 'blue.500' }}
+              _focus={{ ring: 2, ringColor: 'brand.500/20', borderColor: 'brand.500' }}
             />
             {errors.startDate && (
               <Text fontSize="xs" color="red.500">{errors.startDate.message}</Text>
@@ -59,7 +59,7 @@ export function ValidityCard({ register, errors, validateEndDate }: ValidityCard
               type="date"
               bg="bg.subtle"
               borderColor="border"
-              _focus={{ ring: 2, ringColor: 'blue.500/20', borderColor: 'blue.500' }}
+              _focus={{ ring: 2, ringColor: 'brand.500/20', borderColor: 'brand.500' }}
             />
             {errors.endDate && (
               <Text fontSize="xs" color="red.500">{errors.endDate.message}</Text>

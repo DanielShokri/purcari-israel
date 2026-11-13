@@ -24,19 +24,19 @@ export default function SidebarLink({ to, icon, label, active, onClose }: Sideba
         py="2.5"
         rounded="lg"
         position="relative"
-        transition="all 0.2s"
-        bg={active ? 'blue.50' : 'transparent'}
-        color={active ? 'blue.600' : 'fg.muted'}
+        transition="colors 0.15s ease-out"
+        bg={active ? 'brand.50' : 'transparent'}
+        color={active ? 'brand.600' : 'fg.muted'}
         _hover={{
-          bg: active ? 'blue.50' : 'gray.100',
-          color: active ? 'blue.600' : 'fg',
+          bg: active ? 'brand.50' : 'gray.100',
+          color: active ? 'brand.600' : 'fg',
         }}
         _dark={{
-          bg: active ? 'blue.950' : 'transparent',
-          color: active ? 'blue.400' : 'fg.muted',
+          bg: active ? 'brand.950' : 'transparent',
+          color: active ? 'brand.400' : 'fg.muted',
           _hover: {
-            bg: active ? 'blue.950' : 'gray.800',
-            color: active ? 'blue.400' : 'white',
+            bg: active ? 'brand.950' : 'gray.800',
+            color: active ? 'brand.400' : 'white',
           },
         }}
       >
@@ -47,14 +47,14 @@ export default function SidebarLink({ to, icon, label, active, onClose }: Sideba
             top="0"
             h="full"
             w="1"
-            bg="blue.500"
+            bg="brand.500"
             roundedStart="full"
           />
         )}
         <Text
           as="span"
           className="material-symbols-outlined"
-          fontSize="22px"
+          fontSize="18px"
           style={active ? { fontVariationSettings: "'FILL' 1" } : undefined}
         >
           {icon}

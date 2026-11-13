@@ -57,7 +57,7 @@ export function RestrictionsCard({
         bg="bg.subtle"
       >
         <HStack gap="2">
-          <Text as="span" className="material-symbols-outlined" fontSize="lg" color="blue.500">
+          <Text as="span" className="material-symbols-outlined" fontSize="18px" color="brand.500">
             block
           </Text>
           <Heading size="md" color="fg">
@@ -105,7 +105,7 @@ export function RestrictionsCard({
                     <Text
                       as="span"
                       className="material-symbols-outlined"
-                      fontSize="14px"
+                      fontSize="18px"
                       cursor="pointer"
                       _hover={{ color: 'red.500' }}
                       onClick={() => onRemoveCategory(catId)}
@@ -136,7 +136,7 @@ export function RestrictionsCard({
                     <Text
                       as="span"
                       className="material-symbols-outlined"
-                      fontSize="14px"
+                      fontSize="18px"
                       cursor="pointer"
                       _hover={{ color: 'red.500' }}
                       onClick={() => onRemoveProduct(prodId)}

@@ -44,7 +44,7 @@ export function BasicInfoCard({
       >
         <Flex justify="space-between" alignItems="center">
           <HStack gap="2">
-            <Text as="span" className="material-symbols-outlined" fontSize="lg" color="blue.500">
+            <Text as="span" className="material-symbols-outlined" fontSize="18px" color="brand.500">
               info
             </Text>
             <Heading size="md" color="fg">
@@ -90,7 +90,7 @@ export function BasicInfoCard({
                 placeholder="לדוגמה: SALE2024"
                 bg="bg.subtle"
                 borderColor={errors.code ? "red.500" : "border"}
-                _focus={{ ring: 2, ringColor: 'blue.500/20', borderColor: 'blue.500' }}
+                _focus={{ ring: 2, ringColor: 'brand.500/20', borderColor: 'brand.500' }}
               />
               <Button
                 type="button"
@@ -115,7 +115,7 @@ export function BasicInfoCard({
               placeholder="לשימוש מנהלים בלבד"
               bg="bg.subtle"
               borderColor="border"
-              _focus={{ ring: 2, ringColor: 'blue.500/20', borderColor: 'blue.500' }}
+              _focus={{ ring: 2, ringColor: 'brand.500/20', borderColor: 'brand.500' }}
             />
           </VStack>
         </SimpleGrid>

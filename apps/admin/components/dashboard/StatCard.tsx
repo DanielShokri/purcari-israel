@@ -11,10 +11,10 @@ export interface InfoItem {
 export interface StatCardProps {
   title: string;
   value: string;
-  icon: string;
-  iconBg: string;
-  iconColor: string;
-  trend: {
+  icon?: string;
+  iconBg?: string;
+  iconColor?: string;
+  trend?: {
     value: string;
     isPositive: boolean;
     label: string;
@@ -22,38 +22,22 @@ export interface StatCardProps {
   infoItems?: InfoItem[];
 }
 
-export default function StatCard({ title, value, icon, iconBg, iconColor, trend, infoItems }: StatCardProps) {
+export default function StatCard({ title, value, trend, infoItems }: StatCardProps) {
   return (
     <Card.Root
       bg="bg.panel"
       borderWidth="1px"
       borderColor="border"
-      _hover={{ borderColor: 'blue.500/30' }}
-      transition="all 0.2s"
+      _hover={{ borderColor: 'border.hover' }}
+      transition="colors 0.15s ease-out"
     >
       <Card.Body p="5">
-        <Flex justify="space-between" align="start" mb="4">
-          <Box>
-            <Text fontSize="sm" fontWeight="medium" color="fg.muted" mb="1">
-              {title}
-            </Text>
-            <Heading size="xl" fontWeight="bold" color="fg">
-              {value}
-            </Heading>
-          </Box>
-          <Flex
-            p="2"
-            rounded="lg"
-            bg={iconBg}
-            color={iconColor}
-            alignItems="center"
-            justifyContent="center"
-          >
-            <Text as="span" className="material-symbols-outlined" fontSize="24px">
-              {icon}
-            </Text>
-          </Flex>
-        </Flex>
+        <Text fontSize="sm" fontWeight="medium" color="fg.muted" mb="1">
+          {title}
+        </Text>
+        <Heading size="xl" fontWeight="medium" color="fg" style={{ fontVariantNumeric: 'tabular-nums' }}>
+          {value}
+        </Heading>
         
         {/* Info items (e.g., cancelled orders breakdown) */}
         {infoItems && infoItems.length > 0 && (
@@ -61,7 +45,7 @@ export default function StatCard({ title, value, icon, iconBg, iconColor, trend,
             {infoItems.map((item, idx) => (
               <HStack key={idx} gap="1" fontSize="xs">
                 {item.icon && (
-                  <Text as="span" className="material-symbols-outlined" fontSize="14px" color={item.color || 'fg.muted'}>
+                  <Text as="span" className="material-symbols-outlined" fontSize="18px" color={item.color || 'fg.muted'}>
                     {item.icon}
                   </Text>
                 )}
@@ -73,23 +57,25 @@ export default function StatCard({ title, value, icon, iconBg, iconColor, trend,
           </HStack>
         )}
         
-        <HStack fontSize="xs">
-          <HStack
-            gap="1"
-            bg={trend.isPositive ? 'green.500/10' : 'red.500/10'}
-            color={trend.isPositive ? 'green.500' : 'red.500'}
-            px="1.5"
-            py="0.5"
-            rounded="md"
-            fontWeight="medium"
-          >
-            <Text as="span" className="material-symbols-outlined" fontSize="14px">
-              {trend.isPositive ? 'trending_up' : 'trending_down'}
-            </Text>
-            <Text>{trend.value}</Text>
+        {trend && (
+          <HStack fontSize="xs">
+            <HStack
+              gap="1"
+              bg={trend.isPositive ? 'green.500/10' : 'red.500/10'}
+              color={trend.isPositive ? 'green.500' : 'red.500'}
+              px="1.5"
+              py="0.5"
+              rounded="md"
+              fontWeight="medium"
+            >
+              <Text as="span" className="material-symbols-outlined" fontSize="18px">
+                {trend.isPositive ? 'trending_up' : 'trending_down'}
+              </Text>
+              <Text style={{ fontVariantNumeric: 'tabular-nums' }}>{trend.value}</Text>
+            </HStack>
+            <Text color="fg.muted">{trend.label}</Text>
           </HStack>
-          <Text color="fg.muted">{trend.label}</Text>
-        </HStack>
+        )}
       </Card.Body>
     </Card.Root>
   );

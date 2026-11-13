@@ -23,7 +23,7 @@ export default function CouponTableRow({
       case CouponDiscountType.PERCENTAGE:
         return `${coupon.discountValue}%`;
       case CouponDiscountType.FIXED_AMOUNT:
-        return `₪${coupon.discountValue}`;
+        return `₪${coupon.discountValue.toFixed(2)}`;
       case CouponDiscountType.FREE_SHIPPING:
         return 'משלוח חינם';
       case CouponDiscountType.FREE_PRODUCT:
@@ -73,7 +73,7 @@ export default function CouponTableRow({
             fontWeight="semibold"
             color="fg"
             fontFamily="mono"
-            _hover={{ color: 'blue.500' }}
+            _hover={{ color: 'brand.500' }}
             cursor="pointer"
             transition="colors"
             onClick={onEdit}
@@ -120,11 +120,11 @@ export default function CouponTableRow({
             variant="ghost"
             size="sm"
             color="fg.muted"
-            _hover={{ bg: 'gray.100', color: 'blue.500' }}
+            _hover={{ bg: 'gray.100', color: 'brand.500' }}
             aria-label="ערוך"
             onClick={onEdit}
           >
-            <Text as="span" className="material-symbols-outlined" fontSize="20px">
+            <Text as="span" className="material-symbols-outlined" fontSize="18px">
               edit
             </Text>
           </IconButton>
@@ -136,7 +136,7 @@ export default function CouponTableRow({
             aria-label="מחק"
             onClick={onDelete}
           >
-            <Text as="span" className="material-symbols-outlined" fontSize="20px">
+            <Text as="span" className="material-symbols-outlined" fontSize="18px">
               delete
             </Text>
           </IconButton>

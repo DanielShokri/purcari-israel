@@ -82,7 +82,7 @@ export default function Notifications() {
         <Text
           as="span"
           className="material-symbols-outlined"
-          fontSize="48px"
+          fontSize="18px"
           color="red.500"
         >
           error
@@ -102,7 +102,7 @@ export default function Notifications() {
         gap="4"
       >
         <Box>
-          <Heading size="2xl" fontWeight="bold" color="fg" lineHeight="tight" letterSpacing="tight">
+          <Heading size="2xl" fontWeight="medium" color="fg" lineHeight="tight">
             התראות
           </Heading>
           <Text color="fg.muted" mt="1">
@@ -146,12 +146,12 @@ export default function Notifications() {
             px="4"
             py="2"
             fontWeight="medium"
-            color={activeTab === tab.id ? 'blue.500' : 'fg.muted'}
+            color={activeTab === tab.id ? 'brand.500' : 'fg.muted'}
             borderBottomWidth="2px"
-            borderBottomColor={activeTab === tab.id ? 'blue.500' : 'transparent'}
+            borderBottomColor={activeTab === tab.id ? 'brand.500' : 'transparent'}
             rounded="none"
             _hover={{
-              color: activeTab === tab.id ? 'blue.500' : 'fg',
+              color: activeTab === tab.id ? 'brand.500' : 'fg',
             }}
             onClick={() => setActiveTab(tab.id)}
           >
@@ -165,10 +165,10 @@ export default function Notifications() {
                 h="5"
                 mr="2"
                 rounded="full"
-                bg="blue.500"
+                bg="brand.500"
                 color="white"
                 fontSize="xs"
-                fontWeight="bold"
+                fontWeight="medium"
               >
                 {unreadCount}
               </Flex>
@@ -181,7 +181,7 @@ export default function Notifications() {
       {isLoading ? (
         <Flex justify="center" align="center" py="20">
           <VStack gap="4">
-            <Spinner size="lg" color="blue.500" />
+            <Spinner size="lg" color="brand.500" />
             <Text color="fg.muted">טוען התראות...</Text>
           </VStack>
         </Flex>
@@ -204,7 +204,7 @@ export default function Notifications() {
               color="fg.muted"
               fontSize="sm"
               fontWeight="medium"
-              _hover={{ color: 'blue.500' }}
+              _hover={{ color: 'brand.500' }}
             >
               <Text as="span" className="material-symbols-outlined" fontSize="18px" ml="2">
                 history
@@ -218,7 +218,7 @@ export default function Notifications() {
           <Text
             as="span"
             className="material-symbols-outlined"
-            fontSize="64px"
+            fontSize="18px"
             color="fg.subtle"
           >
             notifications_off

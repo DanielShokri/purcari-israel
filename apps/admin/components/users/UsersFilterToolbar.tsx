@@ -32,13 +32,13 @@ export default function UsersFilterToolbar({
             {/* Filter & Export Buttons */}
             <HStack gap="2" flexWrap="wrap" w={{ base: 'full', lg: 'auto' }}>
               <Button variant="outline" size="sm" bg="bg" px="4" h="11">
-                <Text as="span" className="material-symbols-outlined" fontSize="20px" color="fg.muted">
+                <Text as="span" className="material-symbols-outlined" fontSize="18px" color="fg.muted">
                   filter_list
                 </Text>
                 <Text as="span">סינון</Text>
               </Button>
               <Button variant="outline" size="sm" bg="bg" px="4" h="11">
-                <Text as="span" className="material-symbols-outlined" fontSize="20px" color="fg.muted">
+                <Text as="span" className="material-symbols-outlined" fontSize="18px" color="fg.muted">
                   download
                 </Text>
                 <Text as="span">ייצוא</Text>

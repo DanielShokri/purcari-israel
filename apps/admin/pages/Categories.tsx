@@ -54,13 +54,13 @@ export default function Categories() {
           </Text>
         </Box>
         <Button
-          colorPalette="blue"
+          colorPalette="brand"
           size="md"
           shadow="sm"
           onClick={handlers.clearSelection}
           disabled={!selectedCategoryId}
         >
-          <Text as="span" className="material-symbols-outlined" fontSize="20px">
+          <Text as="span" className="material-symbols-outlined" fontSize="18px">
             add
           </Text>
           <Text as="span">קטגוריה ראשית חדשה</Text>
@@ -87,7 +87,7 @@ export default function Categories() {
                   <Button
                     variant="ghost"
                     size="xs"
-                    colorPalette="blue"
+                    colorPalette="brand"
                     onClick={handlers.expandAll}
                   >
                     הרחב הכל
@@ -96,7 +96,7 @@ export default function Categories() {
                   <Button
                     variant="ghost"
                     size="xs"
-                    colorPalette="blue"
+                    colorPalette="brand"
                     onClick={handlers.collapseAll}
                   >
                     כווץ הכל

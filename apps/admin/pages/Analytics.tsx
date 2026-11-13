@@ -14,7 +14,6 @@ import {
   PopularProductsChart,
   ConversionFunnelChart,
   TopSearchesBarList,
-  CartMetricsCard,
   ConversionMetricsCard,
 } from '../components/analytics';
 import { AnalyticsInterval } from '@shared/types';
@@ -33,7 +32,6 @@ export default function Analytics() {
   const salesSeries = useQuery(api.analytics.getSalesSeries, { interval: salesInterval });
   const conversionMetrics = useQuery(api.analytics.getConversionMetrics);
   const checkoutFunnel = useQuery(api.analytics.getCheckoutFunnel);
-  const cartMetrics = useQuery(api.analytics.getCartMetrics);
   const couponMetrics = useQuery(api.analytics.getCouponMetrics);
   const searchMetrics = useQuery(api.analytics.getSearchMetrics);
 
@@ -43,14 +41,13 @@ export default function Analytics() {
   const isSalesLoading = salesSeries === undefined;
   const isConversionLoading = conversionMetrics === undefined;
   const isFunnelLoading = checkoutFunnel === undefined;
-  const isCartLoading = cartMetrics === undefined;
   const isCouponsLoading = couponMetrics === undefined;
   const isSearchLoading = searchMetrics === undefined;
 
   // Track when all queries have loaded for the first time
   const allLoaded = summary !== undefined && viewsSeries !== undefined && newUsersSeries !== undefined &&
     salesSeries !== undefined && conversionMetrics !== undefined && checkoutFunnel !== undefined &&
-    cartMetrics !== undefined && couponMetrics !== undefined && searchMetrics !== undefined;
+    couponMetrics !== undefined && searchMetrics !== undefined;
   useEffect(() => {
     if (allLoaded) setHasEverLoaded(true);
   }, [allLoaded]);
@@ -61,6 +58,21 @@ export default function Analytics() {
   if (isLoading) {
     return <LoadingState message="טוען נתוני אנליטיקות..." />;
   }
+
+  // Average order value across the loaded series (replaces the removed cart-metrics card)
+  const seriesRevenue = salesSeries?.reduce((s, d) => s + (d.value || 0), 0) || 0;
+  const seriesOrders = salesSeries?.reduce((s, d) => s + (d.orders || 0), 0) || 0;
+  const avgOrderValue = seriesOrders > 0 ? seriesRevenue / seriesOrders : 0;
+  const avgOrderTrend = (() => {
+    if (!salesSeries || salesSeries.length < 2) return { value: 0, isPositive: true };
+    const last = salesSeries[salesSeries.length - 1];
+    const prev = salesSeries[salesSeries.length - 2];
+    const lastAvg = last.orders > 0 ? last.value / last.orders : 0;
+    const prevAvg = prev.orders > 0 ? prev.value / prev.orders : 0;
+    if (prevAvg === 0) return { value: 0, isPositive: true };
+    const change = ((lastAvg - prevAvg) / prevAvg) * 100;
+    return { value: change, isPositive: change >= 0 };
+  })();
 
   const formatChange = (value: number): string => {
     const sign = value >= 0 ? '+' : '';
@@ -82,34 +94,22 @@ export default function Analytics() {
         <LoadingOverlay isLoading={isSalesLoading}>
           <StatCard
             title="הכנסות היום"
-            value={salesSeries && salesSeries.length > 0
-              ? formatCurrency(salesSeries[salesSeries.length - 1]?.value || 0)
-              : '₪0'
-            }
-            icon="payments"
-            iconBg="green.500/10"
-            iconColor="green.500"
+            value={formatCurrency(summary?.revenueToday || 0)}
             trend={{
-              value: formatChange(summary?.viewsTodayChange || 0),
-              isPositive: (summary?.viewsTodayChange || 0) >= 0,
-              label: 'מהיום אתמול'
+              value: formatChange(summary?.revenueTodayChange || 0),
+              isPositive: (summary?.revenueTodayChange || 0) >= 0,
+              label: 'מאתמול'
             }}
           />
         </LoadingOverlay>
         <LoadingOverlay isLoading={isSalesLoading}>
           <StatCard
             title="הזמנות היום"
-            value={salesSeries && salesSeries.length > 0
-              ? (salesSeries[salesSeries.length - 1]?.orders || 0).toLocaleString('he-IL')
-              : '0'
-            }
-            icon="shopping_bag"
-            iconBg="blue.500/10"
-            iconColor="blue.500"
+            value={(summary?.ordersToday || 0).toLocaleString('he-IL')}
             trend={{
-              value: formatChange(summary?.viewsTodayChange || 0),
-              isPositive: (summary?.viewsTodayChange || 0) >= 0,
-              label: 'מהיום אתמול'
+              value: formatChange(summary?.ordersTodayChange || 0),
+              isPositive: (summary?.ordersTodayChange || 0) >= 0,
+              label: 'מאתמול'
             }}
           />
         </LoadingOverlay>
@@ -117,27 +117,21 @@ export default function Analytics() {
           <StatCard
             title="שיעור המרה"
             value={`${(conversionMetrics?.overallConversionRate || 0).toFixed(2)}%`}
-            icon="trending_up"
-            iconBg="purple.500/10"
-            iconColor="purple.500"
             trend={{
               value: formatChange(conversionMetrics?.overallConversionRateChange || 0),
               isPositive: (conversionMetrics?.overallConversionRateChange || 0) >= 0,
-              label: 'מהיום אתמול'
+              label: 'מאתמול'
             }}
           />
         </LoadingOverlay>
-        <LoadingOverlay isLoading={isCartLoading}>
+        <LoadingOverlay isLoading={isSalesLoading}>
           <StatCard
-            title="ממוצע סל"
-            value={formatCurrency(cartMetrics?.averageCartValueToday || 0)}
-            icon="shopping_cart"
-            iconBg="orange.500/10"
-            iconColor="orange.500"
+            title="ממוצע הזמנה"
+            value={formatCurrency(avgOrderValue)}
             trend={{
-              value: formatChange(0),
-              isPositive: true,
-              label: 'משבוע שעבר'
+              value: formatChange(avgOrderTrend.value),
+              isPositive: avgOrderTrend.isPositive,
+              label: 'מהתקופה הקודמת'
             }}
           />
         </LoadingOverlay>
@@ -158,7 +152,8 @@ export default function Analytics() {
             title="צפיות והמרות"
             interval={viewsInterval}
             onIntervalChange={setViewsInterval}
-            color="#8b5cf6"
+            color="#9CA3AF"
+            secondaryColor="#b13a48"
           />
         </LoadingOverlay>
       </SimpleGrid>
@@ -179,28 +174,13 @@ export default function Analytics() {
         }} />
       </LoadingOverlay>
 
-      {/* Funnel & Cart Metrics - Stack on mobile */}
-      <SimpleGrid columns={{ base: 1, lg: 2 }} gap="6">
-        <LoadingOverlay isLoading={isFunnelLoading}>
-          <ConversionFunnelChart
-            steps={checkoutFunnel?.steps || []}
-            totalConversion={checkoutFunnel?.totalConversion || 0}
-          />
-        </LoadingOverlay>
-        <LoadingOverlay isLoading={isCartLoading}>
-          <CartMetricsCard metrics={cartMetrics || {
-            cartsCreatedToday: 0,
-            cartsCreatedWeek: 0,
-            abandonedCartsToday: 0,
-            abandonmentRateToday: 0,
-            abandonmentRateChange: 0,
-            averageCartValueToday: 0,
-            averageCartValueWeek: 0,
-            ordersToday: 0,
-            ordersWeek: 0,
-          }} />
-        </LoadingOverlay>
-      </SimpleGrid>
+      {/* Conversion Funnel - Full width */}
+      <LoadingOverlay isLoading={isFunnelLoading}>
+        <ConversionFunnelChart
+          steps={checkoutFunnel?.steps || []}
+          totalConversion={checkoutFunnel?.totalConversion || 0}
+        />
+      </LoadingOverlay>
 
       {/* Top Products & Searches - Stack on mobile */}
       <SimpleGrid columns={{ base: 1, lg: 2 }} gap="6">
@@ -220,18 +200,18 @@ export default function Analytics() {
         <LoadingOverlay isLoading={isCouponsLoading}>
           <Card.Root bg="bg.panel" borderWidth="1px" borderColor="border">
             <Card.Body p="6">
-              <Heading size="md" fontWeight="bold" color="fg" mb="4">
+              <Heading size="md" fontWeight="medium" color="fg" mb="4">
                 נתוני קופונים
               </Heading>
               <SimpleGrid columns={2} gap="4">
                 <Box p="4" bg="bg.muted" rounded="lg" textAlign="center">
-                  <Text fontSize="2xl" fontWeight="bold" color="green.500">
+                  <Text fontSize="2xl" fontWeight="medium" color="fg" style={{ fontVariantNumeric: 'tabular-nums' }}>
                     {couponMetrics?.totalUsesThisMonth || 0}
                   </Text>
                   <Text fontSize="sm" color="fg.muted">שימושים החודש</Text>
                 </Box>
                 <Box p="4" bg="bg.muted" rounded="lg" textAlign="center">
-                  <Text fontSize="2xl" fontWeight="bold" color="blue.500">
+                  <Text fontSize="2xl" fontWeight="medium" color="fg" style={{ fontVariantNumeric: 'tabular-nums' }}>
                     {formatCurrency(couponMetrics?.totalDiscountGiven || 0)}
                   </Text>
                   <Text fontSize="sm" color="fg.muted">הנחות שניתנו</Text>
@@ -261,39 +241,77 @@ export default function Analytics() {
         <LoadingOverlay isLoading={isSummaryLoading}>
           <Card.Root bg="bg.panel" borderWidth="1px" borderColor="border">
             <Card.Body p="6">
-              <Heading size="md" fontWeight="bold" color="fg" mb="4">
+              <Heading size="md" fontWeight="medium" color="fg" mb="1">
                 נתוני משתמשים
               </Heading>
-              <SimpleGrid columns={2} gap="4">
-                <Box p="4" bg="bg.muted" rounded="lg" textAlign="center">
-                  <Text fontSize="xl" fontWeight="bold" color="fg">
-                    {(summary?.dau || 0).toLocaleString('he-IL')}
-                  </Text>
-                  <Text fontSize="sm" color="fg.muted">DAU</Text>
-                </Box>
-                <Box p="4" bg="bg.muted" rounded="lg" textAlign="center">
-                  <Text fontSize="xl" fontWeight="bold" color="fg">
-                    {(summary?.wau || 0).toLocaleString('he-IL')}
-                  </Text>
-                  <Text fontSize="sm" color="fg.muted">WAU</Text>
-                </Box>
-                <Box p="4" bg="bg.muted" rounded="lg" textAlign="center">
-                  <Text fontSize="xl" fontWeight="bold" color="fg">
-                    {(summary?.mau || 0).toLocaleString('he-IL')}
-                  </Text>
-                  <Text fontSize="sm" color="fg.muted">MAU</Text>
-                </Box>
-                <Box p="4" bg="bg.muted" rounded="lg" textAlign="center">
-                  <Text fontSize="xl" fontWeight="bold" color="fg">
-                    {(summary?.totalVisitors || 0).toLocaleString('he-IL')}
-                  </Text>
-                  <Text fontSize="sm" color="fg.muted">צפיות</Text>
-                </Box>
+              <Text fontSize="sm" color="fg.muted" mb="4">
+                כמות המשתמשים הרשומים שהיו פעילים בכל תקופה
+              </Text>
+              <SimpleGrid columns={{ base: 1, sm: 2 }} gap="4">
+                <UserStatTile
+                  value={(summary?.dau || 0).toLocaleString('he-IL')}
+                  acronym="DAU"
+                  explanation="Daily Active Users - משתמשים פעילים היום"
+                  change={summary?.dauChange}
+                  changeLabel="מאתמול"
+                />
+                <UserStatTile
+                  value={(summary?.wau || 0).toLocaleString('he-IL')}
+                  acronym="WAU"
+                  explanation="Weekly Active Users - משתמשים פעילים השבוע"
+                  change={summary?.wauChange}
+                  changeLabel="משבוע שעבר"
+                />
+                <UserStatTile
+                  value={(summary?.mau || 0).toLocaleString('he-IL')}
+                  acronym="MAU"
+                  explanation="Monthly Active Users - משתמשים פעילים החודש"
+                  change={summary?.mauChange}
+                  changeLabel="מחודש שעבר"
+                />
+                <UserStatTile
+                  value={(summary?.totalVisitors || 0).toLocaleString('he-IL')}
+                  acronym={"סה\"כ מבקרים"}
+                  explanation="מספר המבקרים הייחודיים מאז תחילת המדידה"
+                />
               </SimpleGrid>
             </Card.Body>
           </Card.Root>
         </LoadingOverlay>
       </SimpleGrid>
     </VStack>
+  );
+}
+
+function UserStatTile({
+  value,
+  acronym,
+  explanation,
+  change,
+  changeLabel,
+}: {
+  value: string;
+  acronym: string;
+  explanation: string;
+  change?: number;
+  changeLabel?: string;
+}) {
+  return (
+    <Box p="4" bg="bg.muted" rounded="lg" textAlign="center">
+      <Text fontSize="2xl" fontWeight="medium" color="fg">
+        {value}
+      </Text>
+      <Text fontSize="md" fontWeight="medium" color="fg" mt="1">
+        {acronym}
+      </Text>
+      <Text fontSize="xs" color="fg.muted" mt="1">
+        {explanation}
+      </Text>
+      {change !== undefined && changeLabel && Number.isFinite(change) && change !== 0 && (
+        <Text fontSize="xs" color={change > 0 ? 'green.500' : 'red.500'} mt="1">
+          {change > 0 ? '+' : ''}{change.toFixed(0)}% {changeLabel}
+        </Text>
+      )}
+    </Box>
   );
 }

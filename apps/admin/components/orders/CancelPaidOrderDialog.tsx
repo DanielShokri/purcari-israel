@@ -21,7 +21,7 @@ export default function CancelPaidOrderDialog({
   isSubmitting = false,
 }: CancelPaidOrderDialogProps) {
   return (
-    <Dialog.Root lazyMount open={isOpen} onOpenChange={(e) => !e.open && onClose()}>
+    <Dialog.Root placement="center" lazyMount open={isOpen} onOpenChange={(e) => !e.open && onClose()}>
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner>

@@ -30,7 +30,7 @@ export default function UserProfile({ user }: UserProfileProps) {
         }}
       />
       <VStack gap="0" align="end" display={{ base: 'none', lg: 'flex' }}>
-        <Text fontSize="sm" fontWeight="bold" color="fg" lineHeight="tight">
+        <Text fontSize="sm" fontWeight="medium" color="fg" lineHeight="tight">
           {user?.name || 'דניאל כהן'}
         </Text>
         <Text fontSize="xs" color="fg.muted">

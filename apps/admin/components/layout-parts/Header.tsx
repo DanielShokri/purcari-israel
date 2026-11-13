@@ -62,13 +62,13 @@ export default function Header({
           aria-expanded={isSidebarOpen}
           aria-label="פתח תפריט צדדי"
         >
-          <Text as="span" className="material-symbols-outlined" fontSize="24px">
+          <Text as="span" className="material-symbols-outlined" fontSize="18px">
             {isSidebarOpen ? 'close' : 'menu'}
           </Text>
         </Button>
 
         {/* Breadcrumbs */}
-        <HStack display={{ base: 'none', md: 'flex' }} fontSize="sm" color="fg.muted" alignItems="center">
+        <HStack display={{ base: 'none', md: 'flex' }} fontSize="16px" color="fg.muted" alignItems="center">
           <Text opacity={0.7}>ניהול</Text>
           <Text mx="2">/</Text>
           <Text fontWeight="medium" color="fg">{currentPageLabel}</Text>
@@ -84,10 +84,10 @@ export default function Header({
               <Text
                 as="span"
                 className="material-symbols-outlined"
-                fontSize="20px"
+                fontSize="18px"
                 color="fg.muted"
                 cursor="pointer"
-                _hover={{ color: 'blue.500' }}
+                _hover={{ color: 'brand.500' }}
                 onClick={onSearchSubmit}
               >
                 search
@@ -100,7 +100,7 @@ export default function Header({
               bg="bg.subtle"
               borderColor="transparent"
               _hover={{ borderColor: 'border' }}
-              _focus={{ borderColor: 'blue.500', bg: 'bg.panel' }}
+              _focus={{ borderColor: 'brand.500', bg: 'bg.panel' }}
               value={searchInput}
               onChange={(e) => onSearchChange(e.target.value)}
               onKeyDown={onSearchKeyDown}
@@ -115,10 +115,10 @@ export default function Header({
               <Text
                 as="span"
                 className="material-symbols-outlined"
-                fontSize="20px"
+                fontSize="18px"
                 color="fg.muted"
                 cursor="pointer"
-                _hover={{ color: 'blue.500' }}
+                _hover={{ color: 'brand.500' }}
                 onClick={onSearchSubmit}
               >
                 search
@@ -131,7 +131,7 @@ export default function Header({
               bg="bg.subtle"
               borderColor="transparent"
               _hover={{ borderColor: 'border' }}
-              _focus={{ borderColor: 'blue.500', bg: 'bg.panel' }}
+              _focus={{ borderColor: 'brand.500', bg: 'bg.panel' }}
               value={searchInput}
               onChange={(e) => onSearchChange(e.target.value)}
               onKeyDown={onSearchKeyDown}
@@ -143,24 +143,6 @@ export default function Header({
         <HStack gap="2">
           <ColorModeButton />
           <NotificationDropdown />
-          <Flex
-            as="button"
-            w="10"
-            h="10"
-            alignItems="center"
-            justifyContent="center"
-            rounded="full"
-            bg="bg.panel"
-            borderWidth="1px"
-            borderColor="border"
-            color="fg.muted"
-            transition="all 0.15s"
-            _hover={{ bg: 'bg.subtle' }}
-          >
-            <Text as="span" className="material-symbols-outlined" fontSize="22px">
-              settings
-            </Text>
-          </Flex>
         </HStack>
 
         {/* User Profile */}

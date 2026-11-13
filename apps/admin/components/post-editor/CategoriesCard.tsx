@@ -38,7 +38,7 @@ export default function CategoriesCard({
           <Heading size="md" color="fg">
             קטגוריות
           </Heading>
-          <Text as="span" className="material-symbols-outlined" fontSize="lg" color="fg.muted">
+          <Text as="span" className="material-symbols-outlined" fontSize="18px" color="fg.muted">
             category
           </Text>
         </Flex>
@@ -62,15 +62,15 @@ export default function CategoriesCard({
                 transition="colors"
               >
                 <Checkbox.Control />
-                <Text fontSize="sm" color="fg" _groupHover={{ color: 'blue.500' }} transition="colors">
+                <Text fontSize="sm" color="fg" _groupHover={{ color: 'brand.500' }} transition="colors">
                   {category.name}
                 </Text>
               </HStack>
             </Checkbox.Root>
           ))}
         </VStack>
-        <Button variant="ghost" size="sm" mt="4" colorPalette="blue">
-          <Text as="span" className="material-symbols-outlined" fontSize="lg">
+        <Button variant="ghost" size="sm" mt="4" colorPalette="brand">
+          <Text as="span" className="material-symbols-outlined" fontSize="18px">
             add
           </Text>
           הוסף קטגוריה חדשה

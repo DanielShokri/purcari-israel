@@ -102,6 +102,23 @@ export const getSummary = query({
     }
     const totalVisitors = allUniqueVisitors.size;
 
+    // Today's revenue + orders compared to yesterday (from order events)
+    let revenueToday = 0;
+    let revenueYesterday = 0;
+    let ordersToday = 0;
+    let ordersYesterday = 0;
+    for (const event of allEvents) {
+      if (event.event !== 'order_completed') continue;
+      const amount = event.properties?.total || 0;
+      if (event.timestamp >= todayStart && event.timestamp <= todayEnd) {
+        ordersToday++;
+        revenueToday += amount;
+      } else if (event.timestamp >= yesterdayStart && event.timestamp <= yesterdayEnd) {
+        ordersYesterday++;
+        revenueYesterday += amount;
+      }
+    }
+
     return {
       totalViews: totalVisitors,
       totalVisitors,
@@ -109,6 +126,10 @@ export const getSummary = query({
       viewsThisWeek: visitorsThisWeek,
       viewsThisMonth: visitorsThisMonth,
       viewsTodayChange: calculateChange(visitorsToday, visitorsYesterday),
+      revenueToday,
+      revenueTodayChange: calculateChange(revenueToday, revenueYesterday),
+      ordersToday,
+      ordersTodayChange: calculateChange(ordersToday, ordersYesterday),
       viewsWeekChange: calculateChange(visitorsThisWeek, visitorsLastWeek),
       viewsMonthChange: calculateChange(visitorsThisMonth, visitorsLastMonth),
       dau,

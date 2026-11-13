@@ -39,7 +39,7 @@ export default function TagsCard({
           <Heading size="md" color="fg">
             תגיות
           </Heading>
-          <Text as="span" className="material-symbols-outlined" fontSize="lg" color="fg.muted">
+          <Text as="span" className="material-symbols-outlined" fontSize="18px" color="fg.muted">
             label
           </Text>
         </Flex>
@@ -47,7 +47,7 @@ export default function TagsCard({
       <Card.Body p="5">
         <VStack gap="3" align="stretch">
           <Box position="relative">
-            <Text as="span" className="material-symbols-outlined" position="absolute" left="2.5" top="2.5" color="fg.subtle" fontSize="lg">
+            <Text as="span" className="material-symbols-outlined" position="absolute" left="2.5" top="2.5" color="fg.subtle" fontSize="18px">
               add
             </Text>
             <Input
@@ -64,7 +64,7 @@ export default function TagsCard({
                   onAddTag();
                 }
               }}
-              _focus={{ ringColor: 'blue.500', borderColor: 'blue.500' }}
+              _focus={{ ringColor: 'brand.500', borderColor: 'brand.500' }}
             />
           </Box>
           <HStack gap="2" flexWrap="wrap">
@@ -92,7 +92,7 @@ export default function TagsCard({
                   _hover={{ color: 'red.500' }}
                   aria-label="הסר תגית"
                 >
-                  <Text as="span" className="material-symbols-outlined" fontSize="sm">
+                  <Text as="span" className="material-symbols-outlined" fontSize="18px">
                     close
                   </Text>
                 </IconButton>

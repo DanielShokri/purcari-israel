@@ -30,7 +30,7 @@ export default function DeleteConfirmationDialog({
   };
 
   return (
-    <Dialog.Root lazyMount open={isOpen} onOpenChange={(e) => !e.open && onClose()}>
+    <Dialog.Root placement="center" lazyMount open={isOpen} onOpenChange={(e) => !e.open && onClose()}>
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner>

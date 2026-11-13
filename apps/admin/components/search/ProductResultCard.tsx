@@ -25,11 +25,11 @@ export default function ProductResultCard({ product, searchTerm, categoryLabel }
         justifyContent="space-between"
         gap="4"
         shadow="sm"
-        transition="all 0.15s"
+        transition="colors 0.15s ease-out"
         cursor="pointer"
         role="group"
         _hover={{
-          borderColor: 'blue.300',
+          borderColor: 'brand.300',
           shadow: 'md',
         }}
       >
@@ -52,10 +52,10 @@ export default function ProductResultCard({ product, searchTerm, categoryLabel }
           <Box>
             <Text
               fontSize="md"
-              fontWeight="bold"
+              fontWeight="medium"
               color="fg"
               transition="colors 0.15s"
-              _groupHover={{ color: 'blue.500' }}
+              _groupHover={{ color: 'brand.500' }}
             >
               <HighlightText text={product.productName} searchTerm={searchTerm} />
             </Text>

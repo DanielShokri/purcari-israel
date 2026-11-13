@@ -24,7 +24,7 @@ export default function ProductEditor() {
           <Breadcrumbs items={[{ label: 'ראשי', href: '#' }, { label: 'מוצרים', href: '#/products' }, { label: isEditMode ? watch('productName') || 'עריכת מוצר' : 'יצירת מוצר' }]} />
           <Flex direction={{ base: 'column', sm: 'row' }} justify="space-between" align={{ base: 'start', sm: 'center' }} gap="4" mb="8">
             <Box>
-              <Heading size={{ base: 'xl', sm: '2xl' }} color="fg" mb="1" letterSpacing="tight">{isEditMode ? watch('productName') || 'עריכת מוצר' : 'יצירת מוצר'}</Heading>
+              <Heading size={{ base: 'xl', sm: '2xl' }} color="fg" mb="1">{isEditMode ? watch('productName') || 'עריכת מוצר' : 'יצירת מוצר'}</Heading>
               <Text color="fg.muted" fontSize="sm">{isEditMode ? 'ערוך את פרטי המוצר, התיאור וההגדרות' : 'צור מוצר חדש עם תיאור והגדרות'}</Text>
             </Box>
             {saveError && (
@@ -32,14 +32,14 @@ export default function ProductEditor() {
                 <HStack><Text as="span" className="material-symbols-outlined" color="red.500">error</Text><Text color="red.600" fontWeight="medium">{saveError}</Text></HStack>
               </Box>
             )}
-            <Button variant="outline" size="sm" bg="bg.panel" borderColor="border"><Text as="span" className="material-symbols-outlined" fontSize="lg">visibility</Text>תצוגה מקדימה</Button>
+            <Button variant="outline" size="sm" bg="bg.panel" borderColor="border"><Text as="span" className="material-symbols-outlined" fontSize="18px">visibility</Text>תצוגה מקדימה</Button>
           </Flex>
           <form id="product-form" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
             <SimpleGrid columns={{ base: 1, sm: 2, lg: 12 }} gap={{ base: 6, sm: 8, lg: 8 }} alignItems="start">
               <VStack gap="6" gridColumn={{ lg: 'span 8' }} align="stretch">
                 <Card.Root><Card.Body p="6">
-                  <Text fontSize="sm" fontWeight="bold" color="fg" mb="3">שם המוצר</Text>
-                  <Input {...register('productName', { required: 'שדה חובה' })} size="lg" fontSize="lg" fontWeight="medium" placeholder="הוסף שם מוצר כאן..." bg="bg.subtle" borderColor="border" _focus={{ ring: 4, ringColor: 'blue.500/10', borderColor: 'blue.500' }} />
+                  <Text fontSize="sm" fontWeight="medium" color="fg" mb="3">שם המוצר</Text>
+                  <Input {...register('productName', { required: 'שדה חובה' })} size="lg" fontSize="lg" fontWeight="medium" placeholder="הוסף שם מוצר כאן..." bg="bg.subtle" borderColor="border" _focus={{ ring: 4, ringColor: 'brand.500/10', borderColor: 'brand.500' }} />
                 </Card.Body></Card.Root>
                 <RichTextEditor.Root editor={editor} css={{ '--content-min-height': '400px' }}>
                   <RichTextEditor.Toolbar>
@@ -53,7 +53,7 @@ export default function ProductEditor() {
                 </RichTextEditor.Root>
                 <Card.Root><Card.Body p="6">
                   <Flex justify="space-between" align="center" mb="3">
-                    <Text fontSize="sm" fontWeight="bold" color="fg">תיאור קצר</Text>
+                    <Text fontSize="sm" fontWeight="medium" color="fg">תיאור קצר</Text>
                     <Badge fontSize="xs" bg="bg.subtle" px="2" py="1" rounded="md">אופציונלי</Badge>
                   </Flex>
                   <textarea {...register('shortDescription')} placeholder="כתוב תיאור קצר שיופיע ברשימת המוצרים..." style={{ width: '100%', minHeight: '80px', padding: '12px', fontSize: '14px', borderRadius: '6px', border: '1px solid var(--chakra-colors-border)', background: 'var(--chakra-colors-bg-subtle)', resize: 'vertical' }} maxLength={500} />

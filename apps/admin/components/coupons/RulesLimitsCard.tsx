@@ -25,7 +25,7 @@ export function RulesLimitsCard({ register, errors }: RulesLimitsCardProps) {
         bg="bg.subtle"
       >
         <HStack gap="2">
-          <Text as="span" className="material-symbols-outlined" fontSize="lg" color="blue.500">
+          <Text as="span" className="material-symbols-outlined" fontSize="18px" color="brand.500">
             gavel
           </Text>
           <Heading size="md" color="fg">

@@ -41,7 +41,7 @@ function BannerPreview({ type, message }: { type: string; message: string }) {
   const getBannerStyles = () => {
     switch (type) {
       case 'info':
-        return { bg: 'blue.50', borderColor: 'blue.500', textColor: 'blue.800' };
+        return { bg: 'brand.50', borderColor: 'brand.500', textColor: 'brand.800' };
       case 'warning':
         return { bg: 'amber.50', borderColor: 'amber.500', textColor: 'amber.800' };
       case 'success':
@@ -51,7 +51,7 @@ function BannerPreview({ type, message }: { type: string; message: string }) {
       case 'maintenance':
         return { bg: 'orange.50', borderColor: 'orange.500', textColor: 'orange.800' };
       default:
-        return { bg: 'blue.50', borderColor: 'blue.500', textColor: 'blue.800' };
+        return { bg: 'brand.50', borderColor: 'brand.500', textColor: 'brand.800' };
     }
   };
 
@@ -140,7 +140,7 @@ export default function AnnouncementEditor({
   };
 
   return (
-    <Dialog.Root lazyMount open={isOpen} onOpenChange={(e) => !e.open && onClose()}>
+    <Dialog.Root placement="center" lazyMount open={isOpen} onOpenChange={(e) => !e.open && onClose()}>
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner>
@@ -174,7 +174,7 @@ export default function AnnouncementEditor({
                       placeholder="הזן כותרת להודעה"
                       bg="bg.subtle"
                       borderColor={errors.title ? 'red.500' : 'border'}
-                      _focus={{ ring: 2, ringColor: 'blue.500/20', borderColor: 'blue.500' }}
+                      _focus={{ ring: 2, ringColor: 'brand.500/20', borderColor: 'brand.500' }}
                     />
                     {errors.title && (
                       <Text fontSize="xs" color="red.500">
@@ -196,7 +196,7 @@ export default function AnnouncementEditor({
                       placeholder="הזן את תוכן ההודעה"
                       bg="bg.subtle"
                       borderColor={errors.message ? 'red.500' : 'border'}
-                      _focus={{ ring: 2, ringColor: 'blue.500/20', borderColor: 'blue.500' }}
+                      _focus={{ ring: 2, ringColor: 'brand.500/20', borderColor: 'brand.500' }}
                       rows={3}
                     />
                     {errors.message && (
@@ -257,7 +257,7 @@ export default function AnnouncementEditor({
                         type="date"
                         bg="bg.subtle"
                         borderColor={errors.startDate ? 'red.500' : 'border'}
-                        _focus={{ ring: 2, ringColor: 'blue.500/20', borderColor: 'blue.500' }}
+                        _focus={{ ring: 2, ringColor: 'brand.500/20', borderColor: 'brand.500' }}
                         dir="ltr"
                       />
                       {errors.startDate && (
@@ -276,7 +276,7 @@ export default function AnnouncementEditor({
                         type="date"
                         bg="bg.subtle"
                         borderColor="border"
-                        _focus={{ ring: 2, ringColor: 'blue.500/20', borderColor: 'blue.500' }}
+                        _focus={{ ring: 2, ringColor: 'brand.500/20', borderColor: 'brand.500' }}
                         dir="ltr"
                       />
                     </VStack>
@@ -325,7 +325,7 @@ export default function AnnouncementEditor({
                   </Button>
                 </Dialog.ActionTrigger>
                 <Button
-                  colorPalette="blue"
+                  colorPalette="brand"
                   type="submit"
                   form="announcement-form"
                   loading={isLoading}

@@ -58,7 +58,7 @@ export default function Pagination({
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
           aria-label="הקודם"
         >
-          <Text as="span" className="material-symbols-outlined" fontSize="20px">
+          <Text as="span" className="material-symbols-outlined" fontSize="18px">
             chevron_right
           </Text>
         </IconButton>
@@ -68,7 +68,7 @@ export default function Pagination({
             key={page}
             size="sm"
             variant={currentPage === page ? 'solid' : 'ghost'}
-            colorPalette={currentPage === page ? 'blue' : 'gray'}
+            colorPalette={currentPage === page ? 'brand' : 'gray'}
             px="3.5"
             onClick={() => onPageChange(page)}
           >
@@ -98,7 +98,7 @@ export default function Pagination({
           onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
           aria-label="הבא"
         >
-          <Text as="span" className="material-symbols-outlined" fontSize="20px">
+          <Text as="span" className="material-symbols-outlined" fontSize="18px">
             chevron_left
           </Text>
         </IconButton>

@@ -62,7 +62,7 @@ const getStatusBadge = (status: CategoryStatus) => {
 const getIconColor = (color?: string) => {
   switch (color) {
     case 'blue':
-      return { bg: 'blue.100', color: 'blue.600', _dark: { bg: 'blue.900/30', color: 'blue.400' } };
+      return { bg: 'brand.100', color: 'brand.600', _dark: { bg: 'brand.900/30', color: 'brand.400' } };
     case 'purple':
       return { bg: 'purple.100', color: 'purple.600', _dark: { bg: 'purple.900/30', color: 'purple.400' } };
     case 'orange':
@@ -95,21 +95,21 @@ export default function CategoryTreeItem({
         p="2"
         rounded="lg"
         cursor="pointer"
-        bg={isSelected ? 'blue.50' : 'transparent'}
+        bg={isSelected ? 'brand.50' : 'transparent'}
         borderWidth="1px"
-        borderColor={isSelected ? 'blue.200' : 'transparent'}
+        borderColor={isSelected ? 'brand.200' : 'transparent'}
         _hover={{
-          bg: isSelected ? 'blue.50' : 'bg.subtle',
-          borderColor: isSelected ? 'blue.200' : 'border.muted',
+          bg: isSelected ? 'brand.50' : 'bg.subtle',
+          borderColor: isSelected ? 'brand.200' : 'border.muted',
           '& .action-buttons': {
             opacity: 1,
           },
         }}
         _dark={{
-          bg: isSelected ? 'blue.950' : 'transparent',
-          borderColor: isSelected ? 'blue.800' : 'transparent',
+          bg: isSelected ? 'brand.950' : 'transparent',
+          borderColor: isSelected ? 'brand.800' : 'transparent',
           _hover: {
-            bg: isSelected ? 'blue.950' : 'gray.800',
+            bg: isSelected ? 'brand.950' : 'gray.800',
           },
         }}
         onClick={() => onSelect(category._id)}
@@ -169,7 +169,7 @@ export default function CategoryTreeItem({
             <Text
               as="span"
               className="material-symbols-outlined"
-              fontSize="20px"
+              fontSize="18px"
               transform={isExpanded ? 'none' : 'rotate(-90deg)'}
             >
               expand_more
@@ -191,7 +191,7 @@ export default function CategoryTreeItem({
           <Text
             as="span"
             className="material-symbols-outlined"
-            fontSize="20px"
+            fontSize="18px"
           >
             {category.icon || 'category'}
           </Text>
@@ -200,8 +200,8 @@ export default function CategoryTreeItem({
         <Text
           fontSize="sm"
           fontWeight={isSelected ? 'bold' : 'medium'}
-          color={isSelected ? 'blue.600' : 'fg'}
-          _dark={{ color: isSelected ? 'blue.400' : 'fg' }}
+          color={isSelected ? 'brand.600' : 'fg'}
+          _dark={{ color: isSelected ? 'brand.400' : 'fg' }}
           flex="1"
         >
           {category.name}
@@ -216,7 +216,7 @@ export default function CategoryTreeItem({
             <IconButton
               variant="ghost"
               size="xs"
-              colorPalette="blue"
+              colorPalette="brand"
               onClick={(e) => {
                 e.stopPropagation();
                 onEdit(category._id);
@@ -257,8 +257,8 @@ export default function CategoryTreeItem({
               variant="ghost"
               size="xs"
               color="fg.muted"
-              _hover={{ bg: 'blue.50', color: 'blue.500' }}
-              _dark={{ _hover: { bg: 'blue.900/20', color: 'blue.400' } }}
+              _hover={{ bg: 'brand.50', color: 'brand.500' }}
+              _dark={{ _hover: { bg: 'brand.900/20', color: 'brand.400' } }}
               onClick={(e) => {
                 e.stopPropagation();
                 onSelect(category._id);

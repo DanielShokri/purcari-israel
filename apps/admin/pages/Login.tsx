@@ -147,10 +147,10 @@ export default function Login() {
                   type="submit"
                   loading={isLoading}
                   loadingText="מאמת הרשאות..."
-                  colorPalette="blue"
+                  colorPalette="brand"
                   size="lg"
                   w="full"
-                  fontWeight="bold"
+                  fontWeight="medium"
                   shadow="lg"
                   css={{ boxShadow: '0 10px 25px -5px rgba(59, 130, 246, 0.3)' }}
                 >

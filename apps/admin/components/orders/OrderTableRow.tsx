@@ -86,7 +86,7 @@ export default function OrderTableRow({
               color={`${avatarColor}.600`}
               alignItems="center"
               justifyContent="center"
-              fontWeight="bold"
+              fontWeight="medium"
               fontSize="xs"
               _dark={{
                 bg: `${avatarColor}.900`,
@@ -129,11 +129,11 @@ export default function OrderTableRow({
             variant="ghost"
             size="xs"
             color="fg.muted"
-            _hover={{ color: 'blue.500', bg: 'bg.panel' }}
+            _hover={{ color: 'brand.500', bg: 'bg.panel' }}
             onClick={onView}
             aria-label="צפה בפרטים"
           >
-            <Text as="span" className="material-symbols-outlined" fontSize="20px">
+            <Text as="span" className="material-symbols-outlined" fontSize="18px">
               visibility
             </Text>
           </IconButton>
@@ -141,11 +141,11 @@ export default function OrderTableRow({
             variant="ghost"
             size="xs"
             color="fg.muted"
-            _hover={{ color: 'blue.500', bg: 'bg.panel' }}
+            _hover={{ color: 'brand.500', bg: 'bg.panel' }}
             onClick={onEdit}
             aria-label="ערוך"
           >
-            <Text as="span" className="material-symbols-outlined" fontSize="20px">
+            <Text as="span" className="material-symbols-outlined" fontSize="18px">
               edit
             </Text>
           </IconButton>
@@ -157,7 +157,7 @@ export default function OrderTableRow({
             onClick={onDelete}
             aria-label="מחק"
           >
-            <Text as="span" className="material-symbols-outlined" fontSize="20px">
+            <Text as="span" className="material-symbols-outlined" fontSize="18px">
               delete
             </Text>
           </IconButton>

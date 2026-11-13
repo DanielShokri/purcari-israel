@@ -58,7 +58,7 @@ export default function RelatedProductsCard({
           <Heading size="md" color="fg">
             מוצרים קשורים
           </Heading>
-          <Text as="span" className="material-symbols-outlined" fontSize="lg" color="fg.muted">
+          <Text as="span" className="material-symbols-outlined" fontSize="18px" color="fg.muted">
             link
           </Text>
         </Flex>
@@ -79,7 +79,7 @@ export default function RelatedProductsCard({
               placeholder="חפש מוצר להוספה..."
               bg="bg.subtle"
               borderColor="border"
-              _focus={{ ringColor: 'blue.500', borderColor: 'blue.500' }}
+              _focus={{ ringColor: 'brand.500', borderColor: 'brand.500' }}
             />
             <Text
               as="span"
@@ -88,7 +88,7 @@ export default function RelatedProductsCard({
               top="50%"
               left="3"
               transform="translateY(-50%)"
-              fontSize="lg"
+              fontSize="18px"
               color="fg.muted"
               pointerEvents="none"
             >
@@ -169,12 +169,12 @@ export default function RelatedProductsCard({
                       w="8"
                       h="8"
                       rounded="md"
-                      bg="blue.500/10"
+                      bg="brand.500/10"
                       display="flex"
                       alignItems="center"
                       justifyContent="center"
                     >
-                      <Text as="span" className="material-symbols-outlined" fontSize="lg" color="blue.500">
+                      <Text as="span" className="material-symbols-outlined" fontSize="18px" color="brand.500">
                         inventory_2
                       </Text>
                     </Box>
@@ -190,7 +190,7 @@ export default function RelatedProductsCard({
                     _hover={{ color: 'red.500', bg: 'red.500/10' }}
                     onClick={() => onRemoveProduct(product.id)}
                   >
-                    <Text as="span" className="material-symbols-outlined" fontSize="lg">
+                    <Text as="span" className="material-symbols-outlined" fontSize="18px">
                       close
                     </Text>
                   </IconButton>
@@ -199,7 +199,7 @@ export default function RelatedProductsCard({
             </VStack>
           ) : (
             <Box p="4" bg="bg.subtle" rounded="lg" textAlign="center">
-              <Text as="span" className="material-symbols-outlined" fontSize="2xl" color="fg.muted" mb="2">
+              <Text as="span" className="material-symbols-outlined" fontSize="18px" color="fg.muted" mb="2">
                 link_off
               </Text>
               <Text fontSize="sm" color="fg.muted">

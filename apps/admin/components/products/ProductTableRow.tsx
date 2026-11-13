@@ -71,7 +71,7 @@ export default function ProductTableRow({
                 rounded="full"
                 p="0.5"
               >
-                <Text as="span" className="material-symbols-outlined" fontSize="12px" color="yellow.900">
+                <Text as="span" className="material-symbols-outlined" fontSize="18px" color="yellow.900">
                   star
                 </Text>
               </Box>
@@ -83,7 +83,7 @@ export default function ProductTableRow({
                 fontSize="sm"
                 fontWeight="semibold"
                 color="fg"
-                _hover={{ color: 'blue.500' }}
+                _hover={{ color: 'brand.500' }}
                 cursor="pointer"
                 transition="colors"
                 onClick={onEdit}
@@ -113,11 +113,11 @@ export default function ProductTableRow({
             variant="ghost"
             size="sm"
             color="fg.muted"
-            _hover={{ bg: 'gray.100', color: 'blue.500' }}
+            _hover={{ bg: 'gray.100', color: 'brand.500' }}
             aria-label="ערוך"
             onClick={onEdit}
           >
-            <Text as="span" className="material-symbols-outlined" fontSize="20px">
+            <Text as="span" className="material-symbols-outlined" fontSize="18px">
               edit
             </Text>
           </IconButton>
@@ -129,7 +129,7 @@ export default function ProductTableRow({
             aria-label="מחק"
             onClick={onDelete}
           >
-            <Text as="span" className="material-symbols-outlined" fontSize="20px">
+            <Text as="span" className="material-symbols-outlined" fontSize="18px">
               delete
             </Text>
           </IconButton>

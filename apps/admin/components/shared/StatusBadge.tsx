@@ -57,17 +57,19 @@ export default function StatusBadge({ status, config, variant = 'simple' }: Stat
   );
 }
 
-// Pre-configured status badges for common use cases
+// Pre-configured status badges for common use cases.
+// Hue carries meaning only: green = live/good, red = error/cancelled,
+// yellow = needs attention, gray = neutral state. Categories use gray.
 export const productStatusConfig: Record<string, StatusConfig> = {
   published: { colorPalette: 'green', label: 'פורסם' },
   draft: { colorPalette: 'gray', label: 'טיוטה' },
-  archived: { colorPalette: 'orange', label: 'ממתין' },
+  archived: { colorPalette: 'gray', label: 'ממתין' },
 };
 
 export const categoryStatusConfig: Record<string, StatusConfig> = {
   active: { colorPalette: 'green', label: 'פעיל' },
   hidden: { colorPalette: 'gray', label: 'מוסתר' },
-  draft: { colorPalette: 'orange', label: 'טיוטה' },
+  draft: { colorPalette: 'gray', label: 'טיוטה' },
 };
 
 export const userStatusConfig: Record<string, StatusConfig> = {
@@ -77,31 +79,31 @@ export const userStatusConfig: Record<string, StatusConfig> = {
 };
 
 export const userRoleConfig: Record<string, StatusConfig> = {
-  admin: { colorPalette: 'blue', label: 'מנהל' },
-  editor: { colorPalette: 'purple', label: 'עורך' },
+  admin: { colorPalette: 'gray', label: 'מנהל' },
+  editor: { colorPalette: 'gray', label: 'עורך' },
   viewer: { colorPalette: 'gray', label: 'צופה' },
 };
 
 export const orderStatusConfig: Record<string, StatusConfig> = {
   completed: { colorPalette: 'green', label: 'הושלם' },
-  processing: { colorPalette: 'blue', label: 'בטיפול' },
+  processing: { colorPalette: 'gray', label: 'בטיפול', showDot: true },
   pending: { colorPalette: 'yellow', label: 'ממתין' },
   cancelled: { colorPalette: 'red', label: 'בוטל' },
 };
 
 export const couponStatusConfig: Record<string, StatusConfig> = {
   active: { colorPalette: 'green', label: 'פעיל', showDot: true },
-  paused: { colorPalette: 'yellow', label: 'מושהה' },
+  paused: { colorPalette: 'gray', label: 'מושהה' },
   expired: { colorPalette: 'red', label: 'פג תוקף' },
-  scheduled: { colorPalette: 'blue', label: 'מתוזמן' },
+  scheduled: { colorPalette: 'gray', label: 'מתוזמן' },
 };
 
 export const couponDiscountTypeConfig: Record<string, StatusConfig> = {
-  percentage: { colorPalette: 'blue', label: 'אחוז הנחה' },
-  fixed_amount: { colorPalette: 'green', label: 'סכום קבוע' },
-  free_shipping: { colorPalette: 'purple', label: 'משלוח חינם' },
-  free_product: { colorPalette: 'orange', label: 'מוצר חינם' },
-  buy_x_get_y: { colorPalette: 'teal', label: 'קנה X קבל Y' },
+  percentage: { colorPalette: 'gray', label: 'אחוז הנחה' },
+  fixed_amount: { colorPalette: 'gray', label: 'סכום קבוע' },
+  free_shipping: { colorPalette: 'gray', label: 'משלוח חינם' },
+  free_product: { colorPalette: 'gray', label: 'מוצר חינם' },
+  buy_x_get_y: { colorPalette: 'gray', label: 'קנה X קבל Y' },
 };
 
 export const cartRuleStatusConfig: Record<string, StatusConfig> = {
@@ -110,17 +112,17 @@ export const cartRuleStatusConfig: Record<string, StatusConfig> = {
 };
 
 export const cartRuleTypeConfig: Record<string, StatusConfig> = {
-  shipping: { colorPalette: 'purple', label: 'משלוח' },
-  discount: { colorPalette: 'orange', label: 'הנחה' },
-  restriction: { colorPalette: 'red', label: 'הגבלות' },
-  benefit: { colorPalette: 'blue', label: 'הטבה' },
+  shipping: { colorPalette: 'gray', label: 'משלוח' },
+  discount: { colorPalette: 'gray', label: 'הנחה' },
+  restriction: { colorPalette: 'gray', label: 'הגבלות' },
+  benefit: { colorPalette: 'gray', label: 'הטבה' },
 };
 
 export const announcementStatusConfig: Record<string, StatusConfig> = {
   active: { colorPalette: 'green', label: 'פעיל', showDot: true },
-  scheduled: { colorPalette: 'amber', label: 'מתוזמן' },
+  scheduled: { colorPalette: 'gray', label: 'מתוזמן' },
   expired: { colorPalette: 'gray', label: 'פג תוקף' },
-  draft: { colorPalette: 'slate', label: 'טיוטה' },
+  draft: { colorPalette: 'gray', label: 'טיוטה' },
 };
 
 export const announcementTypeConfig: Record<string, StatusConfig> = {

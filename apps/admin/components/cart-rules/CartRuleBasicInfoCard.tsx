@@ -42,7 +42,7 @@ export default function CartRuleBasicInfoCard({
       >
         <Flex justify="space-between" alignItems="center">
           <HStack gap="2">
-            <Text as="span" className="material-symbols-outlined" fontSize="lg" color="blue.500">
+            <Text as="span" className="material-symbols-outlined" fontSize="18px" color="brand.500">
               rule
             </Text>
             <Heading size="md" color="fg">
@@ -83,7 +83,7 @@ export default function CartRuleBasicInfoCard({
               placeholder="לדוגמה: משלוח חינם מעל 300₪"
               bg="bg.subtle"
               borderColor="border"
-              _focus={{ ring: 2, ringColor: 'blue.500/20', borderColor: 'blue.500' }}
+              _focus={{ ring: 2, ringColor: 'brand.500/20', borderColor: 'brand.500' }}
             />
             {errors.name && (
               <Text fontSize="xs" color="red.500">{errors.name.message}</Text>
@@ -107,13 +107,13 @@ export default function CartRuleBasicInfoCard({
                   <Select.Control
                     bg="bg.subtle"
                     borderColor="border"
-                    _focus={{ ring: 2, ringColor: 'blue.500/20', borderColor: 'blue.500' }}
+                    _focus={{ ring: 2, ringColor: 'brand.500/20', borderColor: 'brand.500' }}
                   >
                     <Select.Trigger>
                       <Select.ValueText placeholder="בחר סוג חוק" />
                     </Select.Trigger>
                     <Select.IndicatorGroup>
-                      <Text as="span" className="material-symbols-outlined" fontSize="xl" color="fg.muted">
+                      <Text as="span" className="material-symbols-outlined" fontSize="18px" color="fg.muted">
                         expand_more
                       </Text>
                     </Select.IndicatorGroup>
@@ -154,7 +154,7 @@ export default function CartRuleBasicInfoCard({
             bg="bg.subtle"
             borderColor="border"
             rows={3}
-            _focus={{ ring: 2, ringColor: 'blue.500/20', borderColor: 'blue.500' }}
+            _focus={{ ring: 2, ringColor: 'brand.500/20', borderColor: 'brand.500' }}
           />
         </VStack>
       </Card.Body>

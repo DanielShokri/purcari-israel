@@ -112,7 +112,7 @@ export default function FeaturedImageCard({ imageUrl, onImageUrlChange }: Featur
           <Heading size="md" color="fg">
             תמונה ראשית
           </Heading>
-          <Text as="span" className="material-symbols-outlined" fontSize="lg" color="fg.muted">
+          <Text as="span" className="material-symbols-outlined" fontSize="18px" color="fg.muted">
             image
           </Text>
         </Flex>
@@ -128,12 +128,12 @@ export default function FeaturedImageCard({ imageUrl, onImageUrlChange }: Featur
             borderStyle={hasImage && !isDragOver ? 'solid' : 'dashed'}
             borderColor={
               isDragOver
-                ? 'blue.500'
+                ? 'brand.500'
                 : error
                   ? 'red.500'
                   : 'border'
             }
-            bg={isDragOver ? 'blue.500/5' : 'bg.subtle'}
+            bg={isDragOver ? 'brand.500/5' : 'bg.subtle'}
             display="flex"
             flexDirection="column"
             alignItems="center"
@@ -152,16 +152,16 @@ export default function FeaturedImageCard({ imageUrl, onImageUrlChange }: Featur
           >
             {isUploading ? (
               <VStack gap="3" p="4">
-                <Spinner size="lg" color="blue.500" borderWidth="3px" />
+                <Spinner size="lg" color="brand.500" borderWidth="3px" />
                 <Text fontSize="sm" color="fg.muted">מעלה תמונה...</Text>
               </VStack>
             ) : hasImage ? (
               isDragOver ? (
                 <VStack gap="2" p="4" textAlign="center">
-                  <Text as="span" className="material-symbols-outlined" fontSize="4xl" color="blue.500">
+                  <Text as="span" className="material-symbols-outlined" fontSize="18px" color="brand.500">
                     download
                   </Text>
-                  <Text fontSize="sm" fontWeight="medium" color="blue.500">
+                  <Text fontSize="sm" fontWeight="medium" color="brand.500">
                     שחררו להחלפת התמונה
                   </Text>
                 </VStack>
@@ -195,12 +195,12 @@ export default function FeaturedImageCard({ imageUrl, onImageUrlChange }: Featur
                 </>
               )
             ) : (
-              <VStack gap="2" p="4" textAlign="center" transition="all 0.15s">
+              <VStack gap="2" p="4" textAlign="center" transition="colors 0.15s ease-out">
                 <Text
                   as="span"
                   className="material-symbols-outlined"
-                  fontSize="4xl"
-                  color={isDragOver ? 'blue.500' : 'fg.muted'}
+                  fontSize="18px"
+                  color={isDragOver ? 'brand.500' : 'fg.muted'}
                   mb="2"
                 >
                   upload
@@ -245,7 +245,7 @@ export default function FeaturedImageCard({ imageUrl, onImageUrlChange }: Featur
               placeholder="או הזינו כתובת URL ידנית: https://..."
               bg="bg.subtle"
               borderColor="border"
-              _focus={{ ringColor: 'blue.500', borderColor: 'blue.500' }}
+              _focus={{ ringColor: 'brand.500', borderColor: 'brand.500' }}
             />
           </HStack>
         </VStack>

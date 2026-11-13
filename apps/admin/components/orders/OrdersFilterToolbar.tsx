@@ -48,7 +48,7 @@ export default function OrdersFilterToolbar({
       <Box flex="2" minW="200px">
         <InputGroup
           startElement={
-            <Text as="span" className="material-symbols-outlined" fontSize="20px" color="fg.muted">
+            <Text as="span" className="material-symbols-outlined" fontSize="18px" color="fg.muted">
               search
             </Text>
           }

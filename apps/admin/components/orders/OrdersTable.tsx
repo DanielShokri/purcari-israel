@@ -51,22 +51,22 @@ export default function OrdersTable({
                     <Checkbox.Control />
                   </Checkbox.Root>
                 </Table.ColumnHeader>
-                <Table.ColumnHeader px={{ base: '4', lg: '6' }} py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted">
+                <Table.ColumnHeader px={{ base: '4', lg: '6' }} py="4" fontSize="xs" fontWeight="semibold" color="fg.muted">
                   מזהה הזמנה
                 </Table.ColumnHeader>
-                <Table.ColumnHeader px={{ base: '4', lg: '6' }} py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted">
+                <Table.ColumnHeader px={{ base: '4', lg: '6' }} py="4" fontSize="xs" fontWeight="semibold" color="fg.muted">
                   שם לקוח
                 </Table.ColumnHeader>
-                <Table.ColumnHeader px={{ base: '4', lg: '6' }} py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted" display={{ base: 'none', md: 'table-cell' }}>
+                <Table.ColumnHeader px={{ base: '4', lg: '6' }} py="4" fontSize="xs" fontWeight="semibold" color="fg.muted" display={{ base: 'none', md: 'table-cell' }}>
                   תאריך
                 </Table.ColumnHeader>
-                <Table.ColumnHeader px={{ base: '4', lg: '6' }} py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted">
+                <Table.ColumnHeader px={{ base: '4', lg: '6' }} py="4" fontSize="xs" fontWeight="semibold" color="fg.muted">
                   סה"כ
                 </Table.ColumnHeader>
-                <Table.ColumnHeader px={{ base: '4', lg: '6' }} py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted">
+                <Table.ColumnHeader px={{ base: '4', lg: '6' }} py="4" fontSize="xs" fontWeight="semibold" color="fg.muted">
                   סטטוס
                 </Table.ColumnHeader>
-                <Table.ColumnHeader px={{ base: '4', lg: '6' }} py="4" fontSize="xs" textTransform="uppercase" fontWeight="semibold" color="fg.muted" textAlign="start">
+                <Table.ColumnHeader px={{ base: '4', lg: '6' }} py="4" fontSize="xs" fontWeight="semibold" color="fg.muted" textAlign="start">
                   פעולות
                 </Table.ColumnHeader>
               </Table.Row>

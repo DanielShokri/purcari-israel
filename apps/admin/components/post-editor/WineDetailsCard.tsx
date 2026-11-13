@@ -61,7 +61,7 @@ export default function WineDetailsCard({
           <Heading size="md" color="fg">
             פרטי יין
           </Heading>
-          <Text as="span" className="material-symbols-outlined" fontSize="lg" color="fg.muted">
+          <Text as="span" className="material-symbols-outlined" fontSize="18px" color="fg.muted">
             wine_bar
           </Text>
         </Flex>
@@ -70,7 +70,7 @@ export default function WineDetailsCard({
         <VStack gap="4" align="stretch">
           {/* Wine Type */}
           <VStack align="start" gap="2">
-            <Text fontSize="xs" fontWeight="bold" color="fg.muted" textTransform="uppercase" letterSpacing="wider">
+            <Text fontSize="xs" fontWeight="medium" color="fg.muted">
               סוג יין
             </Text>
             <Select.Root
@@ -84,12 +84,12 @@ export default function WineDetailsCard({
                 <Select.Trigger
                   bg="bg.subtle"
                   borderColor="border"
-                  _focus={{ ringColor: 'blue.500', borderColor: 'blue.500' }}
+                  _focus={{ ringColor: 'brand.500', borderColor: 'brand.500' }}
                 >
                   <Select.ValueText placeholder="בחר סוג יין" />
                 </Select.Trigger>
                 <Select.IndicatorGroup>
-                  <Text as="span" className="material-symbols-outlined" fontSize="xl" color="fg.muted">
+                  <Text as="span" className="material-symbols-outlined" fontSize="18px" color="fg.muted">
                     expand_more
                   </Text>
                 </Select.IndicatorGroup>
@@ -112,7 +112,7 @@ export default function WineDetailsCard({
           {/* Volume and Vintage - stack vertically on mobile */}
           <HStack gap="4" direction={{ base: 'column', sm: 'row' }} align="stretch">
             <VStack align="start" gap="2" flex="1">
-              <Text fontSize="xs" fontWeight="bold" color="fg.muted" textTransform="uppercase" letterSpacing="wider">
+              <Text fontSize="xs" fontWeight="medium" color="fg.muted">
                 נפח
               </Text>
               <Input
@@ -125,7 +125,7 @@ export default function WineDetailsCard({
               />
             </VStack>
             <VStack align="start" gap="2" flex="1">
-              <Text fontSize="xs" fontWeight="bold" color="fg.muted" textTransform="uppercase" letterSpacing="wider">
+              <Text fontSize="xs" fontWeight="medium" color="fg.muted">
                 שנת בציר
               </Text>
               <Input
@@ -142,7 +142,7 @@ export default function WineDetailsCard({
 
           {/* Grape Variety */}
           <VStack align="start" gap="2">
-            <Text fontSize="xs" fontWeight="bold" color="fg.muted" textTransform="uppercase" letterSpacing="wider">
+            <Text fontSize="xs" fontWeight="medium" color="fg.muted">
               זן ענבים
             </Text>
             <Input
@@ -157,7 +157,7 @@ export default function WineDetailsCard({
 
           {/* Serving Temperature */}
           <VStack align="start" gap="2">
-            <Text fontSize="xs" fontWeight="bold" color="fg.muted" textTransform="uppercase" letterSpacing="wider">
+            <Text fontSize="xs" fontWeight="medium" color="fg.muted">
               טמפרטורת הגשה
             </Text>
             <Input

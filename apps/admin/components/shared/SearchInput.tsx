@@ -24,7 +24,7 @@ export default function SearchInput({
         color="fg.muted"
         pointerEvents="none"
       >
-        <Text as="span" className="material-symbols-outlined" fontSize="20px">
+        <Text as="span" className="material-symbols-outlined" fontSize="18px">
           search
         </Text>
       </Box>

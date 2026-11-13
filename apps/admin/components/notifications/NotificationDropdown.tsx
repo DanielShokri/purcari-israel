@@ -59,10 +59,10 @@ export default function NotificationDropdown() {
             borderWidth="1px"
             borderColor="border"
             color="fg.muted"
-            transition="all 0.15s"
+            transition="colors 0.15s ease-out"
             _hover={{ bg: 'bg.subtle' }}
           >
-            <Text as="span" className="material-symbols-outlined" fontSize="22px">
+            <Text as="span" className="material-symbols-outlined" fontSize="18px">
               notifications
             </Text>
           </Flex>
@@ -103,7 +103,7 @@ export default function NotificationDropdown() {
               borderColor="border"
             >
               <Flex align="center" gap="2">
-                <Text fontWeight="bold" color="fg">
+                <Text fontWeight="medium" color="fg">
                   התראות
                 </Text>
                 {(unreadCount ?? 0) > 0 && (
@@ -114,10 +114,10 @@ export default function NotificationDropdown() {
                     h="5"
                     px="1.5"
                     rounded="full"
-                    bg="blue.500"
+                    bg="brand.500"
                     color="white"
                     fontSize="xs"
-                    fontWeight="bold"
+                    fontWeight="medium"
                   >
                     {unreadCount}
                   </Flex>
@@ -142,7 +142,7 @@ export default function NotificationDropdown() {
               {isLoading ? (
                 <Flex justify="center" align="center" py="8">
                   <VStack gap="3">
-                    <Spinner size="md" color="blue.500" />
+                    <Spinner size="md" color="brand.500" />
                     <Text fontSize="sm" color="fg.muted">
                       טוען התראות...
                     </Text>
@@ -165,7 +165,7 @@ export default function NotificationDropdown() {
                   <Text
                     as="span"
                     className="material-symbols-outlined"
-                    fontSize="40px"
+                    fontSize="18px"
                     color="fg.subtle"
                   >
                     notifications_off
@@ -189,9 +189,9 @@ export default function NotificationDropdown() {
                   variant="ghost"
                   w="full"
                   size="sm"
-                  color="blue.500"
+                  color="brand.500"
                   fontWeight="medium"
-                  _hover={{ bg: 'blue.500/10' }}
+                  _hover={{ bg: 'brand.500/10' }}
                   onClick={handleViewAll}
                 >
                   <Text as="span" className="material-symbols-outlined" fontSize="18px" ml="2">

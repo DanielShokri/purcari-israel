@@ -47,7 +47,7 @@ export default function PricingCard({
           <Heading size="md" color="fg">
             תמחור
           </Heading>
-          <Text as="span" className="material-symbols-outlined" fontSize="lg" color="fg.muted">
+          <Text as="span" className="material-symbols-outlined" fontSize="18px" color="fg.muted">
             payments
           </Text>
         </Flex>
@@ -56,7 +56,7 @@ export default function PricingCard({
         <VStack gap="4" align="stretch">
           {/* Regular Price */}
           <VStack align="start" gap="2">
-            <Text fontSize="xs" fontWeight="bold" color="fg.muted" textTransform="uppercase" letterSpacing="wider">
+            <Text fontSize="xs" fontWeight="medium" color="fg.muted">
               מחיר רגיל
             </Text>
             <Box position="relative" w="full">
@@ -83,7 +83,7 @@ export default function PricingCard({
                 placeholder="0.00"
                 bg="bg.subtle"
                 borderColor="border"
-                _focus={{ ringColor: 'blue.500', borderColor: 'blue.500' }}
+                _focus={{ ringColor: 'brand.500', borderColor: 'brand.500' }}
               />
             </Box>
           </VStack>
@@ -102,7 +102,7 @@ export default function PricingCard({
               <Switch.Root
                 checked={onSale}
                 onCheckedChange={(e) => onSaleChange(e.checked)}
-                colorPalette="blue"
+                colorPalette="brand"
               >
                 <Switch.HiddenInput />
                 <Switch.Control>
@@ -116,7 +116,7 @@ export default function PricingCard({
           {onSale && (
             <VStack align="start" gap="2">
               <HStack justify="space-between" w="full" align="center">
-                <Text fontSize="xs" fontWeight="bold" color="fg.muted" textTransform="uppercase" letterSpacing="wider">
+                <Text fontSize="xs" fontWeight="medium" color="fg.muted">
                   מחיר מבצע
                 </Text>
                 {discountPercent > 0 && (
@@ -170,10 +170,10 @@ export default function PricingCard({
                 </Text>
               </HStack>
               <HStack justify="space-between" mt="1">
-                <Text fontSize="sm" fontWeight="bold" color="green.600" _dark={{ color: 'green.400' }}>
+                <Text fontSize="sm" fontWeight="medium" color="green.600" _dark={{ color: 'green.400' }}>
                   מחיר מבצע:
                 </Text>
-                <Text fontSize="sm" fontWeight="bold" color="green.600" _dark={{ color: 'green.400' }} dir="ltr">
+                <Text fontSize="sm" fontWeight="medium" color="green.600" _dark={{ color: 'green.400' }} dir="ltr">
                   ₪{salePrice.toFixed(2)}
                 </Text>
               </HStack>

@@ -9,8 +9,8 @@ body {
 
 /* Selection styles */
 ::selection {
-  background: rgba(59, 130, 246, 0.3);
-  color: white;
+  background: rgba(177, 58, 72, 0.35);
+  color: inherit;
 }
 
 /* Scrollbar styles - Light mode */
@@ -135,9 +135,15 @@ body {
   padding-right: env(safe-area-inset-right);
 }
 
+/* Tabular figures so columns of numbers align in tables */
+.chakra-table td,
+.chakra-table th {
+  font-variant-numeric: tabular-nums;
+}
+
 /* Focus visible styles for accessibility */
 :focus-visible {
-  outline: 2px solid var(--chakra-colors-blue-500);
+  outline: 2px solid var(--chakra-colors-brand-500, #b13a48);
   outline-offset: 2px;
 }
 
@@ -303,7 +309,7 @@ body {
   position: absolute;
   top: -40px;
   left: 0;
-  background: var(--chakra-colors-blue-500);
+  background: var(--chakra-colors-brand-500, #b13a48);
   color: white;
   padding: 8px 16px;
   z-index: 100;

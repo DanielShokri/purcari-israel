@@ -23,14 +23,14 @@ export default function ActivityFeed({
   return (
     <Card.Root bg="bg.panel" borderWidth="1px" borderColor="border">
       <Card.Body p="6" display="flex" flexDirection="column" h="full">
-        <Heading size="md" fontWeight="bold" color="fg" mb="4">
+        <Heading size="md" fontWeight="medium" color="fg" mb="4">
           {title}
         </Heading>
         <VStack gap="6" align="stretch" flex="1">
           {activities.map((activity, index) => (
             <HStack key={index} gap="4" align="start">
               <VStack gap="0" align="center">
-                <Box w="2" h="2" rounded="full" bg={activity.color} mt="2" />
+                <Box w="2" h="2" rounded="full" bg="fg.muted" mt="2" />
                 {index < activities.length - 1 && (
                   <Box w="0.5" flex="1" bg="border" mt="1" minH="8" />
                 )}

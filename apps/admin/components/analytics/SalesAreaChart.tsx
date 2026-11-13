@@ -52,33 +52,42 @@ export default function SalesAreaChart({
     }).format(value);
   };
 
+  // Compact axis formatter - full ₪ strings get clipped on the Y axis
+  const formatAxisCurrency = (value: number) => {
+    if (value >= 1_000_000) return `₪${(value / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`;
+    if (value >= 1_000) return `₪${(value / 1_000).toFixed(1).replace(/\.0$/, '')}K`;
+    return `₪${value.toLocaleString('he-IL', { maximumFractionDigits: 0 })}`;
+  };
+
   return (
     <Card.Root
       bg="bg.panel"
       borderWidth="1px"
       borderColor="border"
+      h="full"
     >
-       <Card.Body p="6">
-         <Flex 
-           justify="space-between" 
-           align="center" 
-           mb="4"
-           gap="4"
-           flexDir={{ base: "column", md: "row" }}
-         >
+      <Card.Body p="6" display="flex" flexDirection="column">
+        <Flex
+          justify="space-between"
+          align="center"
+          mb="4"
+          gap="4"
+          flexDir={{ base: "column", md: "row" }}
+          flexShrink={0}
+        >
            <Box>
-             <Heading size="md" fontWeight="bold" color="fg" mb="1">
+             <Heading size="md" fontWeight="medium" color="fg" mb="1">
                {title}
              </Heading>
              <HStack gap="4" fontSize="sm" color="fg.muted">
                <Text>
-                 <Text as="span" fontWeight="semibold" color="green.500">
+                 <Text as="span" fontWeight="medium" color="fg" style={{ fontVariantNumeric: 'tabular-nums' }}>
                    {formatCurrency(totalRevenue)}
                  </Text>
                  {' '}סה"כ
                </Text>
                <Text>
-                 <Text as="span" fontWeight="semibold" color="blue.500">
+                 <Text as="span" fontWeight="medium" color="fg" style={{ fontVariantNumeric: 'tabular-nums' }}>
                    {totalOrders.toLocaleString('he-IL')}
                  </Text>
                  {' '}הזמנות
@@ -105,7 +114,7 @@ export default function SalesAreaChart({
                 rounded="lg"
                 px="3"
                 py="1"
-                _focus={{ borderColor: 'blue.500' }}
+                _focus={{ borderColor: 'brand.500' }}
               >
                 <Select.ValueText placeholder="בחר תקופה" />
               </Select.Trigger>
@@ -127,13 +136,13 @@ export default function SalesAreaChart({
             </Portal>
           </Select.Root>
         </Flex>
-        <Box h="80" w="full" style={{ direction: 'ltr' }}>
+        <Box flex="1" minH="320px" w="full" style={{ direction: 'ltr' }}>
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0.05}/>
+                  <stop offset="5%" stopColor="#b13a48" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#b13a48" stopOpacity={0.05}/>
                 </linearGradient>
               </defs>
               <CartesianGrid 
@@ -155,7 +164,8 @@ export default function SalesAreaChart({
                 fontSize={12} 
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={formatCurrency}
+                width={72}
+                tickFormatter={formatAxisCurrency}
               />
               <YAxis 
                 yAxisId="right"
@@ -182,15 +192,15 @@ export default function SalesAreaChart({
                 yAxisId="left"
                 type="monotone" 
                 dataKey="value" 
-                stroke="#10b981" 
+                stroke="#b13a48" 
                 strokeWidth={2}
                 fill="url(#salesGradient)"
-                activeDot={{ r: 6, fill: '#10b981' }}
+                activeDot={{ r: 6, fill: '#b13a48' }}
               />
               <Bar
                 yAxisId="right"
                 dataKey="orders"
-                fill="#3b82f6"
+                fill="fg.muted"
                 opacity={0.6}
                 radius={[4, 4, 0, 0]}
                 barSize={20}

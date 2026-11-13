@@ -30,12 +30,12 @@ export default function SearchResultsSection({
           <Text
             as="span"
             className="material-symbols-outlined"
-            fontSize="24px"
-            color="blue.500"
+            fontSize="18px"
+            color="brand.500"
           >
             {icon}
           </Text>
-          <Text fontSize="xl" fontWeight="bold" color="fg">
+          <Text fontSize="xl" fontWeight="medium" color="fg">
             {title}
           </Text>
         </HStack>
@@ -43,7 +43,7 @@ export default function SearchResultsSection({
           <Link to={viewAllLink}>
             <Text
               fontSize="sm"
-              color="blue.500"
+              color="brand.500"
               fontWeight="medium"
               _hover={{ textDecoration: 'underline' }}
             >

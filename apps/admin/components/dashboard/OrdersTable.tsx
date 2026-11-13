@@ -19,14 +19,8 @@ interface OrdersTableProps {
   onViewAll?: () => void;
 }
 
-const getAvatarColor = (color: string) => {
-  const colors: Record<string, { bg: string; text: string }> = {
-    blue: { bg: 'blue.500/20', text: 'blue.500' },
-    purple: { bg: 'purple.500/20', text: 'purple.500' },
-    orange: { bg: 'orange.500/20', text: 'orange.500' },
-  };
-  return colors[color] || colors.blue;
-};
+// Avatars stay neutral — one quiet tint from the ramp
+const getAvatarColor = (_color: string) => ({ bg: 'bg.subtle', text: 'fg.muted' });
 
 export default function OrdersTable({ 
   orders, 
@@ -37,15 +31,15 @@ export default function OrdersTable({
   return (
     <Card.Root bg="bg.panel" borderWidth="1px" borderColor="border" overflow="hidden">
       <Flex p="6" borderBottomWidth="1px" borderColor="border" justify="space-between" align="center">
-        <Heading size="md" fontWeight="bold" color="fg">
+        <Heading size="md" fontWeight="medium" color="fg">
           {title}
         </Heading>
         <Button 
           variant="plain" 
-          color="blue.500" 
+          color="brand.500" 
           fontSize="sm" 
           fontWeight="medium" 
-          _hover={{ color: 'blue.400' }}
+          _hover={{ color: 'brand.400' }}
           onClick={onViewAll}
         >
           {viewAllLabel}
@@ -55,22 +49,22 @@ export default function OrdersTable({
         <Table.Root size="sm">
           <Table.Header>
             <Table.Row bg="bg/50">
-              <Table.ColumnHeader px="6" py="4" fontSize="xs" fontWeight="semibold" color="fg.muted" textTransform="uppercase">
+              <Table.ColumnHeader px="6" py="4" fontSize="xs" fontWeight="semibold" color="fg.muted">
                 מזהה הזמנה
               </Table.ColumnHeader>
-              <Table.ColumnHeader px="6" py="4" fontSize="xs" fontWeight="semibold" color="fg.muted" textTransform="uppercase">
+              <Table.ColumnHeader px="6" py="4" fontSize="xs" fontWeight="semibold" color="fg.muted">
                 לקוח
               </Table.ColumnHeader>
-              <Table.ColumnHeader px="6" py="4" fontSize="xs" fontWeight="semibold" color="fg.muted" textTransform="uppercase">
+              <Table.ColumnHeader px="6" py="4" fontSize="xs" fontWeight="semibold" color="fg.muted">
                 תאריך
               </Table.ColumnHeader>
-              <Table.ColumnHeader px="6" py="4" fontSize="xs" fontWeight="semibold" color="fg.muted" textTransform="uppercase">
+              <Table.ColumnHeader px="6" py="4" fontSize="xs" fontWeight="semibold" color="fg.muted">
                 סכום
               </Table.ColumnHeader>
-              <Table.ColumnHeader px="6" py="4" fontSize="xs" fontWeight="semibold" color="fg.muted" textTransform="uppercase">
+              <Table.ColumnHeader px="6" py="4" fontSize="xs" fontWeight="semibold" color="fg.muted">
                 סטטוס
               </Table.ColumnHeader>
-              <Table.ColumnHeader px="6" py="4" fontSize="xs" fontWeight="semibold" color="fg.muted" textTransform="uppercase">
+              <Table.ColumnHeader px="6" py="4" fontSize="xs" fontWeight="semibold" color="fg.muted">
                 פעולות
               </Table.ColumnHeader>
             </Table.Row>
@@ -98,7 +92,7 @@ export default function OrdersTable({
                         alignItems="center"
                         justifyContent="center"
                         fontSize="xs"
-                        fontWeight="bold"
+                        fontWeight="medium"
                       >
                         {order.initials}
                       </Flex>
@@ -120,9 +114,9 @@ export default function OrdersTable({
                       variant="ghost"
                       size="sm"
                       color="fg.muted"
-                      _hover={{ color: 'blue.500' }}
+                      _hover={{ color: 'brand.500' }}
                     >
-                      <Text as="span" className="material-symbols-outlined" fontSize="20px">
+                      <Text as="span" className="material-symbols-outlined" fontSize="18px">
                         more_vert
                       </Text>
                     </IconButton>

@@ -95,13 +95,13 @@ export default function Search() {
         <Text
           as="span"
           className="material-symbols-outlined"
-          fontSize="48px"
+          fontSize="18px"
           color="fg.subtle"
         >
           search_off
         </Text>
       </Flex>
-      <Text fontSize="xl" fontWeight="bold" color="fg" mb="2">
+      <Text fontSize="xl" fontWeight="medium" color="fg" mb="2">
         לא נמצאו תוצאות
       </Text>
       <Text color="fg.muted" maxW="md" mx="auto">
@@ -119,22 +119,22 @@ export default function Search() {
       textAlign="center"
     >
       <Flex
-        bg="blue.50"
+        bg="brand.50"
         p="6"
         rounded="full"
         mb="4"
-        _dark={{ bg: 'blue.900/20' }}
+        _dark={{ bg: 'brand.900/20' }}
       >
         <Text
           as="span"
           className="material-symbols-outlined"
-          fontSize="48px"
-          color="blue.500"
+          fontSize="18px"
+          color="brand.500"
         >
           search
         </Text>
       </Flex>
-      <Text fontSize="xl" fontWeight="bold" color="fg" mb="2">
+      <Text fontSize="xl" fontWeight="medium" color="fg" mb="2">
         חפש במערכת
       </Text>
       <Text color="fg.muted" maxW="md" mx="auto">
@@ -163,14 +163,14 @@ export default function Search() {
             <Box>
               <Text
                 fontSize={{ base: '2xl', md: '3xl' }}
-                fontWeight="bold"
+                fontWeight="medium"
                 color="fg"
                 lineHeight="tight"
               >
                 {searchInput ? (
                   <>
                     תוצאות חיפוש עבור:{' '}
-                    <Text as="span" color="blue.500">
+                    <Text as="span" color="brand.500">
                       "{searchInput}"
                     </Text>
                   </>
@@ -179,7 +179,7 @@ export default function Search() {
                 )}
               </Text>
               {results && searchInput && (
-                <Text fontSize="sm" color="fg.muted" mt="1">
+                <Text fontSize="16px" color="fg.muted" mt="1">
                   נמצאו {results.counts.total} תוצאות ({results.searchTime} שניות)
                 </Text>
               )}
@@ -196,7 +196,7 @@ export default function Search() {
               color="fg.muted"
               zIndex={1}
             >
-              <Text as="span" className="material-symbols-outlined" fontSize="24px">
+              <Text as="span" className="material-symbols-outlined" fontSize="18px">
                 search
               </Text>
             </Box>
@@ -215,9 +215,9 @@ export default function Search() {
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={handleKeyDown}
               _focus={{
-                borderColor: 'blue.500',
+                borderColor: 'brand.500',
                 ring: '2px',
-                ringColor: 'blue.500/20',
+                ringColor: 'brand.500/20',
               }}
             />
           </Box>
@@ -232,13 +232,13 @@ export default function Search() {
                     as="button"
                     pb="3"
                     borderBottomWidth="2px"
-                    borderColor={activeTab === tab.id ? 'blue.500' : 'transparent'}
-                    color={activeTab === tab.id ? 'blue.500' : 'fg.muted'}
+                    borderColor={activeTab === tab.id ? 'brand.500' : 'transparent'}
+                    color={activeTab === tab.id ? 'brand.500' : 'fg.muted'}
                     fontWeight={activeTab === tab.id ? 'bold' : 'medium'}
                     fontSize="sm"
                     whiteSpace="nowrap"
-                    transition="all 0.15s"
-                    _hover={{ color: activeTab === tab.id ? 'blue.500' : 'fg' }}
+                    transition="colors 0.15s ease-out"
+                    _hover={{ color: activeTab === tab.id ? 'brand.500' : 'fg' }}
                     onClick={() => setActiveTab(tab.id)}
                   >
                     {tab.label}
@@ -266,7 +266,7 @@ export default function Search() {
           {(isLoading || isFetching) && queryParam && (
             <Flex justify="center" align="center" py="20">
               <VStack gap="4">
-                <Spinner size="lg" color="blue.500" borderWidth="3px" />
+                <Spinner size="lg" color="brand.500" borderWidth="3px" />
                 <Text color="fg.muted">מחפש...</Text>
               </VStack>
             </Flex>

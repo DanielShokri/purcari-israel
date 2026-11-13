@@ -93,25 +93,7 @@ export default function NotFound() {
         }}
       >
         {/* Illustration Section */}
-        <Box position="relative" mb="8" role="group">
-          {/* Decorative gradient blob */}
-          <Box
-            position="absolute"
-            inset="-4"
-            bgGradient="to-r"
-            gradientFrom="blue.100"
-            gradientTo="purple.100"
-            rounded="full"
-            filter="blur(24px)"
-            opacity={0.7}
-            transition="opacity 0.7s"
-            _groupHover={{ opacity: 1 }}
-            _dark={{
-              gradientFrom: 'blue.900/20',
-              gradientTo: 'purple.900/20',
-            }}
-          />
-
+        <Box position="relative" mb="8">
           {/* Main illustration card */}
           <Box
             position="relative"
@@ -143,7 +125,7 @@ export default function NotFound() {
                 position="absolute"
                 fontSize="120px"
                 fontWeight="black"
-                color="blue.500"
+                color="brand.500"
                 opacity={0.1}
                 userSelect="none"
                 pointerEvents="none"
@@ -159,7 +141,6 @@ export default function NotFound() {
           <Heading
             size="3xl"
             color="fg"
-            letterSpacing="tight"
           >
             הדף שחיפשת לא קיים
           </Heading>
@@ -176,14 +157,14 @@ export default function NotFound() {
         <Box mt="10">
           <Button
             onClick={handleGoBack}
-            colorPalette="blue"
+            colorPalette="brand"
             size="lg"
             fontWeight="medium"
             py="3"
             px="8"
             rounded="lg"
             shadow="lg"
-            transition="all 0.2s"
+            transition="colors 0.15s ease-out"
             css={{
               boxShadow: '0 10px 25px -5px rgba(59, 130, 246, 0.2)',
               '&:hover': {
@@ -195,7 +176,7 @@ export default function NotFound() {
             <Text
               as="span"
               className="material-symbols-outlined"
-              fontSize="20px"
+              fontSize="18px"
               transition="transform 0.2s"
               css={{ '.group:hover &': { transform: 'translateX(4px)' } }}
             >
@@ -221,7 +202,7 @@ export default function NotFound() {
           <Link
             asChild
             color="fg.muted"
-            _hover={{ color: 'blue.500' }}
+            _hover={{ color: 'brand.500' }}
             transition="colors 0.2s"
           >
             <RouterLink to="/">
@@ -232,7 +213,7 @@ export default function NotFound() {
           <Link
             asChild
             color="fg.muted"
-            _hover={{ color: 'blue.500' }}
+            _hover={{ color: 'brand.500' }}
             transition="colors 0.2s"
           >
             <RouterLink to="/settings">
@@ -243,7 +224,7 @@ export default function NotFound() {
           <Link
             asChild
             color="fg.muted"
-            _hover={{ color: 'blue.500' }}
+            _hover={{ color: 'brand.500' }}
             transition="colors 0.2s"
           >
             <RouterLink to="/settings">

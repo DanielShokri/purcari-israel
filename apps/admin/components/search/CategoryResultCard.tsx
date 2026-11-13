@@ -22,11 +22,11 @@ export default function CategoryResultCard({ category, searchTerm }: CategoryRes
         alignItems="center"
         justifyContent="space-between"
         shadow="sm"
-        transition="all 0.15s"
+        transition="colors 0.15s ease-out"
         cursor="pointer"
         role="group"
         _hover={{
-          borderColor: 'blue.300',
+          borderColor: 'brand.300',
           shadow: 'md',
         }}
       >
@@ -45,17 +45,17 @@ export default function CategoryResultCard({ category, searchTerm }: CategoryRes
               color: category.iconColor ? `${category.iconColor}.400` : 'gray.400',
             }}
           >
-            <Text as="span" className="material-symbols-outlined" fontSize="20px">
+            <Text as="span" className="material-symbols-outlined" fontSize="18px">
               {category.icon || 'category'}
             </Text>
           </Flex>
           <Box>
             <Text
               fontSize="sm"
-              fontWeight="bold"
+              fontWeight="medium"
               color="fg"
               transition="colors 0.15s"
-              _groupHover={{ color: 'blue.500' }}
+              _groupHover={{ color: 'brand.500' }}
             >
               <HighlightText text={category.name} searchTerm={searchTerm} />
             </Text>

@@ -29,7 +29,7 @@ export default function Breadcrumbs({ items }: BreadcrumbsProps) {
                     href={item.href || '#'} 
                     color="fg.muted" 
                     fontWeight="medium" 
-                    _hover={{ color: 'blue.500' }}
+                    _hover={{ color: 'brand.500' }}
                   >
                     {item.label}
                   </Breadcrumb.Link>
@@ -40,7 +40,7 @@ export default function Breadcrumbs({ items }: BreadcrumbsProps) {
                   <Text 
                     as="span" 
                     className="material-symbols-outlined" 
-                    fontSize="sm" 
+                    fontSize="18px" 
                     color="fg.muted" 
                     transform="rotate(180deg)"
                   >

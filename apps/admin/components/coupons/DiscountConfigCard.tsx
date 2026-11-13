@@ -53,7 +53,7 @@ export function DiscountConfigCard({
         bg="bg.subtle"
       >
         <HStack gap="2">
-          <Text as="span" className="material-symbols-outlined" fontSize="lg" color="blue.500">
+          <Text as="span" className="material-symbols-outlined" fontSize="18px" color="brand.500">
             percent
           </Text>
           <Heading size="md" color="fg">
@@ -76,13 +76,13 @@ export function DiscountConfigCard({
               <Select.Control
                 bg="bg.subtle"
                 borderColor="border"
-                _focus={{ ring: 2, ringColor: 'blue.500/20', borderColor: 'blue.500' }}
+                _focus={{ ring: 2, ringColor: 'brand.500/20', borderColor: 'brand.500' }}
               >
                 <Select.Trigger>
                   <Select.ValueText placeholder="בחר סוג הנחה" />
                 </Select.Trigger>
                 <Select.IndicatorGroup>
-                  <Text as="span" className="material-symbols-outlined" fontSize="xl" color="fg.muted">
+                  <Text as="span" className="material-symbols-outlined" fontSize="18px" color="fg.muted">
                     expand_more
                   </Text>
                 </Select.IndicatorGroup>
@@ -113,7 +113,7 @@ export function DiscountConfigCard({
                 bg="bg.subtle"
                 borderColor="border"
                 pr={discountType === CouponDiscountType.PERCENTAGE ? '10' : '4'}
-                _focus={{ ring: 2, ringColor: 'blue.500/20', borderColor: 'blue.500' }}
+                _focus={{ ring: 2, ringColor: 'brand.500/20', borderColor: 'brand.500' }}
               />
               {discountType === CouponDiscountType.PERCENTAGE && (
                 <Text

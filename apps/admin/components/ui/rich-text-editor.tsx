@@ -22,7 +22,7 @@ const proseMirrorBaseCss = defineStyle({
   "& img.ProseMirror-selectednode": {
     outlineWidth: "2px",
     outlineStyle: "solid",
-    outlineColor: "blue.focusRing",
+    outlineColor: "brand.focusRing",
   },
 
   "& .ProseMirror": {
@@ -122,7 +122,7 @@ const proseMirrorBaseCss = defineStyle({
       },
     },
     "& hr": { my: "4" },
-    "& a": { color: "blue.fg", textDecoration: "underline" },
+    "& a": { color: "brand.fg", textDecoration: "underline" },
     "& em": { fontStyle: "italic" },
     "& strong": { fontWeight: "bold" },
     "& p.is-editor-empty:first-of-type::before": {

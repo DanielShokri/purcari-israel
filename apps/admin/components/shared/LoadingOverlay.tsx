@@ -49,7 +49,7 @@ export default function LoadingOverlay({
             gap="3"
             alignItems="center"
           >
-            <Spinner size="md" color="blue.500" borderWidth="3px" />
+            <Spinner size="md" color="brand.500" borderWidth="3px" />
             {message && <Text color="fg.muted" fontSize="sm">{message}</Text>}
           </Flex>
         </Flex>

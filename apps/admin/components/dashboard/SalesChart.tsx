@@ -23,7 +23,7 @@ export default function SalesChart({
   selectedYear,
   onYearChange
 }: SalesChartProps) {
-  const chartStroke = useColorModeValue('#3b82f6', '#3B82F6');
+  const chartStroke = useColorModeValue('#992e3c', '#b13a48');
   const chartGridStroke = useColorModeValue('#e2e8f0', '#374151');
   const chartAxisStroke = useColorModeValue('#94a3b8', '#9CA3AF');
   const tooltipBg = useColorModeValue('#fff', '#1F2937');
@@ -45,7 +45,7 @@ export default function SalesChart({
     >
       <Card.Body p="6">
         <Flex justify="space-between" align="center" mb="6">
-          <Heading size="md" fontWeight="bold" color="fg">
+          <Heading size="md" fontWeight="medium" color="fg">
             {title}
           </Heading>
           <Select.Root
@@ -65,7 +65,7 @@ export default function SalesChart({
                 rounded="lg"
                 px="3"
                 py="1"
-                _focus={{ borderColor: 'blue.500' }}
+                _focus={{ borderColor: 'brand.500' }}
               >
                 <Select.ValueText placeholder="בחר שנה" />
               </Select.Trigger>
@@ -92,8 +92,8 @@ export default function SalesChart({
             <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#b13a48" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="#b13a48" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <XAxis 
@@ -123,6 +123,7 @@ export default function SalesChart({
                   boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' 
                 }}
                 labelStyle={{ color: '#64748b' }}
+                formatter={(value: number) => [`${value.toLocaleString('he-IL')} ₪`, 'מכירות']}
               />
               <Area 
                 type="monotone" 

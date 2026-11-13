@@ -60,7 +60,7 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
       fontFamily="body"
       h="100vh"
       overflow="hidden"
-      css={{ '::selection': { bg: 'blue.500/30', color: 'white' } }}
+      css={{ '::selection': { bg: 'brand.500/30', color: 'white' } }}
     >
       {/* Mobile backdrop overlay */}
       <Box

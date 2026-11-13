@@ -26,7 +26,7 @@ export default function PageHeader({
         flexWrap="wrap"
       >
         <VStack align="start" gap="1">
-          <Heading size="2xl" color="fg" letterSpacing="tight">
+          <Heading size="2xl" color="fg">
             {title}
           </Heading>
           {subtitle && (
@@ -38,12 +38,12 @@ export default function PageHeader({
         {actionLabel && onAction && (
           <Button
             onClick={onAction}
-            colorPalette="blue"
+            colorPalette="brand"
             size="md"
             shadow="sm"
             px="5"
           >
-            <Text as="span" className="material-symbols-outlined" fontSize="20px">
+            <Text as="span" className="material-symbols-outlined" fontSize="18px">
               {actionIcon}
             </Text>
             <Text as="span">{actionLabel}</Text>

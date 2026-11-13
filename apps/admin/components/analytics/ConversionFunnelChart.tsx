@@ -24,7 +24,7 @@ export default function ConversionFunnelChart({
 
   const getStepColor = (index: number) => {
     const colors = [
-      'blue.500',
+      'brand.500',
       'cyan.500', 
       'teal.500',
       'green.500',
@@ -43,19 +43,19 @@ export default function ConversionFunnelChart({
     >
       <Card.Body p="6">
         <Flex justify="space-between" align="center" mb="6">
-          <Heading size="md" fontWeight="bold" color="fg">
+          <Heading size="md" fontWeight="medium" color="fg">
             {title}
           </Heading>
           <HStack 
-            bg="green.500/10" 
-            color="green.500" 
+            bg="brand.500/10" 
+            color="brand.500" 
             px="3" 
             py="1" 
             rounded="full"
             fontSize="sm"
             fontWeight="medium"
           >
-            <Text as="span" className="material-symbols-outlined" fontSize="16px">
+            <Text as="span" className="material-symbols-outlined" fontSize="18px">
               trending_up
             </Text>
             <Text>שיעור המרה: {totalConversion.toFixed(1)}%</Text>
@@ -79,7 +79,7 @@ export default function ConversionFunnelChart({
                     color="white"
                     alignItems="center"
                     justifyContent="center"
-                    fontWeight="bold"
+                    fontWeight="medium"
                     fontSize="sm"
                     flexShrink={0}
                   >
@@ -96,7 +96,7 @@ export default function ConversionFunnelChart({
                             -{step.dropOff.toFixed(1)}%
                           </Text>
                         )}
-                        <Text fontWeight="bold" color="fg" fontSize="sm">
+                        <Text fontWeight="medium" color="fg" fontSize="sm">
                           {step.count.toLocaleString('he-IL')}
                         </Text>
                       </HStack>
@@ -120,7 +120,7 @@ export default function ConversionFunnelChart({
                     <Text 
                       as="span" 
                       className="material-symbols-outlined" 
-                      fontSize="16px" 
+                      fontSize="18px" 
                       color="fg.muted"
                     >
                       arrow_downward

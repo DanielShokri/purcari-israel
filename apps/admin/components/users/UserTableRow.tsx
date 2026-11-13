@@ -52,7 +52,7 @@ export default function UserTableRow({
             }}
           />
           <VStack align="start" gap="0">
-            <Text fontSize="sm" fontWeight="bold" color="fg">
+            <Text fontSize="sm" fontWeight="medium" color="fg">
               {user.name}
             </Text>
           </VStack>
@@ -77,12 +77,12 @@ export default function UserTableRow({
             variant="ghost"
             size="sm"
             color="fg.muted"
-            _hover={{ bg: 'blue.50', color: 'blue.500' }}
-            _dark={{ _hover: { bg: 'blue.900/20', color: 'blue.400' } }}
+            _hover={{ bg: 'brand.50', color: 'brand.500' }}
+            _dark={{ _hover: { bg: 'brand.900/20', color: 'brand.400' } }}
             aria-label="ערוך"
             onClick={onEdit}
           >
-            <Text as="span" className="material-symbols-outlined" fontSize="20px">
+            <Text as="span" className="material-symbols-outlined" fontSize="18px">
               edit
             </Text>
           </IconButton>
@@ -95,7 +95,7 @@ export default function UserTableRow({
             aria-label="מחק"
             onClick={onDelete}
           >
-            <Text as="span" className="material-symbols-outlined" fontSize="20px">
+            <Text as="span" className="material-symbols-outlined" fontSize="18px">
               delete
             </Text>
           </IconButton>
