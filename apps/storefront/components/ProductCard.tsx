@@ -166,7 +166,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           )}
         </div>
         <Link to={`/product/${product._id}`}>
-          <h3 className="font-bold text-gray-800 hover:text-secondary transition-colors mb-2 line-clamp-1">{product.productNameHe || product.productName}</h3>
+          <h3 className="font-bold text-gray-800 hover:text-secondary transition-colors mb-2 leading-snug">{product.productNameHe || product.productName}</h3>
         </Link>
         <div className="flex items-center justify-center gap-2 text-sm">
           {product.onSale && product.salePrice && (
