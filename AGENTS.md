@@ -24,8 +24,8 @@ This is a **pnpm monorepo** for Purcari Israel - a premium Hebrew wine ecommerce
 pnpm dev
 
 # Run specific app
-pnpm dev:storefront   # storefront: http://localhost:5173
-pnpm dev:admin       # admin: http://localhost:5174
+pnpm dev:storefront   # storefront: http://localhost:5183
+pnpm dev:admin       # admin: http://localhost:5181
 ```
 
 ### Convex Development

@@ -5,6 +5,7 @@
   "type": "module",
   "description": "Purcari Israel Wine Ecommerce - Monorepo with Storefront & Admin Dashboard",
   "scripts": {
+    "predev": "lsof -ti:5181,5183 | xargs kill -9 2>/dev/null || true",
     "dev": "pnpm -r --parallel run dev",
     "dev:storefront": "pnpm --filter=@apps/storefront dev",
     "dev:admin": "pnpm --filter=@apps/admin dev",
@@ -35,5 +36,8 @@
     "convex": "^1.49.0",
     "dotenv": "^17.2.3",
     "zod": "^4.3.5"
+  },
+  "volta": {
+    "node": "24.22.3"
   }
 }

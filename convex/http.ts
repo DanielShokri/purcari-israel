@@ -72,7 +72,7 @@ http.route({
     const url = new URL(request.url);
     const orderId = url.searchParams.get("orderId");
 
-    const storefrontUrl = process.env.VITE_STOREFRONT_URL || "http://localhost:3000";
+    const storefrontUrl = process.env.VITE_STOREFRONT_URL || "http://localhost:5183";
 
     if (orderId) {
       return new Response(null, {
@@ -104,7 +104,7 @@ http.route({
     
     
     // Get the storefront URL from environment or use default
-    const storefrontUrl = process.env.STOREFRONT_URL || "http://localhost:3000";
+    const storefrontUrl = process.env.STOREFRONT_URL || "http://localhost:5183";
     
     // Build the final destination URL
     let destination = finalRedirectUrl ? decodeURIComponent(finalRedirectUrl) : storefrontUrl;

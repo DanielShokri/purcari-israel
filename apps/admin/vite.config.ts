@@ -7,7 +7,9 @@ export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     return {
       server: {
-        port: 3001,
+        // strictPort: never silently drift onto the storefront's pinned port.
+        port: 5181,
+        strictPort: true,
         host: '0.0.0.0',
       },
       plugins: [

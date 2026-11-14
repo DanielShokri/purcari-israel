@@ -62,7 +62,7 @@ export const createPaymentPage = action({
     }
 
     // Get storefront URL for redirect after payment
-    const storefrontUrl = process.env.STOREFRONT_URL || "http://localhost:3000";
+    const storefrontUrl = process.env.STOREFRONT_URL || "http://localhost:5183";
 
     // 4 + 5. Read the order and its items in parallel
     const [order, orderItems] = await Promise.all([
