@@ -1,6 +1,10 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+// Exact origins only: a substring match would also accept look-alikes such as
+// https://icredit.rivhit.co.il.evil.example.
+const ICREDIT_ORIGINS = new Set(['https://icredit.rivhit.co.il', 'https://testicredit.rivhit.co.il']);
+
 /**
  * Listens for payment-completion postMessages from the iCredit iframe.
  * Navigates to the order confirmation or calls onPaymentComplete.
@@ -14,11 +18,7 @@ export function usePaymentListener(
   useEffect(() => {
     const handlePaymentMessage = (event: MessageEvent) => {
       // Only handle messages from iCredit domains (test and production)
-      const isIcreditOrigin =
-        event.origin.includes('icredit.rivhit.co.il') ||
-        event.origin.includes('testicredit.rivhit.co.il');
-
-      if (!isIcreditOrigin) return;
+      if (!ICREDIT_ORIGINS.has(event.origin)) return;
 
 
       // Require explicit success indicators: iCredit's Status 0 is a generic OK also

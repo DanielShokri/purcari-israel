@@ -1,8 +1,12 @@
 {
+  "id": "/",
   "name": "Purcari Israel",
   "short_name": "Purcari",
   "description": "יינות פרימיום מבית יקב פורקארי ישראל",
+  "lang": "he",
+  "dir": "rtl",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#8c2438",
@@ -16,13 +20,13 @@
       "src": "/logo192.png",
       "type": "image/png",
       "sizes": "192x192",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/logo512.png",
       "type": "image/png",
       "sizes": "512x512",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
 }
