@@ -9,6 +9,13 @@ import { calculateCartTotals, CartTotals } from '../utils/cartCalculation';
 const CART_STORAGE_KEY = 'cart';
 const COUPON_STORAGE_KEY = 'coupon';
 const FREE_SHIPPING_THRESHOLD = 300;
+const CART_UPDATED_EVENT = 'cart:updated';
+
+// Every useCart() instance holds its own guest-cart state, so notify the others
+// whenever localStorage changes (e.g. add-to-cart on a page must update the header badge).
+function notifyCartUpdated(): void {
+  window.dispatchEvent(new Event(CART_UPDATED_EVENT));
+}
 
 // localStorage adapter functions
 
@@ -31,6 +38,7 @@ function loadFromLocalStorage(): CartItem[] {
 function saveToLocalStorage(items: CartItem[], coupon: AppliedCoupon | null): void {
   try {
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify({ items, appliedCoupon: coupon }));
+    notifyCartUpdated();
   } catch (error) {
     console.error('[Cart] Failed to save cart to localStorage:', error);
   }
@@ -119,6 +127,20 @@ export function useCart(): UseCartReturn {
   const [guestCart, setGuestCart] = useState<CartItem[]>(() => loadFromLocalStorage());
   const [guestCoupon, setGuestCoupon] = useState<AppliedCoupon | null>(() => loadCouponFromLocalStorage());
 
+  // Keep this instance in sync with guest-cart changes made by other useCart() instances
+  useEffect(() => {
+    const reload = () => {
+      setGuestCart(loadFromLocalStorage());
+      setGuestCoupon(loadCouponFromLocalStorage());
+    };
+    window.addEventListener(CART_UPDATED_EVENT, reload);
+    window.addEventListener('storage', reload);
+    return () => {
+      window.removeEventListener(CART_UPDATED_EVENT, reload);
+      window.removeEventListener('storage', reload);
+    };
+  }, []);
+
   // Sync result state (for merge issues)
   const [syncResult, setSyncResult] = useState<CartSyncResult | null>(null);
 
@@ -154,6 +176,7 @@ export function useCart(): UseCartReturn {
             localStorage.removeItem(COUPON_STORAGE_KEY);
             setGuestCart([]);
             setGuestCoupon(null);
+            notifyCartUpdated();
 
             // Surface sync issues
             if (
@@ -276,6 +299,7 @@ export function useCart(): UseCartReturn {
       setGuestCoupon(null);
       localStorage.removeItem(CART_STORAGE_KEY);
       localStorage.removeItem(COUPON_STORAGE_KEY);
+      notifyCartUpdated();
     }
   }, [isAuthenticated, clearCartMutation]);
 
