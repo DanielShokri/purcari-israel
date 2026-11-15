@@ -1,5 +1,6 @@
 import { internalMutation } from "./_generated/server";
 import { v } from "convex/values";
+import { slugify, uniqueSlug } from "./slugHelpers";
 
 /**
  * One-time import of the purcari.co.il spreadsheet into products, matched by SKU
@@ -150,6 +151,7 @@ export const importWines = internalMutation({
       } else {
         await ctx.db.insert("products", {
           ...doc,
+          slug: await uniqueSlug(ctx, slugify(w.name) || slugify(w.sku)),
           createdAt: now,
         });
         created.push(i);

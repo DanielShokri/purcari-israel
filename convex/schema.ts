@@ -129,6 +129,9 @@ export default defineSchema({
       )
     ),
 
+    // URL segment (/product/<slug>); set on create, stable when the name changes.
+    slug: v.optional(v.string()),
+
     dateAdded: v.optional(v.string()),
     createdAt: v.string(),
     updatedAt: v.string(),
@@ -141,6 +144,7 @@ export default defineSchema({
     .index("by_stockStatus", ["stockStatus"])
     .index("by_isFeatured", ["isFeatured"])
     .index("by_onSale", ["onSale"])
+    .index("by_slug", ["slug"])
     .index("by_createdAt", ["createdAt"]),
 
   categories: defineTable({

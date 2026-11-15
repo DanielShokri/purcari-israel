@@ -1,5 +1,6 @@
 import { mutation, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
+import { slugify, uniqueSlug } from "./slugHelpers";
 
 // The refined product list mapped to categories
 const PRODUCTS_DATA = [
@@ -473,7 +474,10 @@ export const run = internalMutation({
         .unique();
 
       if (!existing) {
-        await ctx.db.insert("products", productToInsert);
+        await ctx.db.insert("products", {
+          ...productToInsert,
+          slug: await uniqueSlug(ctx, slugify(p.productName) || "product"),
+        });
         count++;
       }
     }

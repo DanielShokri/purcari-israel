@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { internalMutation, query } from "./_generated/server";
 import { adminMutation } from "./authHelpers";
 import { Id } from "./_generated/dataModel";
+import { slugify, uniqueSlug } from "./slugHelpers";
 
 /**
  * List products with optional filtering and pagination.
@@ -90,6 +91,17 @@ export const trackEvent = internalMutation({
 /**
  * Get product by ID.
  */
+/** Look up a product by its URL slug (see slugHelpers.ts). Null when no product matches. */
+export const getBySlug = query({
+  args: { slug: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("products")
+      .withIndex("by_slug", (q) => q.eq("slug", args.slug))
+      .first();
+  },
+});
+
 export const getById = query({
   args: { productId: v.id("products") },
   handler: async (ctx, args) => {
@@ -246,8 +258,12 @@ export const create = adminMutation({
     ),
   },
   handler: async (ctx, args) => {
+    // adminMutation types args loosely, so name the two fields the slug needs.
+    const { productName, sku } = args as { productName: string; sku: string };
+    const slug = await uniqueSlug(ctx, slugify(productName) || slugify(sku));
     return await ctx.db.insert("products", {
       ...args,
+      slug,
       stockStatus: Number(args.quantityInStock) > 0 ? "in_stock" : "out_of_stock",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -258,6 +274,8 @@ export const create = adminMutation({
 export const update = adminMutation({
   args: {
     id: v.id("products"),
+    // Explicit slug edit only; renaming a product never regenerates it (stable URLs).
+    slug: v.optional(v.string()),
     productName: v.optional(v.string()),
     productNameHe: v.optional(v.string()),
     price: v.optional(v.float64()),
@@ -300,8 +318,13 @@ export const update = adminMutation({
     ),
   },
   handler: async (ctx, args) => {
-    const { id, ...fields } = args;
+    const { id, slug, ...fields } = args;
     const updates: any = { ...fields, updatedAt: new Date().toISOString() };
+
+    if (slug !== undefined) {
+      const cleaned = slugify(slug as string);
+      if (cleaned) updates.slug = await uniqueSlug(ctx, cleaned, id as Id<"products">);
+    }
     
     if (fields.quantityInStock !== undefined) {
       updates.stockStatus = Number(fields.quantityInStock) > 0 ? "in_stock" : "out_of_stock";
