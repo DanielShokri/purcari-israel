@@ -34,7 +34,7 @@ export interface CartRule {
   config: BuyXGetYConfig | BulkDiscountConfig | ShippingConfig;
 }
 
-export const DEFAULT_SHIPPING_COST = 29.9;
+export const DEFAULT_SHIPPING_COST = 30;
 
 export interface CartTotals {
   subtotal: number;
