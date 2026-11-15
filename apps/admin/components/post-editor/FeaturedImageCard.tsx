@@ -14,6 +14,7 @@ import {
 } from '@chakra-ui/react';
 import { useMutation } from 'convex/react';
 import { api } from '@convex/api';
+import { resizeImageForUpload } from '../../utils/resizeImage';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'];
@@ -54,14 +55,17 @@ export default function FeaturedImageCard({ imageUrl, onImageUrlChange }: Featur
     setError(null);
     setIsUploading(true);
     try {
+      // 0. Shrink and convert to WebP so storefront pages don't ship multi-MB originals
+      const upload = await resizeImageForUpload(file);
+
       // 1. Get a one-time upload URL (admin-only)
       const postUrl = await generateUploadUrl({});
 
-      // 2. POST the raw file directly to Convex storage
+      // 2. POST the file directly to Convex storage
       const res = await fetch(postUrl, {
         method: 'POST',
-        headers: { 'Content-Type': file.type },
-        body: file,
+        headers: { 'Content-Type': upload.type },
+        body: upload,
       });
       if (!res.ok) {
         throw new Error(`העלאה נכשלה (${res.status})`);
