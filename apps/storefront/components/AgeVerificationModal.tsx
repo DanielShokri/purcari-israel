@@ -55,7 +55,6 @@ const AgeVerificationModal: React.FC = () => {
                   <Wine className="text-white" size={32} />
                 </div>
                 <h2 className="text-2xl font-bold text-white mb-1">אימות גיל</h2>
-                <p className="text-white/80 text-sm">Age Verification</p>
               </div>
 
               {/* Content */}
