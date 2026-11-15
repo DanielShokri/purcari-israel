@@ -35,7 +35,7 @@ const AboutHero: React.FC = () => {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="text-xl md:text-2xl font-light max-w-3xl mx-auto"
         >
-          מורשת של מצוינות מאז 1827, המביאה את טעמי מולדובה אל שולחן שלכם בישראל.
+          מורשת של מצוינות מאז 1827, המביאה את טעמי מולדובה אל השולחן שלכם בישראל.
         </motion.p>
       </div>
     </section>
