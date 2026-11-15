@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AlertCircle, CheckCircle2, Loader } from 'lucide-react';
 import { CartItem, CouponValidationResult } from '@shared/types';
+import ProductImage from '../ProductImage';
 
 interface OrderSummarySidebarProps {
   cartItems: CartItem[];
@@ -65,7 +66,7 @@ const OrderSummarySidebar: React.FC<OrderSummarySidebarProps> = ({
           {cartItems.map((item, index) => (
             <div key={item.id || item.productId || `item-${index}`} className="flex gap-3">
               <div className="w-12 h-16 bg-gray-50 rounded overflow-hidden flex-shrink-0 border border-gray-100">
-                <img src={item.imgSrc} alt={item.title} className="w-full h-full object-cover" />
+                <ProductImage src={item.imgSrc} alt={item.title} className="w-full h-full object-cover" widths={[400]} sizes="48px" />
               </div>
               <div className="flex-1 flex flex-col justify-center min-w-0">
                 <h4 className="text-xs font-bold text-gray-800 truncate">{item.title}</h4>

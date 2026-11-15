@@ -8,6 +8,7 @@ import { ShoppingBag, Eye, Zap, Package, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import theme from '../theme/styles';
 import { getWineTypeLabel } from '../utils/wineHelpers';
+import ProductImage from './ProductImage';
 
 interface ProductCardProps {
   product: Product;
@@ -91,10 +92,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     <div className={`group relative ${theme.CARD} ${theme.CARD_HOVER} flex flex-col h-full border-transparent hover:border-gray-100`}>
       <div className="relative aspect-[2/3] overflow-hidden bg-amber-50">
         <Link to={`/product/${product._id}`} className="block w-full h-full p-4 flex items-center justify-center">
-          <img
-            src={product.featuredImage || product.images?.[0] || ''}
+          <ProductImage
+            src={product.featuredImage || product.images?.[0]}
             alt={product.productNameHe || product.productName}
             className="max-w-full max-h-full object-contain transition-transform duration-700 group-hover:scale-105"
+            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
           />
         </Link>
         

@@ -8,6 +8,7 @@ import { CheckCircle, Package, Truck, ArrowLeft, AlertCircle, Clock, XCircle, Fi
 import { motion } from 'framer-motion';
 import { Id } from '../../../convex/_generated/dataModel';
 import { isConvexId } from '../utils/convexId';
+import ProductImage from '../components/ProductImage';
 
 // Payment status labels in Hebrew
 const PAYMENT_STATUS_LABELS = {
@@ -261,7 +262,7 @@ const OrderConfirmationPage: React.FC = () => {
               {items.map((item: any) => (
                 <div key={item._id} className="flex justify-between items-center text-sm">
                   <div className="flex items-center gap-3">
-                    <img src={item.productImage || ''} alt={item.productName} className="w-10 h-14 object-cover rounded" />
+                    <ProductImage src={item.productImage} alt={item.productName} className="w-10 h-14 object-cover rounded" widths={[400]} sizes="40px" />
                     <span>{item.productName} x {Number(item.quantity)}</span>
                   </div>
                   <span className="font-bold">₪{item.total}</span>

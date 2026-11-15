@@ -1,6 +1,7 @@
 import React from 'react';
 import { CartItem } from '@shared/types';
 import { ClipboardCheck, AlertCircle, Loader2 } from 'lucide-react';
+import ProductImage from '../ProductImage';
 
 interface ReviewStepProps {
   formData: any;
@@ -48,7 +49,7 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
             {cartItems.map((item, index) => (
               <div key={item.id || item.productId || `review-item-${index}`} className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <img src={item.imgSrc} alt={item.title} className="w-12 h-16 object-cover rounded" />
+                  <ProductImage src={item.imgSrc} alt={item.title} className="w-12 h-16 object-cover rounded" widths={[400]} sizes="48px" />
                   <div>
                     <p className="font-medium text-sm">{item.title}</p>
                     <p className="text-xs text-gray-500">{item.quantity} יחידות</p>

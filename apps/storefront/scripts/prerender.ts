@@ -17,6 +17,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ConvexHttpClient } from 'convex/browser';
 import { buildProductSchema } from '../utils/productSchema';
+import { IMAGE_WIDTHS, imageSources, optimizedPath, storageIdOf } from '../utils/imageUrl';
+import { optimizeImages, type OptimizedImage } from './optimize-images';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = path.join(ROOT, 'dist');
@@ -38,6 +40,7 @@ interface RouteMeta {
   schema?: object[];
   ogType?: 'website' | 'product';
   ogImage?: string;
+  preloadImage?: { href: string; srcset?: string; sizes?: string }; // LCP hint, added to <head>
   body?: string; // crawlable HTML placed inside #root until React mounts
 }
 
@@ -173,9 +176,42 @@ const imageOf = (p: Product) => {
   return img ? abs(img) : undefined;
 };
 
+// Filled by optimizeImages() in main(); empty means every image falls back to its original URL.
+let OPTIMIZED = new Map<string, OptimizedImage>();
+
+/** Optimised WebP for shells at `width`, with height scaled from the original aspect ratio. */
+function shellImage(p: Product, width: number): { src: string; srcset?: string; w?: number; h?: number } | undefined {
+  const original = imageOf(p);
+  if (!original) return undefined;
+  const id = storageIdOf(original);
+  const dims = id ? OPTIMIZED.get(id) : undefined;
+  if (!id || !dims) return { src: original };
+  const sources = imageSources(original);
+  const variant = IMAGE_WIDTHS.find((w) => w >= width) ?? IMAGE_WIDTHS[IMAGE_WIDTHS.length - 1];
+  return {
+    src: optimizedPath(id, variant), // same-origin, so keep it relative (works on staging and prod)
+    srcset: sources.srcSet,
+    w: width,
+    h: Math.round((width * dims.h) / dims.w),
+  };
+}
+
+/** 1200x630 JPEG for og:image and JSON-LD, or the original URL when not optimised. */
+function socialImage(p: Product): string | undefined {
+  const original = imageOf(p);
+  const id = storageIdOf(original);
+  return id && OPTIMIZED.has(id) ? abs(optimizedPath(id, 'og')) : original;
+}
+
+const imgTag = (p: Product, width: number, extra = '') => {
+  const i = shellImage(p, width);
+  if (!i) return '';
+  const size = i.w && i.h ? ` width="${i.w}" height="${i.h}"` : '';
+  return `<img src="${esc(i.src)}"${i.srcset ? ` srcset="${esc(i.srcset)}" sizes="${width}px"` : ''} alt="${esc(nameOf(p))}"${size}${extra} />`;
+};
+
 function productItem(p: Product): string {
-  const img = imageOf(p);
-  return `<li><a href="/product/${esc(p._id)}">${img ? `<img src="${esc(img)}" alt="${esc(nameOf(p))}" width="200" height="200" loading="lazy" />` : ''}<span>${esc(nameOf(p))}</span></a> <span>${fmtPrice(priceOf(p))}</span></li>`;
+  return `<li><a href="/product/${esc(p._id)}">${imgTag(p, 200, ' loading="lazy"')}<span>${esc(nameOf(p))}</span></a> <span>${fmtPrice(priceOf(p))}</span></li>`;
 }
 
 async function loadEnvFile(file: string) {
@@ -203,7 +239,6 @@ async function fetchProducts(): Promise<Product[]> {
 function productRoute(p: Product, byId: Map<string, Product>): RouteMeta {
   const name = p.productNameHe || p.productName;
   const url = `${SITE_URL}/product/${p._id}`;
-  const image = p.featuredImage || p.images?.[0];
   const desc = p.descriptionHe || p.description || p.shortDescriptionHe;
   const price = p.onSale && p.salePrice ? p.salePrice : p.price;
   return {
@@ -213,13 +248,17 @@ function productRoute(p: Product, byId: Map<string, Product>): RouteMeta {
     indexable: true,
     inSitemap: true,
     ogType: 'product',
-    ogImage: image ? abs(image) : undefined,
+    ogImage: socialImage(p),
+    preloadImage: (() => {
+      const i = shellImage(p, 800);
+      return i && i.srcset ? { href: i.src, srcset: i.srcset, sizes: '(min-width: 768px) 400px, 80vw' } : undefined;
+    })(),
     schema: [
       buildProductSchema({
         siteUrl: SITE_URL,
         id: p._id,
         name,
-        image: image ? abs(image) : undefined,
+        image: socialImage(p),
         description: desc,
         sku: p.sku,
         price,
@@ -248,7 +287,6 @@ function productRoute(p: Product, byId: Map<string, Product>): RouteMeta {
 function productBody(p: Product, byId: Map<string, Product>): string {
   const name = nameOf(p);
   const desc = p.descriptionHe || p.description || p.shortDescriptionHe;
-  const img = imageOf(p);
   const inStock = Number(p.quantityInStock) > 0;
   const facts = [
     p.wineType ? ['סוג', WINE_TYPE_HE[p.wineType] || p.wineType] : null,
@@ -267,7 +305,7 @@ function productBody(p: Product, byId: Map<string, Product>): string {
     '<main>',
     '<nav aria-label="breadcrumb"><a href="/">דף הבית</a> / <a href="/products">חנות</a></nav>',
     `<h1>${esc(name)}</h1>`,
-    img ? `<img src="${esc(img)}" alt="${esc(name)}" width="400" height="400" />` : '',
+    imgTag(p, 800),
     `<p>${fmtPrice(priceOf(p))} · ${inStock ? 'במלאי' : 'אזל מהמלאי'}</p>`,
     desc ? `<p>${esc(trimDesc(desc, 600))}</p>` : '',
     facts.length ? `<ul>${facts.map(([k, v]) => `<li>${esc(k)}: ${esc(v)}</li>`).join('')}</ul>` : '',
@@ -353,7 +391,10 @@ function render(template: string, r: RouteMeta, notFound = false): string {
 
   let html = template.replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(fullTitle)}</title>`);
   if (html === template && !/<title>/.test(template)) throw new Error('dist/index.html has no <title>');
-  html = html.replace('</head>', `    ${tags}\n  </head>`);
+  const preload = r.preloadImage
+    ? `    <link rel="preload" as="image" href="${esc(r.preloadImage.href)}"${r.preloadImage.srcset ? ` imagesrcset="${esc(r.preloadImage.srcset)}" imagesizes="${esc(r.preloadImage.sizes || '100vw')}"` : ''} fetchpriority="high" />\n`
+    : '';
+  html = html.replace('</head>', `${preload}    ${tags}\n  </head>`);
   html = html.replace('<div id="root"></div>', `<div id="root">${body}</div>`);
   if (!html.includes(`<div id="root">${body}`)) throw new Error('Could not locate #root in dist/index.html');
   return html;
@@ -393,6 +434,10 @@ async function main() {
 
   const template = await readFile(path.join(DIST, 'index.html'), 'utf8');
   const products = await fetchProducts();
+  OPTIMIZED = await optimizeImages(products.map(imageOf), DIST).catch((err) => {
+    console.warn('optimize-images failed, using original image URLs:', err);
+    return new Map<string, OptimizedImage>();
+  });
 
   const byId = new Map(products.map((p) => [p._id, p]));
   const routes = [homeRoute(products), shopRoute(products),

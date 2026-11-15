@@ -6,6 +6,7 @@ import { useTrackCheckoutStart, useTrackCartViewed, useTrackCartItemRemoved } fr
 import { X, Trash2, Plus, Minus, Gift } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import ProductImage from './ProductImage';
 
 const CartModal: React.FC = () => {
   const toast = useToast();
@@ -93,7 +94,7 @@ const CartModal: React.FC = () => {
             items.map((item, index) => (
               <div key={item.id || item.productId || `cart-item-${index}`} className="flex gap-4">
                 <div className="w-20 h-24 bg-gray-100 rounded-md overflow-hidden flex-shrink-0 border border-gray-200">
-                  <img src={item.imgSrc} alt={item.title} className="w-full h-full object-cover" />
+                  <ProductImage src={item.imgSrc} alt={item.title} className="w-full h-full object-cover" widths={[400]} sizes="80px" />
                 </div>
                 <div className="flex-1 flex flex-col justify-between">
                   <div>

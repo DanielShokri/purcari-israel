@@ -9,6 +9,7 @@ import { api } from '../../../convex/_generated/api';
 import { Product } from '@shared/types';
 import { getWineTypeLabel } from '../utils/wineHelpers';
 import { useTrackSearch } from '../hooks/useAnalytics';
+import ProductImage from './ProductImage';
 
 // Debounce hook
 const useDebounce = (value: string, delay: number) => {
@@ -182,10 +183,12 @@ const SearchModal: React.FC = () => {
                           >
                           {/* Product Image */}
                           <div className="w-16 h-20 flex-shrink-0 bg-amber-50 rounded-lg overflow-hidden">
-                            <img
-                              src={product.featuredImage || product.images?.[0] || ''}
-                              alt={product.productNameHe}
+                            <ProductImage
+                              src={product.featuredImage || product.images?.[0]}
+                              alt={product.productNameHe || product.productName}
                               className="w-full h-full object-cover"
+                              widths={[400]}
+                              sizes="64px"
                             />
                           </div>
 

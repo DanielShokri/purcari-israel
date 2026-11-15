@@ -14,6 +14,7 @@ import { Minus, Plus, ShoppingBag, Truck, Shield, RotateCcw, Package, AlertTrian
 import ProductCard from '../components/ProductCard';
 import Breadcrumbs from '../components/common/Breadcrumbs';
 import { getWineTypeLabel } from '../utils/wineHelpers';
+import ProductImage from '../components/ProductImage';
 
 const ProductPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -172,7 +173,7 @@ const ProductPage: React.FC = () => {
           {/* Gallery */}
           <div className="space-y-4">
             <div className="relative aspect-[3/4] bg-amber-50 rounded-lg overflow-hidden border border-gray-100 p-6 flex items-center justify-center">
-              <img src={product.featuredImage || product.images?.[0] || ''} alt={product.productNameHe || product.productName} className="max-w-full max-h-full object-contain" />
+              <ProductImage src={productImage} alt={product.productNameHe || product.productName} className="max-w-full max-h-full object-contain" sizes="(min-width: 768px) 40vw, 90vw" priority />
               
               {/* Sale Badge */}
               {product.onSale && discountPercent > 0 && !isOutOfStock && (
