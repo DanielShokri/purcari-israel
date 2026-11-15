@@ -3,11 +3,13 @@
  * (scripts/prerender.ts), so crawlers and the hydrated page always see the same markup.
  * Shipping and return terms mirror pages/ShippingPage.tsx and pages/TermsPage.tsx.
  */
+import { productPath } from './productPath';
 import { FREE_SHIPPING_THRESHOLD, RETURN_WINDOW_DAYS, SHIPPING_FEE } from './policy';
 
 export interface ProductSchemaInput {
   siteUrl: string;
   id: string;
+  slug?: string;
   name: string;
   image?: string; // absolute URL
   description?: string;
@@ -38,7 +40,7 @@ const shippingDetails = (fee: number, orderValue: object) => ({
 });
 
 export function buildProductSchema(p: ProductSchemaInput) {
-  const url = `${p.siteUrl}/product/${p.id}`;
+  const url = `${p.siteUrl}${productPath({ _id: p.id, slug: p.slug })}`;
   const extra = [
     p.wineType && property('wineType', p.wineType),
     p.region && property('region', p.region),

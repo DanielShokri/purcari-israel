@@ -10,6 +10,7 @@ import { Product } from '@shared/types';
 import { getWineTypeLabel } from '../utils/wineHelpers';
 import { useTrackSearch } from '../hooks/useAnalytics';
 import ProductImage from './ProductImage';
+import { productPath } from '../utils/productPath';
 
 // Debounce hook
 const useDebounce = (value: string, delay: number) => {
@@ -177,7 +178,7 @@ const SearchModal: React.FC = () => {
                         {searchResults.map((product: any) => (
                           <Link
                             key={product._id}
-                            to={`/product/${product._id}`}
+                            to={productPath(product)}
                             onClick={handleProductClick}
                             className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 transition-colors group"
                           >

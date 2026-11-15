@@ -138,7 +138,8 @@ export function useTrackProductView(
   const hasTracked = useRef(false);
 
   useEffect(() => {
-    if (hasTracked.current) return;
+    // The product page passes '' until the product has loaded, so views carry real data.
+    if (!productId || hasTracked.current) return;
     hasTracked.current = true;
 
     track("product_viewed", {

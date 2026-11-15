@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import theme from '../theme/styles';
 import { getWineTypeLabel } from '../utils/wineHelpers';
 import ProductImage from './ProductImage';
+import { productPath } from '../utils/productPath';
 
 interface ProductCardProps {
   product: Product;
@@ -91,7 +92,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   return (
     <div className={`group relative ${theme.CARD} ${theme.CARD_HOVER} flex flex-col h-full border-transparent hover:border-gray-100`}>
       <div className="relative aspect-[2/3] overflow-hidden bg-amber-50">
-        <Link to={`/product/${product._id}`} className="block w-full h-full p-4 flex items-center justify-center">
+        <Link to={productPath(product)} className="block w-full h-full p-4 flex items-center justify-center">
           <ProductImage
             src={product.featuredImage || product.images?.[0]}
             alt={product.productNameHe || product.productName}
@@ -138,7 +139,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {/* Overlay Actions */}
         <div className={`absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 pointer-events-none ${isOutOfStock ? 'hidden' : ''}`}>
           <Link
-            to={`/product/${product._id}`}
+            to={productPath(product)}
             aria-label={`צפה ב${product.productNameHe || product.productName}`}
             className="bg-white text-gray-900 p-3 rounded-full hover:bg-secondary hover:text-white transition-colors shadow-lg transform translate-y-4 group-hover:translate-y-0 duration-300 pointer-events-auto flex items-center justify-center"
           >
@@ -169,7 +170,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             </>
           )}
         </div>
-        <Link to={`/product/${product._id}`}>
+        <Link to={productPath(product)}>
           <h3 className="font-bold text-gray-800 hover:text-secondary transition-colors mb-2 leading-snug">{product.productNameHe || product.productName}</h3>
         </Link>
         <div className="flex items-center justify-center gap-2 text-sm">

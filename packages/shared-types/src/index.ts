@@ -116,6 +116,7 @@ export enum SystemAnnouncementStatus {
 export interface Product {
   _id: string;
   _creationTime?: number;
+  slug?: string; // URL segment: /product/<slug>
   productName: string;
   productNameHe?: string;
   description?: string;

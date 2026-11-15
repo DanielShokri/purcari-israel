@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from 'convex/react';
 import useToast from '../store/hooks/useToast';
 import { api } from '../../../convex/_generated/api';
@@ -7,6 +7,7 @@ import { Id } from '../../../convex/_generated/dataModel';
 import { isConvexId } from '../utils/convexId';
 import { Product } from '@shared/types';
 import { buildProductSchema } from '../utils/productSchema';
+import { productPath } from '../utils/productPath';
 import SEO from '../components/SEO';
 import { useCart } from '../hooks/useCart';
 import { useTrackProductView, useTrackAddToCart } from '../hooks/useAnalytics';
@@ -17,13 +18,24 @@ import { getWineTypeLabel } from '../utils/wineHelpers';
 import ProductImage from '../components/ProductImage';
 
 const ProductPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { slug: param } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
 
-  const validId = isConvexId(id);
-  const product = useQuery(
+  // The URL segment is a slug; an old-style Convex id is still accepted and redirected below.
+  const paramIsId = isConvexId(param);
+  const productById = useQuery(
     api.products.getById,
-    validId ? { productId: id as Id<"products"> } : "skip"
+    paramIsId ? { productId: param as Id<"products"> } : "skip"
   );
+  const productBySlug = useQuery(
+    api.products.getBySlug,
+    param && !paramIsId ? { slug: param } : "skip"
+  );
+  const product = paramIsId ? productById : productBySlug;
+
+  useEffect(() => {
+    if (paramIsId && product?.slug) navigate(productPath(product), { replace: true });
+  }, [paramIsId, product, navigate]);
 
   const allProducts = useQuery(api.products.list, {});
 
@@ -34,7 +46,7 @@ const ProductPage: React.FC = () => {
 
   // Track product view with all required properties
   useTrackProductView(
-    id || '',
+    product?._id || '',
     product?.productNameHe || product?.productName,
     product?.onSale && product?.salePrice ? product?.salePrice : product?.price,
     getWineTypeLabel(product?.wineType)
@@ -43,12 +55,12 @@ const ProductPage: React.FC = () => {
   // Track add to cart events
   const { trackAddToCart } = useTrackAddToCart();
 
-  const isLoading = validId && product === undefined;
+  const isLoading = !!param && product === undefined;
 
   // Reset quantity when product changes
   useEffect(() => {
     setQuantity(1);
-  }, [id]);
+  }, [product?._id]);
 
    // Get related products - first try relatedProducts field, then fallback to same category/wineType
    // Keep raw data for filtering logic
@@ -96,6 +108,7 @@ const ProductPage: React.FC = () => {
   const productSchema = buildProductSchema({
     siteUrl: 'https://purcari.co.il',
     id: product._id,
+    slug: product.slug,
     name: product.productNameHe || product.productName,
     image: productImage,
     description: product.descriptionHe || product.description,
@@ -130,7 +143,7 @@ const ProductPage: React.FC = () => {
         "@type": "ListItem",
         "position": 3,
         "name": product.productNameHe || product.productName,
-        "item": `https://purcari.co.il/product/${product._id}`
+        "item": `https://purcari.co.il${productPath(product)}`
       }
     ]
   };
@@ -155,7 +168,7 @@ const ProductPage: React.FC = () => {
         description={product.descriptionHe || product.description}
         ogImage={productImage}
         ogType="product"
-        canonical={`/product/${product._id}`}
+        canonical={productPath(product)}
         schemaData={[productSchema, breadcrumbSchema]}
       />
       <div className="container mx-auto px-4 py-10">

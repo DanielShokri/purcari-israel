@@ -18,6 +18,7 @@ import { fileURLToPath } from 'node:url';
 import { ConvexHttpClient } from 'convex/browser';
 import { buildProductSchema } from '../utils/productSchema';
 import { FREE_SHIPPING_THRESHOLD } from '../utils/policy';
+import { productPath } from '../utils/productPath';
 import { IMAGE_WIDTHS, imageSources, optimizedPath, storageIdOf } from '../utils/imageUrl';
 import { optimizeImages, type OptimizedImage } from './optimize-images';
 
@@ -138,6 +139,7 @@ const STATIC_ROUTES: RouteMeta[] = [
 
 interface Product {
   _id: string;
+  slug?: string;
   productName: string;
   productNameHe?: string;
   description?: string;
@@ -214,7 +216,7 @@ const imgTag = (p: Product, width: number, extra = '') => {
 };
 
 function productItem(p: Product): string {
-  return `<li><a href="/product/${esc(p._id)}">${imgTag(p, 200, ' loading="lazy"')}<span>${esc(nameOf(p))}</span></a> <span>${fmtPrice(priceOf(p))}</span></li>`;
+  return `<li><a href="${esc(productPath(p))}">${imgTag(p, 200, ' loading="lazy"')}<span>${esc(nameOf(p))}</span></a> <span>${fmtPrice(priceOf(p))}</span></li>`;
 }
 
 async function loadEnvFile(file: string) {
@@ -241,11 +243,11 @@ async function fetchProducts(): Promise<Product[]> {
 
 function productRoute(p: Product, byId: Map<string, Product>): RouteMeta {
   const name = p.productNameHe || p.productName;
-  const url = `${SITE_URL}/product/${p._id}`;
+  const url = `${SITE_URL}${productPath(p)}`;
   const desc = p.descriptionHe || p.description || p.shortDescriptionHe;
   const price = p.onSale && p.salePrice ? p.salePrice : p.price;
   return {
-    path: `/product/${p._id}`,
+    path: productPath(p),
     title: name,
     description: desc ? trimDesc(desc) : undefined,
     indexable: true,
@@ -260,6 +262,7 @@ function productRoute(p: Product, byId: Map<string, Product>): RouteMeta {
       buildProductSchema({
         siteUrl: SITE_URL,
         id: p._id,
+        slug: p.slug,
         name,
         image: socialImage(p),
         description: desc,
@@ -343,7 +346,7 @@ function shopRoute(products: Product[]): RouteMeta {
         itemListElement: products.map((p, i) => ({
           '@type': 'ListItem',
           position: i + 1,
-          url: `${SITE_URL}/product/${p._id}`,
+          url: `${SITE_URL}${productPath(p)}`,
           name: nameOf(p),
         })),
       },
@@ -423,7 +426,7 @@ function sitemapXml(routes: RouteMeta[], products: Product[]): string {
   const productTimes = products.map((p) => Date.parse(p.updatedAt ?? '')).filter((t) => !Number.isNaN(t));
   // Catalogue pages change whenever any product does.
   const newestProduct = productTimes.length ? new Date(Math.max(...productTimes)).toISOString() : undefined;
-  const lastmod = new Map<string, string | undefined>(products.map((p) => [`/product/${p._id}`, toIso(p.updatedAt)]));
+  const lastmod = new Map<string, string | undefined>(products.map((p) => [productPath(p), toIso(p.updatedAt)]));
   lastmod.set('/', newestProduct);
   lastmod.set('/products', newestProduct);
   const urls = routes

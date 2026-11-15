@@ -45,7 +45,7 @@ const App: React.FC = () => {
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/products" element={<ShopPage />} />
-              <Route path="/product/:id" element={<ProductPage />} />
+              <Route path="/product/:slug" element={<ProductPage />} />
               <Route path="/checkout" element={privateRoute('תשלום', <CheckoutPage />)} />
               <Route path="/order-confirmation/:id" element={privateRoute('אישור הזמנה', <OrderConfirmationPage />)} />
               <Route path="/login" element={privateRoute('התחברות', <LoginPage />)} />
