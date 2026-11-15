@@ -10,6 +10,7 @@ const ToastContainer: React.FC = () => {
   return (
     <div 
       className="fixed bottom-6 start-4 z-[100] flex flex-col-reverse gap-3 pointer-events-none"
+      role="region"
       aria-live="polite"
       aria-label="התראות"
     >

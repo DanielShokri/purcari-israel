@@ -9,6 +9,8 @@ const Logo: React.FC = () => {
       <img 
         src={PURCARI_LOGO_URL}
         alt="Purcari - Château Purcari"
+        width={91}
+        height={52}
         className="h-13 w-auto"
       />
     </Link>

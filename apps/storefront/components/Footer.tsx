@@ -17,6 +17,9 @@ const Footer: React.FC = () => {
               <img 
                 src={PURCARI_LOGO_URL}
                 alt="Purcari - Château Purcari"
+                width={65}
+                height={40}
+                loading="lazy"
                 className="h-10 w-auto"
               />
             </Link>
@@ -58,10 +61,10 @@ const Footer: React.FC = () => {
           <div>
             <h4 className="text-lg font-bold mb-6 text-accent">עקבו אחרינו</h4>
             <div className="flex space-x-4">
-              <a href="https://www.facebook.com/purcariwines/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+              <a href="https://www.facebook.com/purcariwines/" aria-label="Facebook" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
                 <Facebook size={20} />
               </a>
-              <a href="https://www.instagram.com/purcari_israel/?hl=en/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+              <a href="https://www.instagram.com/purcari_israel/?hl=en/" aria-label="Instagram" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
                 <Instagram size={20} />
               </a>
             </div>
@@ -69,7 +72,7 @@ const Footer: React.FC = () => {
           
         </div>
 
-        <div className="border-t border-gray-800 pt-8 text-center text-xs text-gray-500">
+        <div className="border-t border-gray-800 pt-8 text-center text-xs text-gray-400">
           <p>&copy; {new Date().getFullYear()} Purcari Israel. כל הזכויות שמורות.</p>
           <p className="mt-2">אזהרה: צריכה מופרזת של אלכוהול מסכנת חיים ומזיקה לבריאות.</p>
         </div>
