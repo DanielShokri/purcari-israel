@@ -177,7 +177,7 @@ const ProductPage: React.FC = () => {
               
               {/* Sale Badge */}
               {product.onSale && discountPercent > 0 && !isOutOfStock && (
-                <div className="absolute top-4 right-4 bg-red-500 text-white text-sm font-bold px-4 py-2 rounded-full shadow-lg z-10">
+                <div className="absolute top-4 right-4 bg-red-600 text-white text-sm font-bold px-4 py-2 rounded-full shadow-lg z-10">
                   -{discountPercent}% הנחה
                 </div>
               )}
@@ -192,7 +192,7 @@ const ProductPage: React.FC = () => {
             <div className="flex items-center gap-4 mb-6">
               <p className={`text-3xl font-bold ${product.onSale ? 'text-red-600' : 'text-gray-900'}`}>₪{currentPrice}</p>
               {product.onSale && product.salePrice && (
-                <p className="text-xl text-gray-400 line-through">₪{product.price}</p>
+                <p className="text-xl text-gray-500 line-through">₪{product.price}</p>
               )}
             </div>
             
@@ -259,6 +259,7 @@ const ProductPage: React.FC = () => {
                 <button 
                   onClick={() => setQuantity(q => Math.max(1, q - 1))}
                   disabled={isOutOfStock}
+                  aria-label="הפחת כמות"
                   className={`px-4 py-3 text-gray-600 ${isOutOfStock ? 'cursor-not-allowed' : 'hover:bg-gray-100 cursor-pointer'}`}
                 >
                   <Minus size={16} />
@@ -267,6 +268,7 @@ const ProductPage: React.FC = () => {
                 <button 
                   onClick={() => setQuantity(q => Math.min(Number(product.quantityInStock), q + 1))}
                   disabled={isOutOfStock || quantity >= Number(product.quantityInStock)}
+                  aria-label="הוסף כמות"
                   className={`px-4 py-3 text-gray-600 ${isOutOfStock || quantity >= Number(product.quantityInStock) ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-100 cursor-pointer'}`}
                 >
                   <Plus size={16} />

@@ -43,7 +43,7 @@ const AwardsSection: React.FC = () => {
                   className="border-r border-accent/30 pr-6 py-2"
                 >
                   <span className="text-accent font-bold text-sm block mb-1">{award.year}</span>
-                  <h4 className="font-bold text-lg mb-1">{award.title}</h4>
+                  <h3 className="font-bold text-lg mb-1">{award.title}</h3>
                   <p className="text-gray-500 text-xs">{award.event}</p>
                 </motion.div>
               ))}

@@ -102,7 +102,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         
         {/* Sale Badge - Top Right */}
         {product.onSale && discountPercent > 0 && !isOutOfStock && (
-          <span className="absolute top-3 end-3 bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full pointer-events-none">
+          <span className="absolute top-3 end-3 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full pointer-events-none">
             -{discountPercent}%
           </span>
         )}
@@ -117,7 +117,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
         {/* Low Stock Badge */}
         {isLowStock && !isOutOfStock && (
-          <span className="absolute top-3 start-3 bg-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-full pointer-events-none flex items-center gap-1">
+          <span className="absolute top-3 start-3 bg-amber-700 text-white text-xs font-bold px-3 py-1.5 rounded-full pointer-events-none flex items-center gap-1">
             <AlertTriangle size={12} />
             נותרו {Number(product.quantityInStock)} בלבד
           </span>
@@ -139,6 +139,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className={`absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 pointer-events-none ${isOutOfStock ? 'hidden' : ''}`}>
           <Link
             to={`/product/${product._id}`}
+            aria-label={`צפה ב${product.productNameHe || product.productName}`}
             className="bg-white text-gray-900 p-3 rounded-full hover:bg-secondary hover:text-white transition-colors shadow-lg transform translate-y-4 group-hover:translate-y-0 duration-300 pointer-events-auto flex items-center justify-center"
           >
             <Eye size={20} />
@@ -146,6 +147,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <button
             onClick={handleAddToCart}
             disabled={isOutOfStock}
+            aria-label={`הוסף לסל: ${product.productNameHe || product.productName}`}
             className={`bg-white text-gray-900 p-3 rounded-full transition-colors shadow-lg transform translate-y-4 group-hover:translate-y-0 duration-300 delay-75 pointer-events-auto flex items-center justify-center ${
               isOutOfStock 
                 ? 'opacity-50 cursor-not-allowed' 
@@ -172,7 +174,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </Link>
         <div className="flex items-center justify-center gap-2 text-sm">
           {product.onSale && product.salePrice && (
-            <span className="text-gray-400 line-through">₪{product.price}</span>
+            <span className="text-gray-500 line-through">₪{product.price}</span>
           )}
           <span className={`font-bold ${product.onSale ? 'text-red-600' : 'text-gray-900'}`}>
             ₪{product.onSale && product.salePrice ? product.salePrice : product.price}

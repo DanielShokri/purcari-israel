@@ -18,17 +18,17 @@ const FeaturesBar: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
         <div className="flex flex-col items-center p-4 border-b md:border-b-0 border-gray-100">
           <div className="bg-gray-50 p-3 rounded-full mb-4 text-secondary"><Award size={32} /></div>
-          <h3 className="font-bold text-lg mb-2">היקב המעוטר ביותר</h3>
+          <h2 className="font-bold text-lg mb-2">היקב המעוטר ביותר</h2>
           <p className="text-gray-500 text-sm px-6">היקב המעוטר ביותר במזרח אירופה עם מעל 400 מדליות בשנת 2023.</p>
         </div>
         <div className="flex flex-col items-center p-4 border-b md:border-b-0 md:border-e md:border-s border-gray-100">
           <div className="bg-gray-50 p-3 rounded-full mb-4 text-secondary"><Truck size={32} /></div>
-          <h3 className="font-bold text-lg mb-2">משלוח מהיר</h3>
+          <h2 className="font-bold text-lg mb-2">משלוח מהיר</h2>
           <p className="text-gray-500 text-sm px-6">משלוח מהיר עד פתח הבית.</p>
         </div>
         <div className="flex flex-col items-center p-4">
           <div className="bg-gray-50 p-3 rounded-full mb-4 text-secondary"><ShieldCheck size={32} /></div>
-          <h3 className="font-bold text-lg mb-2">קנייה מאובטחת</h3>
+          <h2 className="font-bold text-lg mb-2">קנייה מאובטחת</h2>
           <p className="text-gray-500 text-sm px-6">תשלום מאובטח בתקנים המחמירים ביותר.</p>
         </div>
       </div>

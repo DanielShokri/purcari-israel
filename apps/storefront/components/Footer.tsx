@@ -30,7 +30,7 @@ const Footer: React.FC = () => {
 
           {/* Quick Links */}
           <div>
-            <h4 className="text-lg font-bold mb-6 text-accent">ניווט מהיר</h4>
+            <h2 className="text-lg font-bold mb-6 text-accent">ניווט מהיר</h2>
             <ul className="space-y-3 text-sm text-gray-400">
               <li><Link to="/about" className="hover:text-white transition-colors">הסיפור שלנו</Link></li>
               <li><Link to="/products" className="hover:text-white transition-colors">החנות</Link></li>
@@ -41,7 +41,7 @@ const Footer: React.FC = () => {
 
           {/* Legal Links */}
           <div>
-            <h4 className="text-lg font-bold mb-6 text-accent">מידע משפטי</h4>
+            <h2 className="text-lg font-bold mb-6 text-accent">מידע משפטי</h2>
             <ul className="space-y-3 text-sm text-gray-400">
               <li><Link to="/terms" className="hover:text-white transition-colors">תנאי שימוש</Link></li>
               <li><Link to="/privacy" className="hover:text-white transition-colors">מדיניות פרטיות</Link></li>
@@ -50,7 +50,7 @@ const Footer: React.FC = () => {
 
           {/* Contact */}
           <div>
-            <h4 className="text-lg font-bold mb-6 text-accent">צור קשר</h4>
+            <h2 className="text-lg font-bold mb-6 text-accent">צור קשר</h2>
             <ul className="space-y-3 text-sm text-gray-400">
               <li>טלפון: 050-9480040</li>
               <li>אימייל: ivninov45@gmail.com</li>
@@ -59,7 +59,7 @@ const Footer: React.FC = () => {
 
           {/* Social Media */}
           <div>
-            <h4 className="text-lg font-bold mb-6 text-accent">עקבו אחרינו</h4>
+            <h2 className="text-lg font-bold mb-6 text-accent">עקבו אחרינו</h2>
             <div className="flex space-x-4">
               <a href="https://www.facebook.com/purcariwines/" aria-label="Facebook" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
                 <Facebook size={20} />

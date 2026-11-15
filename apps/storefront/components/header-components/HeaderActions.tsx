@@ -118,7 +118,7 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({ user }) => {
       <button 
         className="p-2 text-gray-600 hover:text-secondary transition-colors relative cursor-pointer"
         onClick={toggleCart}
-        aria-label="סל קניות"
+        aria-label={itemCount > 0 ? `סל קניות (${itemCount})` : 'סל קניות'}
       >
         <ShoppingCart size={22} />
         {itemCount > 0 && (
