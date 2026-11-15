@@ -22,7 +22,7 @@ export interface ProductSchemaInput {
 }
 
 const FREE_SHIPPING_THRESHOLD = 300;
-const SHIPPING_FEE = 35;
+const SHIPPING_FEE = 30;
 
 const property = (name: string, value: string | number) => ({ '@type': 'PropertyValue', name, value });
 

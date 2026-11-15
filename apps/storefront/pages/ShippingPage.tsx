@@ -61,7 +61,7 @@ const ShippingPage: React.FC = () => {
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="w-2 h-2 bg-secondary rounded-full"></span>
-                  <span>הזמנות עד ₪300 - משלוח בעלות של ₪35</span>
+                  <span>הזמנות עד ₪300 - משלוח בעלות של ₪30</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="w-2 h-2 bg-secondary rounded-full"></span>
