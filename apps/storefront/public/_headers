@@ -4,6 +4,8 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+  Content-Security-Policy: script-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'
+  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://*.convex.cloud https://www.purcari.de https://winetravelawards.com https://cf.bstatic.com https://cdn.8wines.com https://upload.wikimedia.org; media-src https://purcariwineries.com; connect-src 'self' https://*.convex.cloud wss://*.convex.cloud https://*.convex.site https://api.geoapify.com; frame-src https://icredit.rivhit.co.il https://testicredit.rivhit.co.il https://*.convex.site; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
 
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
