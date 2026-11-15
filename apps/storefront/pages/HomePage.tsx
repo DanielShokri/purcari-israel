@@ -35,6 +35,7 @@ const HomePage: React.FC = () => {
       <SEO 
         title="דף הבית" 
         description="ברוכים הבאים לפורקארי ישראל - חנות היין המובילה ליינות פרימיום ממולדובה. גלו את מגוון היינות האדומים, הלבנים והמבעבעים שלנו."
+        ogImage="https://purcari.co.il/images/og-home.jpg"
         schemaData={organizationSchema}
       />
       {/* Hero Section */}

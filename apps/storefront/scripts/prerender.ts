@@ -61,6 +61,7 @@ const trimDesc = (s: string, max = 160) => {
 const STATIC_ROUTES: RouteMeta[] = [
   {
     path: '/',
+    ogImage: `${SITE_URL}/images/og-home.jpg`,
     title: 'דף הבית',
     description:
       'ברוכים הבאים לפורקארי ישראל - חנות היין המובילה ליינות פרימיום ממולדובה. גלו את מגוון היינות האדומים, הלבנים והמבעבעים שלנו.',
@@ -86,6 +87,7 @@ const STATIC_ROUTES: RouteMeta[] = [
   },
   {
     path: '/about',
+    ogImage: `${SITE_URL}/images/og-about.jpg`,
     lastmod: '2026-01-31',
     title: 'אודותינו',
     description:
@@ -353,6 +355,11 @@ function homeRoute(products: Product[]): RouteMeta {
   const featured = [...products].sort((a, b) => Number(!!b.isFeatured) - Number(!!a.isFeatured)).slice(0, 12);
   return {
     ...base,
+    preloadImage: {
+      href: '/images/hero-1600.webp',
+      srcset: '/images/hero-800.webp 800w, /images/hero-1600.webp 1600w',
+      sizes: '100vw',
+    },
     schema: [
       ...(base.schema || []),
       { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE_NAME, url: SITE_URL, inLanguage: 'he-IL' },

@@ -13,6 +13,7 @@ const AboutPage: React.FC = () => {
         title="אודותינו"
         description="גלו את הסיפור המרתק של יקב פורקרי - מסורת של ייצור יין מאז 1827. המסע שלנו ממולדובה לישראל והמחויבות שלנו לאיכות ללא פשרות."
         canonical="/about"
+        ogImage="https://purcari.co.il/images/og-about.jpg"
       />
       {/* Hero Section */}
       <AboutHero />

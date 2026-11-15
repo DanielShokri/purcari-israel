@@ -6,7 +6,14 @@ const AboutHero: React.FC = () => {
     <section className="relative h-[60vh] flex items-center justify-center overflow-hidden">
       <div className="absolute inset-0 z-0">
         <img 
-          src="https://images.unsplash.com/photo-1560493676-04071c5f467b?q=80&w=2068&auto=format&fit=crop" 
+          src="/images/about-hero-1600.webp"
+          srcSet="/images/about-hero-800.webp 800w, /images/about-hero-1600.webp 1600w"
+          sizes="100vw"
+          width={1600}
+          height={1199}
+          decoding="async"
+          // @ts-expect-error React 18 types lack fetchpriority; the lowercase attribute is passed through to the DOM
+          fetchpriority="high"
           alt="Purcari Vineyards" 
           className="w-full h-full object-cover scale-110"
         />

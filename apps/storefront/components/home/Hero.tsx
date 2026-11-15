@@ -16,10 +16,18 @@ const Hero: React.FC = () => {
   return (
     <section className={`mt-6 sm:mt-8 ${theme.CONTAINER_PX}`}>
       <div className={`relative h-[65vh] sm:h-[70vh] w-full overflow-hidden rounded-2xl sm:rounded-3xl bg-gray-900 shadow-2xl`}>
-        {/* Static Background / Poster Image */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
-          style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=1920&q=80")' }}
+        {/* Static Background / Poster Image (LCP element: real <img> so the preload scanner sees it) */}
+        <img
+          src="/images/hero-1600.webp"
+          srcSet="/images/hero-800.webp 800w, /images/hero-1600.webp 1600w"
+          sizes="100vw"
+          width={1600}
+          height={1067}
+          alt=""
+          decoding="async"
+          // @ts-expect-error React 18 types lack fetchpriority; the lowercase attribute is passed through to the DOM
+          fetchpriority="high"
+          className="absolute inset-0 w-full h-full object-cover"
         />
 
         {/* Video Background */}
@@ -38,7 +46,7 @@ const Hero: React.FC = () => {
                   loop
                   playsInline
                   className="absolute inset-0 w-full h-full object-cover"
-                  poster="https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=1920&q=80"
+                  poster="/images/hero-1600.webp"
                 >
                   <source 
                     src="https://purcariwineries.com/wp-content/uploads/2023/11/Purcari-General-44sec_ian_2023.mp4" 
