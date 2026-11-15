@@ -37,6 +37,7 @@ export interface ProductForm {
   onSale: boolean;
   salePrice: number;
   sku: string;
+  slug: string; // storefront URL segment, editable only for existing products
   quantityInStock: number;
   stockStatus: StockStatus;
   isFeatured: boolean;
@@ -144,6 +145,7 @@ export function useProductEditor({ id }: UseProductEditorProps) {
       onSale: false,
       salePrice: 0,
       sku: '',
+      slug: '',
       quantityInStock: 0,
       stockStatus: StockStatus.IN_STOCK,
       isFeatured: false,
@@ -206,6 +208,7 @@ export function useProductEditor({ id }: UseProductEditorProps) {
         onSale: existingProduct.onSale || false,
         salePrice: existingProduct.salePrice || 0,
         sku: existingProduct.sku || '',
+        slug: existingProduct.slug || '',
         quantityInStock: Number(existingProduct.quantityInStock) || 0,
         stockStatus: (existingProduct.stockStatus as StockStatus) || StockStatus.IN_STOCK,
         isFeatured: existingProduct.isFeatured || false,
@@ -262,9 +265,12 @@ export function useProductEditor({ id }: UseProductEditorProps) {
       };
 
       if (isEditMode && id) {
+        // Send the slug only when it was edited; the server cleans it and keeps it unique.
+        const slugChanged = data.slug.trim() !== '' && data.slug !== (existingProduct?.slug || '');
         await updateProduct({
           id: id as Id<'products'>,
           ...commonData,
+          ...(slugChanged ? { slug: data.slug } : {}),
         });
       } else {
         await createProduct(commonData);

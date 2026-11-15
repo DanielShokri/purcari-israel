@@ -18,6 +18,9 @@ import { StockStatus } from '@shared/types';
 interface InventoryCardProps {
   sku: string;
   onSkuChange: (sku: string) => void;
+  /** Storefront URL segment. Pass both to show the field (existing products only). */
+  slug?: string;
+  onSlugChange?: (slug: string) => void;
   quantityInStock: number;
   onQuantityChange: (quantity: number) => void;
   stockStatus: StockStatus;
@@ -36,6 +39,8 @@ const stockStatusOptions = createListCollection({
 
 export default function InventoryCard({
   sku,
+  slug,
+  onSlugChange,
   onSkuChange,
   quantityInStock,
   onQuantityChange,
@@ -94,6 +99,29 @@ export default function InventoryCard({
               _focus={{ ringColor: 'brand.500', borderColor: 'brand.500' }}
             />
           </VStack>
+
+          {/* URL slug (existing products only; new products get one from their name) */}
+          {onSlugChange && (
+            <VStack align="start" gap="2">
+              <Text fontSize="xs" fontWeight="medium" color="fg.muted">
+                כתובת בחנות (Slug)
+              </Text>
+              <Input
+                size="sm"
+                dir="ltr"
+                textAlign="left"
+                value={slug ?? ''}
+                onChange={(e) => onSlugChange(e.target.value)}
+                placeholder="wine-name"
+                bg="bg.subtle"
+                borderColor="border"
+                _focus={{ ringColor: 'brand.500', borderColor: 'brand.500' }}
+              />
+              <Text fontSize="xs" color="fg.muted" dir="ltr">
+                /product/{slug || '…'} · שינוי הכתובת מחליף את הקישור הקיים של המוצר
+              </Text>
+            </VStack>
+          )}
 
           {/* Quantity in Stock */}
           <VStack align="start" gap="2">
