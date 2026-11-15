@@ -160,6 +160,7 @@ const ShopPage: React.FC = () => {
         title={pageTitle}
         description={pageDescription}
         canonical={searchFromUrl ? `/products?search=${searchFromUrl}` : "/products"}
+        ogImage="https://purcari.co.il/images/og-home.jpg"
         schemaData={breadcrumbSchema}
       />
       {/* Header */}

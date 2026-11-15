@@ -3,6 +3,7 @@
  * (scripts/prerender.ts), so crawlers and the hydrated page always see the same markup.
  * Shipping and return terms mirror pages/ShippingPage.tsx and pages/TermsPage.tsx.
  */
+import { FREE_SHIPPING_THRESHOLD, RETURN_WINDOW_DAYS, SHIPPING_FEE } from './policy';
 
 export interface ProductSchemaInput {
   siteUrl: string;
@@ -21,8 +22,6 @@ export interface ProductSchemaInput {
   alcoholContent?: number;
 }
 
-const FREE_SHIPPING_THRESHOLD = 300;
-const SHIPPING_FEE = 30;
 
 const property = (name: string, value: string | number) => ({ '@type': 'PropertyValue', name, value });
 
@@ -84,7 +83,7 @@ export function buildProductSchema(p: ProductSchemaInput) {
         '@type': 'MerchantReturnPolicy',
         applicableCountry: 'IL',
         returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
-        merchantReturnDays: 14,
+        merchantReturnDays: RETURN_WINDOW_DAYS,
         refundType: 'https://schema.org/FullRefund',
         merchantReturnLink: `${p.siteUrl}/terms`,
       },

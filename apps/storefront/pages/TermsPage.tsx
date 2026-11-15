@@ -1,6 +1,7 @@
 import React from 'react';
 import { FileText, AlertCircle } from 'lucide-react';
 import SEO from '../components/SEO';
+import { REFUND_BUSINESS_DAYS, RETURN_WINDOW_DAYS } from '../utils/policy';
 
 const TermsPage: React.FC = () => {
   return (
@@ -76,9 +77,9 @@ const TermsPage: React.FC = () => {
                 4. ביטולים והחזרות
               </h2>
               <ul className="space-y-3 list-disc list-inside">
-                <li>ניתן לבטל עסקה בהתאם לחוק הגנת הצרכן תוך 14 יום מקבלת המוצר.</li>
+                <li>ניתן לבטל עסקה בהתאם לחוק הגנת הצרכן תוך {RETURN_WINDOW_DAYS} יום מקבלת המוצר.</li>
                 <li>ביטול עסקה יעשה בכתב (אימייל או דואר).</li>
-                <li>החזר כספי יבוצע תוך 14 ימי עסקים מאישור הביטול.</li>
+                <li>החזר כספי יבוצע תוך {REFUND_BUSINESS_DAYS} ימי עסקים מאישור הביטול.</li>
                 <li>מוצרים שנפתחו או נפגמו על ידי הלקוח לא יתקבלו להחזרה.</li>
               </ul>
             </section>

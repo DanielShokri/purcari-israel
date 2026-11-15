@@ -1,13 +1,14 @@
 import React from 'react';
 import { Truck, Clock, MapPin, Package, RotateCcw, Phone } from 'lucide-react';
 import SEO from '../components/SEO';
+import { FREE_SHIPPING_THRESHOLD, SHIPPING_FEE } from '../utils/policy';
 
 const ShippingPage: React.FC = () => {
   return (
     <div className="bg-gray-50 min-h-screen pb-20">
       <SEO 
         title="מדיניות משלוחים"
-        description="מידע על משלוחים וזמני אספקה בפורקארי ישראל. משלוח חינם בהזמנה מעל ₪300."
+        description={`מידע על משלוחים וזמני אספקה בפורקארי ישראל. משלוח חינם בהזמנה מעל ₪${FREE_SHIPPING_THRESHOLD}.`}
         canonical="/shipping"
       />
       
@@ -27,7 +28,7 @@ const ShippingPage: React.FC = () => {
               <Truck className="text-secondary" size={28} />
             </div>
             <h3 className="font-bold text-lg mb-2">משלוח חינם</h3>
-            <p className="text-gray-600 text-sm">בהזמנה מעל ₪300</p>
+            <p className="text-gray-600 text-sm">בהזמנה מעל ₪{FREE_SHIPPING_THRESHOLD}</p>
           </div>
           <div className="bg-white p-6 rounded-2xl shadow-sm text-center">
             <div className="w-14 h-14 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -57,11 +58,11 @@ const ShippingPage: React.FC = () => {
               <ul className="space-y-2">
                 <li className="flex items-center gap-2">
                   <span className="w-2 h-2 bg-secondary rounded-full"></span>
-                  <span>הזמנות מעל ₪300 - <strong className="text-green-600">משלוח חינם!</strong></span>
+                  <span>הזמנות מעל ₪{FREE_SHIPPING_THRESHOLD} - <strong className="text-green-600">משלוח חינם!</strong></span>
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="w-2 h-2 bg-secondary rounded-full"></span>
-                  <span>הזמנות עד ₪300 - משלוח בעלות של ₪30</span>
+                  <span>הזמנות עד ₪{FREE_SHIPPING_THRESHOLD} - משלוח בעלות של ₪{SHIPPING_FEE}</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="w-2 h-2 bg-secondary rounded-full"></span>

@@ -17,6 +17,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ConvexHttpClient } from 'convex/browser';
 import { buildProductSchema } from '../utils/productSchema';
+import { FREE_SHIPPING_THRESHOLD } from '../utils/policy';
 import { IMAGE_WIDTHS, imageSources, optimizedPath, storageIdOf } from '../utils/imageUrl';
 import { optimizeImages, type OptimizedImage } from './optimize-images';
 
@@ -108,7 +109,7 @@ const STATIC_ROUTES: RouteMeta[] = [
     path: '/shipping',
     lastmod: '2026-02-22',
     title: 'מדיניות משלוחים',
-    description: 'מידע על משלוחים וזמני אספקה בפורקארי ישראל. משלוח חינם בהזמנה מעל ₪300.',
+    description: `מידע על משלוחים וזמני אספקה בפורקארי ישראל. משלוח חינם בהזמנה מעל ₪${FREE_SHIPPING_THRESHOLD}.`,
     indexable: true,
     inSitemap: true,
   },
@@ -322,6 +323,7 @@ function shopRoute(products: Product[]): RouteMeta {
   const links = products.map(productItem).join('');
   return {
     path: '/products',
+    ogImage: `${SITE_URL}/images/og-home.jpg`,
     title: 'חנות - הכל',
     description: 'צפו בקטלוג היינות המלא של פורקארי ישראל. הכל - יינות איכותיים ממולדובה במחירים מעולים.',
     indexable: true,
