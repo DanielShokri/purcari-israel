@@ -251,7 +251,7 @@ function productRoute(p: Product, byId: Map<string, Product>): RouteMeta {
     ogImage: socialImage(p),
     preloadImage: (() => {
       const i = shellImage(p, 800);
-      return i && i.srcset ? { href: i.src, srcset: i.srcset, sizes: '(min-width: 768px) 400px, 80vw' } : undefined;
+      return i && i.srcset ? { href: i.src, srcset: i.srcset, sizes: '(min-width: 768px) 40vw, 90vw' /* keep identical to the gallery's sizes in pages/ProductPage.tsx */ } : undefined;
     })(),
     schema: [
       buildProductSchema({
