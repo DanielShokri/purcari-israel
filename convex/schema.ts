@@ -378,6 +378,15 @@ export default defineSchema({
     .index("by_createdAt", ["createdAt"]),
 
   // Rivhit Payment Transactions - tracks payment lifecycle for Israeli payment gateway
+  // Messages from the storefront contact form (kept so none are lost if email fails; also used for rate limiting).
+  contactMessages: defineTable({
+    name: v.string(),
+    email: v.string(),
+    subject: v.string(),
+    message: v.string(),
+    createdAt: v.string(),
+  }).index("by_createdAt", ["createdAt"]),
+
   paymentTransactions: defineTable({
     orderId: v.id("orders"),
     rivhitPaymentUrl: v.optional(v.string()),

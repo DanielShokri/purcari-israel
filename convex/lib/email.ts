@@ -15,6 +15,8 @@ export type SendEmailInput = {
   subject: string;
   html: string;
   text: string;
+  /** Defaults to hello@purcari.co.il. Unosend supports a single reply-to address. */
+  replyTo?: string;
 };
 
 /** Sends one email through Unosend and returns the Unosend email id. Throws on any failure. */
@@ -36,7 +38,7 @@ export async function sendEmail(input: SendEmailInput): Promise<string> {
       subject: input.subject,
       html: input.html,
       text: input.text,
-      reply_to: EMAIL_REPLY_TO,
+      reply_to: input.replyTo ?? EMAIL_REPLY_TO,
     }),
   });
 

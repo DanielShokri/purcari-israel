@@ -5,6 +5,9 @@ import { ConvexError } from "convex/values";
 import { z } from "zod";
 import type { DataModel } from "./_generated/dataModel";
 import type { MutationCtx } from "./_generated/server";
+import { internal } from "./_generated/api";
+import { sendEmail } from "./lib/email";
+import { passwordResetEmail } from "./lib/emailTemplates";
 
 
 
@@ -18,9 +21,31 @@ const nameSchema = z.string()
   .min(7, "השם המלא חייב להכיל שם פרטי ושם משפחה")
   .regex(fullNameRegex, "השם המלא חייב להכיל שם פרטי (לפחות 3 תווים), רווח ושם משפחה (לפחות 3 תווים)");
 
+const RESET_CODE_MINUTES = 20;
+
+/** Email provider used by the Password provider's reset flow: sends an 8-digit code through Unosend. */
+const PasswordResetEmail = {
+  id: "password-reset-otp",
+  type: "email" as const,
+  name: "Password reset",
+  from: "Purcari <hello@purcari.co.il>",
+  maxAge: RESET_CODE_MINUTES * 60,
+  options: {},
+  async generateVerificationToken() {
+    const digits = new Uint32Array(8);
+    crypto.getRandomValues(digits);
+    return Array.from(digits, (d) => d % 10).join("");
+  },
+  async sendVerificationRequest({ identifier: email, token }: { identifier: string; token: string }) {
+    const { subject, html, text } = passwordResetEmail({ code: token, minutes: RESET_CODE_MINUTES });
+    await sendEmail({ to: email, subject, html, text });
+  },
+};
+
 export const { auth, signIn, signOut, store } = convexAuth({
   providers: [
     Password<DataModel>({
+      reset: PasswordResetEmail as any,
       validatePasswordRequirements: (password: string) => {
         const result = passwordSchema.safeParse(password);
         if (!result.success) {
@@ -108,7 +133,7 @@ export const { auth, signIn, signOut, store } = convexAuth({
         }
       }
 
-      return await db.insert("users", {
+      const userId = await db.insert("users", {
         name: name ?? email?.split("@")[0],
         email,
         image,
@@ -119,6 +144,9 @@ export const { auth, signIn, signOut, store } = convexAuth({
         createdAt: now,
         updatedAt: now,
       });
+      // New account: send the welcome email (the callback ctx is a full mutation ctx).
+      await (ctx as unknown as MutationCtx).scheduler.runAfter(0, internal.email.sendWelcomeEmail, { userId });
+      return userId;
     },
   },
 });

@@ -120,6 +120,8 @@ export async function transitionOrder(ctx: MutationCtx, order: Doc<"orders">, to
         message: `הזמנה #${order.orderNumber} בוטלה לאחר תשלום - ₪${order.total.toLocaleString("he-IL")}. יש לבצע החזר ידני ב-iCredit.`,
         orderId: order._id,
       });
+      // Tell the customer too (only paid orders; unpaid ones never took money).
+      await ctx.scheduler.runAfter(0, internal.email.sendOrderCancelled, { orderId: order._id });
     }
     await releaseReservation(ctx, order);
     // Close any open payment pages so late IPNs cannot resurrect a cancelled order.
@@ -192,6 +194,7 @@ export async function applyPaymentEvent(
     });
     // Payment confirmed: send the confirmation email (deduped inside the action).
     await ctx.scheduler.runAfter(0, internal.email.sendOrderConfirmation, { orderId: order._id });
+    await ctx.scheduler.runAfter(0, internal.email.sendAdminNewOrder, { orderId: order._id });
   } else if (order?.status === "cancelled") {
     // Money was taken for an order we already released: flag it for the admin.
     await ctx.db.insert("activities", {
