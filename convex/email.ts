@@ -28,17 +28,6 @@ export const sendTestEmail = action({
   },
 });
 
-/** Same test send for `npx convex run email:sendTestEmailInternal` (CLI runs have no user session). */
-export const sendTestEmailInternal = internalAction({
-  args: {},
-  handler: async (): Promise<{ id: string }> => {
-    const { subject, html, text } = testEmail();
-    const id = await sendEmail({ to: TEST_RECIPIENT, subject, html, text });
-    console.log(`[email] test email sent, unosend id=${id}`);
-    return { id };
-  },
-});
-
 export const markConfirmationSent = internalMutation({
   args: { orderId: v.id("orders"), emailId: v.string() },
   handler: async (ctx, args) => {
