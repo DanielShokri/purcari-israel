@@ -64,6 +64,7 @@ export const sendOrderConfirmation = internalAction({
         postalCode: order.shippingPostalCode,
       },
       receiptUrl: tx.rivhitDocumentLink,
+      logoUrl: `${(process.env.STOREFRONT_URL || "https://purcari-storefront.pages.dev").replace(/\/$/, "")}/logo.png`,
     });
 
     const id = await sendEmail({ to: order.customerEmail, subject, html, text });
