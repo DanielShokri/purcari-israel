@@ -182,6 +182,8 @@ const CheckoutPage: React.FC = () => {
   usePaymentListener(currentOrderId, (orderId) => {
     clearCart();
     navigate(`/order-confirmation/${orderId}`);
+  }, ({ failed }) => {
+    if (!failed) clearCart();
   });
 
   // Empty cart state

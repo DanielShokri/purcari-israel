@@ -106,19 +106,27 @@ http.route({
     // Get the storefront URL from environment or use default
     const storefrontUrl = process.env.STOREFRONT_URL || "http://localhost:5183";
     
-    // Build the final destination URL
-    let destination = finalRedirectUrl ? decodeURIComponent(finalRedirectUrl) : storefrontUrl;
-    
-    // Append token and status if available
-    const destUrl = new URL(destination);
+    // Only ever redirect to the storefront's own order-confirmation pages; anything else
+    // (this endpoint is public) would make it an open redirect.
+    const storefrontOrigin = new URL(storefrontUrl).origin;
+    let destUrl = new URL(storefrontUrl);
+    if (finalRedirectUrl) {
+      try {
+        const candidate = new URL(decodeURIComponent(finalRedirectUrl));
+        if (candidate.origin === storefrontOrigin && candidate.pathname.startsWith("/order-confirmation/")) {
+          destUrl = candidate;
+        }
+      } catch {
+        // malformed finalUrl: fall back to the storefront home page
+      }
+    }
     // Do NOT forward iCredit's payment Token as ?token=: that is the order access token
     // (already in finalUrl), and overwriting it made orders.getPublic reject the request.
     if (status) destUrl.searchParams.set("paymentStatus", status);
     if (saleId) destUrl.searchParams.set("saleId", saleId);
     if (response) destUrl.searchParams.set("response", response);
-    destination = destUrl.toString();
-    
-    
+    const destination = destUrl.toString();
+
     // Return HTML page that breaks out of iframe and redirects parent
     const html = `<!DOCTYPE html>
 <html>
@@ -159,9 +167,10 @@ http.route({
     <p>מעבד תשלום, אנא המתן...</p>
   </div>
   <script>
-    // Break out of iframe and redirect parent window
+    // Browsers block a cross-origin iframe from navigating the top window without a recent
+    // click, so ask the storefront (the only allowed target origin) to navigate itself.
     if (window.top !== window.self) {
-      window.top.location.href = ${JSON.stringify(destination)};
+      window.top.postMessage({ type: "icredit-redirect", url: ${JSON.stringify(destination)} }, ${JSON.stringify(storefrontOrigin)});
     } else {
       window.location.href = ${JSON.stringify(destination)};
     }
