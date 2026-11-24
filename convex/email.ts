@@ -49,10 +49,13 @@ export const sendOrderConfirmation = internalAction({
     if (!tx || tx.status !== "completed") return;
     const items = await ctx.runQuery(internal.icreditHelpers.getOrderItems, { orderId: args.orderId });
 
+    const assetsUrl = (process.env.STOREFRONT_URL || "https://purcari-storefront.pages.dev").replace(/\/$/, "");
+    const toAbsolute = (src?: string) => (!src ? undefined : /^https?:\/\//.test(src) ? src : `${assetsUrl}${src.startsWith("/") ? "" : "/"}${src}`);
+
     const { subject, html, text } = orderConfirmationEmail({
       orderNumber: order.orderNumber ?? String(order._id),
       customerName: order.customerName,
-      items: items.map((i) => ({ productName: i.productName, variant: i.variant, quantity: i.quantity, price: i.price, total: i.total })),
+      items: items.map((i) => ({ productName: i.productName, variant: i.variant, quantity: i.quantity, price: i.price, total: i.total, image: toAbsolute(i.productImage) })),
       subtotal: order.subtotal,
       shippingCost: order.shippingCost,
       discount: order.discount,
@@ -64,7 +67,7 @@ export const sendOrderConfirmation = internalAction({
         postalCode: order.shippingPostalCode,
       },
       receiptUrl: tx.rivhitDocumentLink,
-      logoUrl: `${(process.env.STOREFRONT_URL || "https://purcari-storefront.pages.dev").replace(/\/$/, "")}/logo.png`,
+      assetsUrl,
     });
 
     const id = await sendEmail({ to: order.customerEmail, subject, html, text });
