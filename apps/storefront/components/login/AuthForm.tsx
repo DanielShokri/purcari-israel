@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import useToast from "../../store/hooks/useToast";
 import { LogIn, UserPlus, Mail, Lock, User as UserIcon, AlertCircle, Phone, Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
@@ -268,6 +268,13 @@ const AuthForm: React.FC = () => {
             <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
           )}
         </div>
+        {isLogin && (
+          <div className="text-start">
+            <Link to="/forgot-password" className="text-sm text-secondary hover:underline">
+              שכחתם סיסמה?
+            </Link>
+          </div>
+        )}
 
         <button
           type="submit"

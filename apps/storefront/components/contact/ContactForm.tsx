@@ -2,24 +2,35 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Send, CheckCircle2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
+import { useMutation } from 'convex/react';
+import { api } from '../../../../convex/_generated/api';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { contactSchema, ContactInput } from '../../schemas/validationSchemas';
 
 const ContactForm: React.FC = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const submitContact = useMutation(api.contact.submit);
 
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     reset
   } = useForm<ContactInput>({
     resolver: zodResolver(contactSchema)
   });
 
-  const onSubmit = (data: ContactInput) => {
-    setIsSubmitted(true);
-    reset();
+  const onSubmit = async (data: ContactInput) => {
+    setSubmitError(null);
+    try {
+      await submitContact(data);
+      setIsSubmitted(true);
+      reset();
+    } catch (err) {
+      const message = (err as { data?: unknown })?.data;
+      setSubmitError(typeof message === 'string' ? message : 'שליחת ההודעה נכשלה. נסו שוב מאוחר יותר.');
+    }
   };
 
   return (
@@ -91,9 +102,11 @@ const ContactForm: React.FC = () => {
             ></textarea>
             {errors.message && <p className="text-red-500 text-xs mt-1">{errors.message.message}</p>}
           </div>
+          {submitError && <p className="text-red-500 text-sm">{submitError}</p>}
           <button
             type="submit"
-            className="w-full bg-secondary text-white py-4 rounded-xl font-bold text-lg hover:bg-red-900 transition-all flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform hover:-translate-y-1 cursor-pointer"
+            disabled={isSubmitting}
+            className="w-full disabled:opacity-70 bg-secondary text-white py-4 rounded-xl font-bold text-lg hover:bg-red-900 transition-all flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform hover:-translate-y-1 cursor-pointer"
           >
             <Send size={20} />
             שלח הודעה

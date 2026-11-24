@@ -12,6 +12,7 @@ const ProductPage = lazy(() => import('./pages/ProductPage'));
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
 const OrderConfirmationPage = lazy(() => import('./pages/OrderConfirmationPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const ContactPage = lazy(() => import('./pages/ContactPage'));
 const AboutPage = lazy(() => import('./pages/AboutPage'));
@@ -49,6 +50,7 @@ const App: React.FC = () => {
               <Route path="/checkout" element={privateRoute('תשלום', <CheckoutPage />)} />
               <Route path="/order-confirmation/:id" element={privateRoute('אישור הזמנה', <OrderConfirmationPage />)} />
               <Route path="/login" element={privateRoute('התחברות', <LoginPage />)} />
+              <Route path="/forgot-password" element={privateRoute('שחזור סיסמה', <ForgotPasswordPage />)} />
               <Route path="/dashboard" element={privateRoute('האזור האישי', <DashboardPage />)} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/about" element={<AboutPage />} />
