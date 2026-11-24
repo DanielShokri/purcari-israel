@@ -205,6 +205,10 @@ export default defineSchema({
     // True while this order holds stock; released on cancel.
     stockReserved: v.optional(v.boolean()),
 
+    // Set once the order-confirmation email has been sent (dedupe; Unosend has no idempotency).
+    confirmationEmailSentAt: v.optional(v.string()),
+    confirmationEmailId: v.optional(v.string()),
+
     createdAt: v.string(),
     updatedAt: v.string(),
   })

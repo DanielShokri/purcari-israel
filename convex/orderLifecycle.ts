@@ -7,6 +7,7 @@ import { MutationCtx } from "./_generated/server";
 import { Doc, Id } from "./_generated/dataModel";
 import { releaseCouponUsage } from "./coupons";
 import { notifyAdmins } from "./notifications";
+import { internal } from "./_generated/api";
 
 export const orderStatusValidator = v.union(
   v.literal("pending"),
@@ -189,6 +190,8 @@ export async function applyPaymentEvent(
       message: `הזמנה #${order.orderNumber} - ₪${Number(transaction.amount).toLocaleString("he-IL")}`,
       orderId: order._id,
     });
+    // Payment confirmed: send the confirmation email (deduped inside the action).
+    await ctx.scheduler.runAfter(0, internal.email.sendOrderConfirmation, { orderId: order._id });
   } else if (order?.status === "cancelled") {
     // Money was taken for an order we already released: flag it for the admin.
     await ctx.db.insert("activities", {
