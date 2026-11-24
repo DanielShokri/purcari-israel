@@ -49,7 +49,8 @@ export const sendOrderConfirmation = internalAction({
     if (!tx || tx.status !== "completed") return;
     const items = await ctx.runQuery(internal.icreditHelpers.getOrderItems, { orderId: args.orderId });
 
-    const assetsUrl = (process.env.STOREFRONT_URL || "https://purcari-storefront.pages.dev").replace(/\/$/, "");
+    // Dev sets EMAIL_ASSETS_URL: STOREFRONT_URL is localhost there, which mail clients cannot load images from.
+    const assetsUrl = (process.env.EMAIL_ASSETS_URL || process.env.STOREFRONT_URL || "https://purcari-storefront.pages.dev").replace(/\/$/, "");
     const toAbsolute = (src?: string) => (!src ? undefined : /^https?:\/\//.test(src) ? src : `${assetsUrl}${src.startsWith("/") ? "" : "/"}${src}`);
 
     const { subject, html, text } = orderConfirmationEmail({
